@@ -1,11 +1,11 @@
 # Programing-Java: Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống của 01 cơ sở y tế.
 Bloodline DNA Testing Service Management System
-Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống
-Guest
-Customer
-Staff
-Manager
-Admin
+Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống,
+Guest,
+Customer,
+Staff,
+Manager,
+Admin.
 Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống của 01 cơ sở y tế.
 - Trang chủ giới thiệu cơ sở y tế, dịch vụ xét nghiệm ADN (dân sự, hành chính), blog chia sẽ kinh nghiệm kiến thức ADN & hướng dẫn xét nghiệm, ….
 - Chức năng cho phép người dùng đặt dịch vụ xét nghiệm bằng cách tự thu mẫu tại nhà hoặc yêu cầu cơ sở tự thu mẫu (tại nhà hoặc tại cơ sở y tế) tùy theo từng dịch vụ xét nghiệm ADN.
