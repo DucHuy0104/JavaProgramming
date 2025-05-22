@@ -1,4 +1,4 @@
-# Programing-Java: Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống của 01 cơ sở y tế.
+# JavaProgramming: Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống của 01 cơ sở y tế.
 Bloodline DNA Testing Service Management System
 Phần mềm quản lý dịch vụ xét nghiệm ADN huyết thống,
 Guest,
