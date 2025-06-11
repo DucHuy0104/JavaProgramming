@@ -1,0 +1,46 @@
+.header {
+    background-color: #ffffff;
+    color: #fff;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.header-logo {
+    width: 100px;
+    height: 100px;
+}
+
+.header-menu {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.text-content {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.text-content h1 {
+    font-size: 3.2em; /* Slightly larger for impact */
+    color: #333;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.text-content p {
+    font-size: 1.2em;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+
