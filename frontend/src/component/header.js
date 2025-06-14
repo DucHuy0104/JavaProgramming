@@ -1,4 +1,3 @@
-import './header.css';
 import Navbar from 'react-bootstrap/Navbar'; 
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
@@ -33,28 +32,20 @@ function Header() {
                                     <Nav className="me-auto main-nav">
                                         <Nav.Link 
                                             as={Link} 
-                                            to="/" 
-                                            className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
+                                            to="/home" 
+                                            className={`nav-link ${location.pathname === '/home' ? 'active' : ''}`}
                                         >
-                                            Home
+                                            Trang Chủ
                                         </Nav.Link>
                                         
-                                        <NavDropdown 
-                                            title="Services" 
-                                            id="basic-nav-paternity-1"
-                                            className={`nav-dropdown ${location.pathname === '/services' ? 'active' : ''}`}
+                                        <Nav.Link 
+                                            as={Link} 
+                                            to="/services" 
+                                            className={`nav-link ${location.pathname === '/services' ? 'active' : ''}`}
                                         >
-                                            <NavDropdown.Item as={Link} to="/services">
-                                                Đặt dịch vụ tự lấy mẫu tại nhà
-                                            </NavDropdown.Item>
-                                            <NavDropdown.Item as={Link} to="/services">
-                                                Đặt dịch vụ cơ sở tự thu mẫu tại nhà
-                                            </NavDropdown.Item>
-                                            <NavDropdown.Item as={Link} to="/services">
-                                                Đặt dịch vụ cơ sở tự thu máu tại cơ sở
-                                            </NavDropdown.Item>
-                                        </NavDropdown>
-
+                                            Dịch vụ
+                                        </Nav.Link>
+                                        
                                         <Nav.Link 
                                             as={Link} 
                                             to="/blog"
@@ -68,15 +59,7 @@ function Header() {
                                             to="/reliability"
                                             className={`nav-link ${location.pathname === '/reliability' ? 'active' : ''}`}
                                         >
-                                            Reliability
-                                        </Nav.Link>
-
-                                        <Nav.Link 
-                                            as={Link} 
-                                            to="/contact"
-                                            className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}
-                                        >
-                                            Contact
+                                            Độ tin cậy
                                         </Nav.Link>
 
                                         <Nav.Link 
@@ -84,7 +67,7 @@ function Header() {
                                             to="/login"
                                             className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
                                         >
-                                            Login
+                                            Đăng nhập
                                         </Nav.Link>
 
                                     </Nav>
@@ -96,93 +79,198 @@ function Header() {
             </div>
 
             <style jsx>{`
+                /* Header Styles */
                 .header {
                     position: sticky;
                     top: 0;
                     z-index: 1000;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+                    background: white;
+                    animation: fadeInDown 0.5s ease-out;
                 }
-                
+
+                /* Top Bar */
+                .top-bar {
+                    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+                    color: white;
+                    font-size: 14px;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                }
+
+                .contact-info {
+                    display: flex;
+                    gap: 20px;
+                }
+
+                .contact-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    transition: all 0.3s ease;
+                }
+
+                .contact-item:hover {
+                    color: #3498db;
+                    transform: translateY(-1px);
+                }
+
+                .contact-icon {
+                    color: #3498db;
+                    font-size: 12px;
+                }
+
+                .top-actions {
+                    display: flex;
+                    gap: 10px;
+                }
+
+                .action-btn {
+                    border-radius: 20px;
+                    padding: 6px 15px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    transition: all 0.3s ease;
+                    border: 1px solid rgba(255,255,255,0.3);
+                }
+
+                .action-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                }
+
+                /* Main Header */
                 .main-header {
                     background: white;
                     padding: 15px 0;
+                    border-bottom: 1px solid #e9ecef;
                 }
-                
+
                 .header-container {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
                 }
-                
+
+                /* Logo */
                 .header-logo {
                     flex-shrink: 0;
                 }
-                
+
                 .logo-link {
                     display: flex;
                     align-items: center;
                     text-decoration: none;
                     color: #333;
                     transition: all 0.3s ease;
+                    padding: 10px;
+                    border-radius: 10px;
                 }
-                
+
                 .logo-link:hover {
                     color: #007bff;
-                    transform: scale(1.05);
+                    transform: scale(1.02);
+                    background: rgba(0,123,255,0.05);
                 }
-                
+
                 .logo-image {
                     height: 50px;
                     width: auto;
-                    margin-right: 10px;
+                    margin-right: 15px;
+                    border-radius: 8px;
                 }
-                
+
                 .logo-text {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .logo-title {
                     font-size: 24px;
                     font-weight: bold;
                     color: #007bff;
+                    line-height: 1;
                 }
-                
+
+                .logo-subtitle {
+                    font-size: 12px;
+                    color: #6c757d;
+                    font-weight: 500;
+                    margin-top: 2px;
+                }
+
+                /* Navigation Menu */
                 .header-menu {
                     flex-grow: 1;
                     margin-left: 30px;
                 }
-                
+
                 .main-navbar {
                     padding: 0;
                 }
-                
-                .navbar-nav .nav-link {
+
+                .main-nav {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+
+                .nav-link {
                     color: #333 !important;
                     font-weight: 500;
-                    padding: 10px 15px !important;
-                    margin: 0 5px;
-                    border-radius: 5px;
+                    padding: 12px 18px !important;
+                    margin: 0 3px;
+                    border-radius: 25px;
                     transition: all 0.3s ease;
+                    position: relative;
+                    text-decoration: none;
                 }
-                
-                .navbar-nav .nav-link:hover,
-                .navbar-nav .nav-link.active {
+
+                .nav-link:hover,
+                .nav-link.active {
                     color: #007bff !important;
-                    background-color: #f8f9fa;
+                    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 15px rgba(0,123,255,0.15);
+                    animation: pulse 0.3s ease-in-out;
                 }
-                
-                .dropdown-menu {
+
+                .nav-link::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 50%;
+                    width: 0;
+                    height: 2px;
+                    background: #007bff;
+                    transition: all 0.3s ease;
+                    transform: translateX(-50%);
+                }
+
+                .nav-link:hover::after,
+                .nav-link.active::after {
+                    width: 80%;
+                }
+
+                /* Mobile Toggle */
+                .navbar-toggler {
                     border: none;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-                    border-radius: 10px;
-                }
-                
-                .dropdown-item {
-                    padding: 10px 20px;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    background: #f8f9fa;
                     transition: all 0.3s ease;
                 }
-                
-                .dropdown-item:hover {
-                    background-color: #f8f9fa;
-                    color: #007bff;
+
+                .navbar-toggler:hover {
+                    background: #e9ecef;
+                    transform: scale(1.05);
                 }
-                
+
+                .navbar-toggler:focus {
+                    box-shadow: none;
+                    outline: none;
+                }
+
+                /* Responsive Design */
                 @media (max-width: 991px) {
                     .header-container {
                         flex-direction: column;
@@ -191,8 +279,99 @@ function Header() {
                     
                     .header-menu {
                         margin-left: 0;
-                        margin-top: 15px;
+                        margin-top: 20px;
                     }
+                    
+                    .top-bar {
+                        display: none;
+                    }
+                    
+                    .main-nav {
+                        flex-direction: column;
+                        align-items: stretch;
+                        gap: 0;
+                    }
+                    
+                    .nav-link {
+                        margin: 5px 0;
+                        border-radius: 10px;
+                        text-align: center;
+                    }
+                    
+                    .contact-info {
+                        flex-direction: column;
+                        gap: 10px;
+                    }
+                    
+                    .top-actions {
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+                }
+
+                @media (max-width: 576px) {
+                    .logo-link {
+                        flex-direction: column;
+                        text-align: center;
+                    }
+                    
+                    .logo-image {
+                        margin-right: 0;
+                        margin-bottom: 10px;
+                    }
+                    
+                    .logo-title {
+                        font-size: 20px;
+                    }
+                    
+                    .logo-subtitle {
+                        font-size: 10px;
+                    }
+                }
+
+                /* Animation Effects */
+                @keyframes fadeInDown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+
+                @keyframes pulse {
+                    0% {
+                        transform: translateY(-2px) scale(1);
+                    }
+                    50% {
+                        transform: translateY(-2px) scale(1.05);
+                    }
+                    100% {
+                        transform: translateY(-2px) scale(1);
+                    }
+                }
+
+                .text-content {
+                    flex: 1;
+                    padding: 40px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                }
+
+                .text-content h1 {
+                    font-size: 3.2em;
+                    color: #333;
+                    margin-bottom: 20px;
+                    line-height: 1.2;
+                }
+
+                .text-content p {
+                    font-size: 1.2em;
+                    color: #555;
+                    margin-bottom: 15px;
                 }
             `}</style>
         </div>

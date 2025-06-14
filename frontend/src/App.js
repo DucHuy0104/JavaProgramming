@@ -22,23 +22,25 @@ import FeedbackAdmin from './pages/Feedback(Admin)';
 import BlogAdmin from './pages/Blog(Admin)';
 import StaffAdmin from './pages/Staff(Admin)';
 
+// Layout component for public pages
+const PublicLayout = ({ children }) => (
+  <>
+    <Header />
+    {children}
+    <Footer />
+  </>
+);
+
 function App() {
   return (
     <Router>
       <Routes>
         {/* Public (user) routes */}
-        <Route path="/" element={
-          <>
-            <Header />
-            <Routes>
-              <Route index element={<Home />} />
-              <Route path="reliability" element={<Reliability />} />
-              <Route path="services" element={<Services />} />
-              <Route path="contact" element={<Contact />} />
-            </Routes>
-            <Footer />
-          </>
-        } />
+        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+        <Route path="/home" element={<PublicLayout><Home /></PublicLayout>} />
+        <Route path="/reliability" element={<PublicLayout><Reliability /></PublicLayout>} />
+        <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
+        <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
 
         {/* Admin routes with layout */}
         <Route path="/admin" element={<LayoutAdmin />}>
@@ -55,14 +57,12 @@ function App() {
 
         {/* Catch all route */}
         <Route path="*" element={
-          <>
-            <Header />
+          <PublicLayout>
             <div className="container mt-5">
               <h1>404 - Page Not Found</h1>
               <p>The page you are looking for does not exist.</p>
             </div>
-            <Footer />
-          </>
+          </PublicLayout>
         } />
       </Routes>
     </Router>

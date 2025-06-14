@@ -1,317 +1,490 @@
+import React, { useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaPaperPlane, FaUser, FaComments } from 'react-icons/fa';
+import Card from 'react-bootstrap/Card';
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 
 function Contact() {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Xử lý gửi form liên hệ
+        console.log('Form submitted:', formData);
+        alert('Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể.');
+        setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            subject: '',
+            message: ''
+        });
+    };
+
     return (
         <div className="contact-page">
             {/* Hero Section */}
-            <section className="contact-hero py-5">
-                <div className="hero-background"></div>
+            <div className="contact-hero">
                 <Container>
-                    <Row className="justify-content-center text-center">
-                        <Col lg={10} md={12}>
-                            <h1 className="display-2 fw-bold text-white mb-4">Liên hệ với chúng tôi</h1>
-                            <p className="lead text-white-50 mb-0">
-                                Hãy liên hệ ngay để được tư vấn miễn phí và đặt lịch xét nghiệm
+                    <Row className="justify-content-center">
+                        <Col lg={8} className="text-center">
+                            <h1 className="hero-title">Liên Hệ Với Chúng Tôi</h1>
+                            <p className="hero-subtitle">
+                                Đội ngũ chuyên gia của chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7
                             </p>
                         </Col>
                     </Row>
                 </Container>
-            </section>
+            </div>
 
-            <section className="contact-content py-5">
-                <Container>
-                    <Row>
-                        {/* Contact Form */}
-                        <Col lg={8} md={12} className="mb-4">
-                            <Card className="border-0 shadow-lg">
-                                <Card.Body className="p-5">
-                                    <div className="d-flex align-items-center mb-4">
-                                        <div className="form-icon me-3">
-                                            <FaComments size={40} color="#007bff" />
-                                        </div>
-                                        <div>
-                                            <h3 className="fw-bold mb-1">Gửi tin nhắn cho chúng tôi</h3>
-                                            <p className="text-muted mb-0">Chúng tôi sẽ phản hồi trong vòng 24 giờ</p>
-                                        </div>
-                                    </div>
-                                    <Form>
-                                        <Row>
-                                            <Col md={6} sm={12} className="mb-3">
-                                                <Form.Group controlId="formFirstName">
-                                                    <Form.Label className="fw-bold">
-                                                        <FaUser className="me-2" />
-                                                        Họ và tên *
-                                                    </Form.Label>
-                                                    <Form.Control 
-                                                        type="text" 
-                                                        placeholder="Nhập họ và tên" 
-                                                        required 
-                                                        className="form-control-lg"
-                                                    />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col md={6} sm={12} className="mb-3">
-                                                <Form.Group controlId="formPhone">
-                                                    <Form.Label className="fw-bold">
-                                                        <FaPhone className="me-2" />
-                                                        Số điện thoại *
-                                                    </Form.Label>
-                                                    <Form.Control 
-                                                        type="tel" 
-                                                        placeholder="Nhập số điện thoại" 
-                                                        required 
-                                                        className="form-control-lg"
-                                                    />
-                                                </Form.Group>
-                                            </Col>
-                                        </Row>
-                                        <Row>
-                                            <Col md={6} sm={12} className="mb-3">
-                                                <Form.Group controlId="formEmail">
-                                                    <Form.Label className="fw-bold">
-                                                        <FaEnvelope className="me-2" />
-                                                        Email
-                                                    </Form.Label>
-                                                    <Form.Control 
-                                                        type="email" 
-                                                        placeholder="Nhập email" 
-                                                        className="form-control-lg"
-                                                    />
-                                                </Form.Group>
-                                            </Col>
-                                            <Col md={6} sm={12} className="mb-3">
-                                                <Form.Group controlId="formService">
-                                                    <Form.Label className="fw-bold">Dịch vụ quan tâm</Form.Label>
-                                                    <Form.Select className="form-select-lg">
-                                                        <option>Chọn dịch vụ</option>
-                                                        <option>Xét nghiệm ADN cha con</option>
-                                                        <option>Xét nghiệm di trú</option>
-                                                        <option>Xét nghiệm quan hệ huyết thống</option>
-                                                        <option>Xét nghiệm ADN trước sinh</option>
-                                                        <option>Xét nghiệm gia đình</option>
-                                                        <option>Xét nghiệm pháp lý</option>
-                                                    </Form.Select>
-                                                </Form.Group>
-                                            </Col>
-                                        </Row>
-                                        <Form.Group controlId="formMessage" className="mb-4">
-                                            <Form.Label className="fw-bold">Nội dung tin nhắn *</Form.Label>
-                                            <Form.Control 
-                                                as="textarea" 
-                                                rows={5} 
-                                                placeholder="Nhập nội dung tin nhắn" 
-                                                required 
-                                                className="form-control-lg"
-                                            />
-                                        </Form.Group>
-                                        <Button variant="primary" type="submit" size="lg" className="px-5 py-3 fw-bold">
-                                            <FaPaperPlane className="me-2" />
-                                            Gửi tin nhắn
-                                        </Button>
-                                    </Form>
-                                </Card.Body>
-                            </Card>
-                        </Col>
+            <Container className="py-5">
+                <Row className="g-4">
+                    {/* Contact Form */}
+                    <Col lg={8}>
+                        <Card className="contact-form-card">
+                            <Card.Body className="p-4">
+                                <h3 className="form-title mb-4">Gửi Tin Nhắn Cho Chúng Tôi</h3>
+                                <Form onSubmit={handleSubmit}>
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Họ và tên *</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    name="name"
+                                                    value={formData.name}
+                                                    onChange={handleChange}
+                                                    required
+                                                    placeholder="Nhập họ và tên"
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Email *</Form.Label>
+                                                <Form.Control
+                                                    type="email"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleChange}
+                                                    required
+                                                    placeholder="Nhập email"
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Số điện thoại</Form.Label>
+                                                <Form.Control
+                                                    type="tel"
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={handleChange}
+                                                    placeholder="Nhập số điện thoại"
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Chủ đề *</Form.Label>
+                                                <Form.Select
+                                                    name="subject"
+                                                    value={formData.subject}
+                                                    onChange={handleChange}
+                                                    required
+                                                >
+                                                    <option value="">Chọn chủ đề</option>
+                                                    <option value="dich-vu">Tư vấn dịch vụ</option>
+                                                    <option value="dat-lich">Đặt lịch xét nghiệm</option>
+                                                    <option value="ket-qua">Tra cứu kết quả</option>
+                                                    <option value="thanh-toan">Thanh toán</option>
+                                                    <option value="khac">Khác</option>
+                                                </Form.Select>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Form.Group className="mb-4">
+                                        <Form.Label>Nội dung tin nhắn *</Form.Label>
+                                        <Form.Control
+                                            as="textarea"
+                                            rows={5}
+                                            name="message"
+                                            value={formData.message}
+                                            onChange={handleChange}
+                                            required
+                                            placeholder="Nhập nội dung tin nhắn..."
+                                        />
+                                    </Form.Group>
+                                    <Button 
+                                        type="submit" 
+                                        className="submit-btn"
+                                        size="lg"
+                                    >
+                                        Gửi Tin Nhắn
+                                    </Button>
+                                </Form>
+                            </Card.Body>
+                        </Card>
+                    </Col>
 
-                        {/* Contact Information */}
-                        <Col lg={4} md={12}>
-                            <Card className="border-0 shadow-lg mb-4">
+                    {/* Contact Information */}
+                    <Col lg={4}>
+                        <div className="contact-info-sidebar">
+                            {/* Company Info */}
+                            <Card className="info-card mb-4">
                                 <Card.Body className="p-4">
-                                    <h3 className="fw-bold mb-4">Thông tin liên hệ</h3>
+                                    <h4 className="info-title mb-4">Thông Tin Liên Hệ</h4>
                                     
-                                    <div className="contact-item mb-4">
-                                        <div className="d-flex align-items-start">
-                                            <div className="contact-icon me-3">
-                                                <FaPhone color="#007bff" size={24} />
-                                            </div>
-                                            <div>
-                                                <h6 className="fw-bold mb-2">Điện thoại</h6>
-                                                <p className="mb-1">1900-xxxx</p>
-                                                <p className="mb-0">098-xxx-xxxx</p>
-                                            </div>
+                                    <div className="contact-item">
+                                        <div className="contact-icon">
+                                            <FaPhone />
                                         </div>
-                                    </div>
-
-                                    <div className="contact-item mb-4">
-                                        <div className="d-flex align-items-start">
-                                            <div className="contact-icon me-3">
-                                                <FaEnvelope color="#28a745" size={24} />
-                                            </div>
-                                            <div>
-                                                <h6 className="fw-bold mb-2">Email</h6>
-                                                <p className="mb-1">info@dnatesting.vn</p>
-                                                <p className="mb-0">support@dnatesting.vn</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="contact-item mb-4">
-                                        <div className="d-flex align-items-start">
-                                            <div className="contact-icon me-3">
-                                                <FaMapMarkerAlt color="#dc3545" size={24} />
-                                            </div>
-                                            <div>
-                                                <h6 className="fw-bold mb-2">Địa chỉ</h6>
-                                                <p className="mb-1">123 Đường ABC, Quận 1</p>
-                                                <p className="mb-0">TP. Hồ Chí Minh, Việt Nam</p>
-                                            </div>
+                                        <div className="contact-details">
+                                            <h6>Điện thoại</h6>
+                                            <p>1900-xxxx</p>
+                                            <p>098-xxx-xxxx</p>
                                         </div>
                                     </div>
 
                                     <div className="contact-item">
-                                        <div className="d-flex align-items-start">
-                                            <div className="contact-icon me-3">
-                                                <FaClock color="#ffc107" size={24} />
-                                            </div>
-                                            <div>
-                                                <h6 className="fw-bold mb-2">Giờ làm việc</h6>
-                                                <p className="mb-1">Thứ 2 - Thứ 6: 8:00 - 18:00</p>
-                                                <p className="mb-1">Thứ 7: 8:00 - 12:00</p>
-                                                <p className="mb-0">Chủ nhật: Nghỉ</p>
-                                            </div>
+                                        <div className="contact-icon">
+                                            <FaEnvelope />
+                                        </div>
+                                        <div className="contact-details">
+                                            <h6>Email</h6>
+                                            <p>info@dnatesting.vn</p>
+                                            <p>support@dnatesting.vn</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="contact-item">
+                                        <div className="contact-icon">
+                                            <FaMapMarkerAlt />
+                                        </div>
+                                        <div className="contact-details">
+                                            <h6>Địa chỉ</h6>
+                                            <p>123 Đường ABC, Quận 1</p>
+                                            <p>TP. Hồ Chí Minh, Việt Nam</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="contact-item">
+                                        <div className="contact-icon">
+                                            <FaClock />
+                                        </div>
+                                        <div className="contact-details">
+                                            <h6>Giờ làm việc</h6>
+                                            <p>Thứ 2 - Thứ 6: 8:00 - 18:00</p>
+                                            <p>Thứ 7: 8:00 - 12:00</p>
+                                            <p>Chủ nhật: Nghỉ</p>
                                         </div>
                                     </div>
                                 </Card.Body>
                             </Card>
 
-                            {/* Emergency Contact */}
-                            <Card className="border-0 shadow-lg emergency-card">
-                                <Card.Body className="p-4 text-center">
-                                    <h5 className="fw-bold mb-3">Liên hệ khẩn cấp</h5>
-                                    <p className="mb-3">Cần tư vấn ngay? Gọi cho chúng tôi:</p>
-                                    <Button variant="danger" size="lg" className="w-100 py-3 fw-bold">
-                                        <FaPhone className="me-2" />
-                                        1900-xxxx
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
-                </Container>
-            </section>
-
-            {/* Map Section */}
-            <section className="map-section py-5 bg-light">
-                <Container>
-                    <Row className="mb-4">
-                        <Col lg={12} className="text-center">
-                            <h2 className="display-4 fw-bold mb-3">Vị trí của chúng tôi</h2>
-                            <p className="lead text-muted">Tìm đường đến trung tâm xét nghiệm DNA</p>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col lg={12}>
-                            <Card className="border-0 shadow-lg">
-                                <Card.Body className="p-0">
-                                    <div className="map-placeholder">
-                                        <div className="map-content">
-                                            <FaMapMarkerAlt size={80} color="#6c757d" />
-                                            <h4 className="mt-3 mb-2">Bản đồ sẽ được hiển thị tại đây</h4>
-                                            <p className="text-muted">123 Đường ABC, Quận 1, TP. Hồ Chí Minh</p>
-                                        </div>
+                            {/* Social Media */}
+                            <Card className="social-card">
+                                <Card.Body className="p-4">
+                                    <h4 className="info-title mb-4">Theo Dõi Chúng Tôi</h4>
+                                    <div className="social-links">
+                                        <a href="#" className="social-link facebook">
+                                            <FaFacebook />
+                                        </a>
+                                        <a href="#" className="social-link twitter">
+                                            <FaTwitter />
+                                        </a>
+                                        <a href="#" className="social-link instagram">
+                                            <FaInstagram />
+                                        </a>
+                                        <a href="#" className="social-link linkedin">
+                                            <FaLinkedin />
+                                        </a>
                                     </div>
                                 </Card.Body>
                             </Card>
-                        </Col>
-                    </Row>
-                </Container>
-            </section>
+                        </div>
+                    </Col>
+                </Row>
+
+                {/* Map Section */}
+                <Row className="mt-5">
+                    <Col>
+                        <Card className="map-card">
+                            <Card.Body className="p-0">
+                                <div className="map-container">
+                                    <iframe
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.424098981303!2d106.6983153148008!3d10.776755992319!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752f46f64b933f%3A0xf8a6e5b2a5a4f1f4!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyBDw7RuZyBuZ2jhu4cgVGjDtG5nIHRpbiB2aWV0!5e0!3m2!1svi!2s!4v1234567890"
+                                        width="100%"
+                                        height="400"
+                                        style={{ border: 0 }}
+                                        allowFullScreen=""
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer-when-downgrade"
+                                        title="DNA Testing Location"
+                                    ></iframe>
+                                </div>
+                            </Card.Body>
+                        </Card>
+                    </Col>
+                </Row>
+            </Container>
 
             <style jsx>{`
                 .contact-page {
-                    overflow-x: hidden;
+                    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+                    min-height: 100vh;
                 }
-                
+
                 .contact-hero {
-                    position: relative;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 60vh;
-                    display: flex;
-                    align-items: center;
-                }
-                
-                .hero-background {
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.1)" points="0,1000 1000,0 1000,1000"/></svg>');
-                    background-size: cover;
-                }
-                
-                .form-icon {
-                    width: 60px;
-                    height: 60px;
-                    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                }
-                
-                .contact-item {
-                    padding: 15px 0;
-                    border-bottom: 1px solid #eee;
-                    transition: all 0.3s ease;
-                }
-                
-                .contact-item:last-child {
-                    border-bottom: none;
-                }
-                
-                .contact-item:hover {
-                    transform: translateX(10px);
-                }
-                
-                .contact-icon {
-                    width: 50px;
-                    height: 50px;
-                    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: transform 0.3s ease;
-                }
-                
-                .contact-item:hover .contact-icon {
-                    transform: scale(1.1);
-                }
-                
-                .emergency-card {
-                    background: linear-gradient(135deg, #dc3545, #c82333);
+                    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
                     color: white;
-                }
-                
-                .map-placeholder {
-                    height: 400px;
-                    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 15px;
-                }
-                
-                .map-content {
+                    padding: 80px 0;
                     text-align: center;
                 }
-                
-                .form-control-lg, .form-select-lg {
-                    border-radius: 10px;
-                    border: 2px solid #e9ecef;
+
+                .hero-title {
+                    font-size: 3.5rem;
+                    font-weight: 700;
+                    margin-bottom: 20px;
+                    background: linear-gradient(135deg, #3498db, #2980b9);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                }
+
+                .hero-subtitle {
+                    font-size: 1.2rem;
+                    color: #b8c5d6;
+                    max-width: 600px;
+                    margin: 0 auto;
+                }
+
+                .contact-form-card {
+                    border: none;
+                    border-radius: 20px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    background: white;
+                }
+
+                .form-title {
+                    color: #2c3e50;
+                    font-weight: 700;
+                    font-size: 2rem;
+                }
+
+                .submit-btn {
+                    background: linear-gradient(135deg, #28a745, #20c997);
+                    border: none;
+                    border-radius: 50px;
+                    padding: 12px 40px;
+                    font-weight: 600;
+                    font-size: 1.1rem;
                     transition: all 0.3s ease;
                 }
-                
-                .form-control-lg:focus, .form-select-lg:focus {
-                    border-color: #007bff;
-                    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+
+                .submit-btn:hover {
+                    background: linear-gradient(135deg, #20c997, #17a2b8);
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+                }
+
+                .contact-info-sidebar {
+                    position: sticky;
+                    top: 100px;
+                }
+
+                .info-card, .social-card {
+                    border: none;
+                    border-radius: 20px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    background: white;
+                }
+
+                .info-title {
+                    color: #2c3e50;
+                    font-weight: 700;
+                    font-size: 1.5rem;
+                }
+
+                .contact-item {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 15px;
+                    margin-bottom: 25px;
+                }
+
+                .contact-item:last-child {
+                    margin-bottom: 0;
+                }
+
+                .contact-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 50px;
+                    height: 50px;
+                    background: linear-gradient(135deg, #3498db, #2980b9);
+                    color: white;
+                    border-radius: 12px;
+                    font-size: 20px;
+                    flex-shrink: 0;
+                }
+
+                .contact-details h6 {
+                    color: #2c3e50;
+                    font-weight: 600;
+                    margin-bottom: 5px;
+                    font-size: 1rem;
+                }
+
+                .contact-details p {
+                    color: #6c757d;
+                    margin-bottom: 2px;
+                    font-size: 0.9rem;
+                }
+
+                .social-links {
+                    display: flex;
+                    gap: 15px;
+                    justify-content: center;
+                }
+
+                .social-link {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 12px;
+                    color: white;
+                    text-decoration: none;
+                    transition: all 0.3s ease;
+                    font-size: 20px;
+                }
+
+                .social-link.facebook {
+                    background: linear-gradient(135deg, #3b5998, #2d4373);
+                }
+
+                .social-link.twitter {
+                    background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+                }
+
+                .social-link.instagram {
+                    background: linear-gradient(135deg, #e4405f, #c13584);
+                }
+
+                .social-link.linkedin {
+                    background: linear-gradient(135deg, #0077b5, #005885);
+                }
+
+                .social-link:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+                }
+
+                .map-card {
+                    border: none;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                }
+
+                .map-container {
+                    position: relative;
+                    width: 100%;
+                    height: 400px;
+                }
+
+                .map-container iframe {
+                    border-radius: 20px;
+                }
+
+                /* Form Styling */
+                .form-control, .form-select {
+                    border: 2px solid #e9ecef;
+                    border-radius: 12px;
+                    padding: 12px 16px;
+                    font-size: 1rem;
+                    transition: all 0.3s ease;
+                }
+
+                .form-control:focus, .form-select:focus {
+                    border-color: #3498db;
+                    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+                }
+
+                .form-label {
+                    font-weight: 600;
+                    color: #2c3e50;
+                    margin-bottom: 8px;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 991px) {
+                    .contact-info-sidebar {
+                        position: static;
+                        margin-top: 30px;
+                    }
+
+                    .hero-title {
+                        font-size: 2.5rem;
+                    }
+
+                    .form-title {
+                        font-size: 1.5rem;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .contact-hero {
+                        padding: 60px 0;
+                    }
+
+                    .hero-title {
+                        font-size: 2rem;
+                    }
+
+                    .hero-subtitle {
+                        font-size: 1rem;
+                    }
+
+                    .contact-item {
+                        flex-direction: column;
+                        text-align: center;
+                    }
+
+                    .social-links {
+                        flex-wrap: wrap;
+                    }
+                }
+
+                @media (max-width: 576px) {
+                    .hero-title {
+                        font-size: 1.8rem;
+                    }
+
+                    .submit-btn {
+                        width: 100%;
+                    }
                 }
             `}</style>
         </div>
