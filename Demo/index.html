@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Xét nghiệm huyết thống DNA</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+
+<body>
+
+  <h1>Xét nghiệm huyết thống DNA</h1>
+
+  <!-- FORM NHẬP DỊCH VỤ -->
+  <h2>Nhập dịch vụ</h2>
+  <form id="service-form">
+    <label>Tên dịch vụ</label>
+    <input type="text" name="name" placeholder="VD: Xét nghiệm cha con" required />
+    <label>Giá (VNĐ)</label>
+    <input type="number" name="price" placeholder="VD: 2500000" required />
+    <label>Mô tả</label>
+    <textarea name="description" rows="3" placeholder="VD: Dịch vụ xét nghiệm ADN huyết thống..."></textarea>
+    <button type="submit">Thêm dịch vụ</button>
+  </form>
+
+  <!-- BẢNG DỊCH VỤ -->
+  <h2>Danh sách dịch vụ</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tên</th>
+        <th>Giá</th>
+        <th>Mô tả</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Xét nghiệm cha con</td>
+        <td>2,500,000</td>
+        <td>Dành cho xác định huyết thống giữa cha và con</td>
+        <td class="actions">
+          <button>Sửa</button>
+          <button class="delete">Xóa</button>
+        </td>
+      </tr>
+      <tr>
+        <td>Xét nghiệm anh chị em</td>
+        <td>2,800,000</td>
+        <td>Kiểm tra mối quan hệ huyết thống giữa anh chị em ruột</td>
+        <td class="actions">
+          <button>Sửa</button>
+          <button class="delete">Xóa</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- FORM THU MẪU -->
+  <h2>Thu mẫu (Staff)</h2>
+  <form>
+    <label>Mã đơn</label>
+    <input type="text" placeholder="VD: DN12345" required />
+    <label>Ngày thu</label>
+    <input type="date" required />
+    <button type="submit">Xác nhận thu mẫu</button>
+  </form>
+
+  <!-- TRẠNG THÁI MẪU -->
+  <h2>Trạng thái mẫu xét nghiệm</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Mã đơn</th>
+        <th>Khách hàng</th>
+        <th>Dịch vụ</th>
+        <th>Trạng thái</th>
+        <th>Cập nhật</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>DN12345</td>
+        <td>Nguyễn Văn A</td>
+        <td>Cha con</td>
+        <td>
+          <select>
+            <option value="pending">Chờ thu mẫu</option>
+            <option value="collected">Đã thu mẫu</option>
+            <option value="testing">Đang xét nghiệm</option>
+            <option value="completed">Hoàn tất</option>
+          </select>
+        </td>
+        <td><button>Cập nhật</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+</body>
+</html>
