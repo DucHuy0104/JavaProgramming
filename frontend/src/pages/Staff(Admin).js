@@ -107,7 +107,7 @@ const StaffAdmin = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
-  const [sortField, setSortField] = useState('fullName');
+  const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
   const [showAlert, setShowAlert] = useState({ show: false, message: '', variant: 'success' });
   const [showSampleModal, setShowSampleModal] = useState(false);
@@ -133,7 +133,7 @@ const StaffAdmin = () => {
       department: 'IT',
       hireDate: '2023-01-15',
       salary: '25000000',
-      avatar: 'https://via.placeholder.com/50',
+     
     },
     {
       id: 2,
@@ -146,7 +146,7 @@ const StaffAdmin = () => {
       department: 'Sales',
       hireDate: '2023-03-20',
       salary: '15000000',
-      avatar: 'https://via.placeholder.com/50',
+    
     },
     {
       id: 3,
@@ -159,7 +159,7 @@ const StaffAdmin = () => {
       department: 'Marketing',
       hireDate: '2022-11-10',
       salary: '20000000',
-      avatar: 'https://via.placeholder.com/50',
+      
     },
     {
       id: 4,
@@ -172,7 +172,7 @@ const StaffAdmin = () => {
       department: 'HR',
       hireDate: '2024-01-05',
       salary: '18000000',
-      avatar: 'https://via.placeholder.com/50',
+      
     },
   ];
 
@@ -504,6 +504,15 @@ const StaffAdmin = () => {
                   <tr>
                     <th>
                       <div className="d-flex align-items-center">
+                        ID
+                        <FaSort 
+                          className="ms-1 cursor-pointer" 
+                          onClick={() => handleSort('id')}
+                        />
+                      </div>
+                    </th>
+                    <th>
+                      <div className="d-flex align-items-center">
                         Họ tên
                         <FaSort 
                           className="ms-1 cursor-pointer" 
@@ -539,14 +548,12 @@ const StaffAdmin = () => {
                   {currentItems.map((staff) => (
                     <tr key={staff.id}>
                       <td>
+                        <Badge bg="secondary" className="fs-6 px-2 py-1">
+                          {staff.id}
+                        </Badge>
+                      </td>
+                      <td>
                         <div className="d-flex align-items-center">
-                          <img 
-                            src={staff.avatar} 
-                            alt={staff.fullName}
-                            className="rounded-circle me-2"
-                            width="32"
-                            height="32"
-                          />
                           {staff.fullName}
                         </div>
                       </td>
@@ -595,7 +602,7 @@ const StaffAdmin = () => {
                   ))}
                   {currentItems.length === 0 && (
                     <tr>
-                      <td colSpan="7" className="text-center py-4">
+                      <td colSpan="8" className="text-center py-4">
                         <div className="text-muted">
                           <FaUsers size={48} className="mb-3" />
                           <p>Không tìm thấy nhân viên nào.</p>
@@ -1066,4 +1073,4 @@ const StaffAdmin = () => {
   );
 };
 
-export default StaffAdmin; 
+export default StaffAdmin;
