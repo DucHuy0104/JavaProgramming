@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home - Bloodline DNA Testing</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0e1538, #1a2a6c);
+      margin: 0;
+      padding: 0;
+      color: #ffffff;
+    }
+    .header {
+      background: rgba(74, 144, 226, 0.9);
+      padding: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .nav a {
+      color: #ffffff;
+      text-decoration: none;
+      margin-left: 20px;
+      transition: color 0.3s ease;
+    }
+    .nav a:hover {
+      color: #ADD8E6;
+    }
+    .content {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .carousel {
+      height: 400px;
+      background: linear-gradient(135deg, #4A90E2, #ADD8E6);
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 40px;
+    }
+    .carousel-slide {
+      display: flex;
+      height: 100%;
+      transition: transform 0.5s ease;
+    }
+    .carousel-item {
+      flex: 0 0 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      color: #ffffff;
+    }
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      color: #ffffff;
+      font-size: 20px;
+      padding: 10px;
+      cursor: pointer;
+    }
+    .carousel-btn.left {
+      left: 10px;
+    }
+    .carousel-btn.right {
+      right: 10px;
+    }
+    .blog-section {
+      margin-top: 40px;
+    }
+    .blog-carousel {
+      height: 200px;
+      background: #e6f0fa;
+      border-radius: 15px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .blog-slide {
+      display: flex;
+      height: 100%;
+      transition: transform 0.5s ease;
+    }
+    .blog-item {
+      flex: 0 0 33.33%;
+      padding: 20px;
+      color: #1a73e8;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .blog-form {
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .blog-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 15px;
+      color: #1a73e8;
+      transition: transform 0.3s ease;
+    }
+    .blog-card:hover {
+      transform: scale(1.05);
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #E6F0FA;
+      color: #333333;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const HomePage = () => {
+      const [carouselIndex, setCarouselIndex] = React.useState(0);
+      const [blogIndex, setBlogIndex] = React.useState(0);
+      const carouselItems = ['Discover Your Roots', 'Accurate DNA Testing', 'Trusted Results'];
+      const blogItems = ['How to Take a DNA Sample', 'Understanding DNA Results', 'Latest Research'];
+
+      const nextCarousel = () => setCarouselIndex((prev) => (prev + 1) % carouselItems.length);
+      const prevCarousel = () => setCarouselIndex((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
+      const nextBlog = () => setBlogIndex((prev) => (prev + 1) % 3);
+      const prevBlog = () => setBlogIndex((prev) => (prev - 1 + 3) % 3);
+
+      return (
+        <div>
+          <header className="header">
+            <div className="nav">
+              <h1 className="text-3xl font-bold">Bloodline DNA </h1>
+              <div>
+                <a href="#login" className="text-white hover:text-[#ADD8E6]">Login</a>
+                <a href="#register" className="text-white hover:text-[#ADD8E6] ml-4">Register</a>
+              </div>
+            </div>
+          </header>
+          <main className="content">
+            <div className="carousel">
+              <div className="carousel-slide" style={{ transform: `translateX(-${carouselIndex * 100}%)` }}>
+                {carouselItems.map((item, index) => (
+                  <div key={index} className="carousel-item">{item}</div>
+                ))}
+              </div>
+              <button className="carousel-btn left" onClick={prevCarousel}>&lt;</button>
+              <button className="carousel-btn right" onClick={nextCarousel}>&gt;</button>
+            </div>
+            <div className="blog-section">
+              <div className="blog-carousel">
+                <div className="blog-slide" style={{ transform: `translateX(-${blogIndex * 33.33}%)` }}>
+                  {blogItems.map((item, index) => (
+                    <div key={index} className="blog-item">{item}</div>
+                  ))}
+                </div>
+                <button className="carousel-btn left" onClick={prevBlog}>&lt;</button>
+                <button className="carousel-btn right" onClick={nextBlog}>&gt;</button>
+              </div>
+              <div className="blog-form">
+                <h3 className="text-2xl mb-4">Leave a Comment</h3>
+                <textarea className="w-full p-3 border rounded-lg bg-white text-[#1a73e8]" rows="4" placeholder="Share your thoughts..."></textarea>
+                <button className="mt-2 bg-[#4A90E2] text-white p-2 rounded-lg hover:bg-[#ADD8E6]">Submit</button>
+              </div>
+              <div className="blog-grid">
+                {blogItems.map((item, index) => (
+                  <div key={index} className="blog-card">
+                    <h4 className="text-xl font-bold">{item}</h4>
+                    <p className="mt-2">Learn more about your DNA journey with our expert insights.</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
+          <footer>
+            <p>Bloodline DNA Testing Service</p>
+            <p>123 Health St, Hanoi, Vietnam | contact@bloodlinedna.com | +84 123 456 789</p>
+            <p>© 2025 All Rights Reserved</p>
+          </footer>
+        </div>
+      );
+    };
+    ReactDOM.render(<HomePage />, document.getElementById('root'));
+  </script>
+</body>
+</html>

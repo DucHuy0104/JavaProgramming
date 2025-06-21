@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bloodline DNA Testing Service Management System</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.20.15/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0a0f2b, #1e3a8a);
+      overflow-x: hidden;
+      transition: background 0.5s ease;
+      margin: 0;
+      position: relative;
+      height: 100vh;
+    }
+    .dark-mode {
+      background: linear-gradient(135deg, #1a2526, #2d3a4a);
+    }
+    .dark-mode .box {
+      background: rgba(30, 41, 59, 0.98);
+      color: #e2e8f0;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+    }
+    .dark-mode .input-field,
+    .dark-mode select {
+      background: #2d3748;
+      color: #e2e8f0;
+      border-color: #4a5568;
+    }
+    .dark-mode .btn {
+      background: linear-gradient(45deg, #2b6cb0, #63b3ed);
+    }
+    .form-box {
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 10;
+    }
+    .box {
+      position: relative;
+      width: 100%;
+      max-width: 900px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 30px;
+      padding: 50px;
+      box-shadow: 0 0 50px rgba(74, 144, 226, 0.7);
+      transition: all 0.5s ease;
+      overflow: hidden;
+      z-index: 10;
+    }
+    .box::before {
+      content: '';
+      position: absolute;
+      width: 130%;
+      height: 130%;
+      background: linear-gradient(45deg, #4A90E2, #ADD8E6, #4A90E2);
+      border-radius: 30px;
+      animation: dnaRotate 10s linear infinite;
+      filter: blur(20px);
+      z-index: -1;
+      opacity: 0.5;
+    }
+    .box::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 24px;
+      border: 2px solid rgba(74, 144, 226, 0.5);
+      z-index: -1;
+      transition: background 0.5s ease;
+    }
+    .dark-mode .box::after {
+      background: #2d3748;
+    }
+    .dna-decoration {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 0;
+    }
+    .dna-strand {
+      position: absolute;
+      width: 5px;
+      height: 350px;
+      background: linear-gradient(to bottom, #4A90E2, #ADD8E6, #4A90E2);
+      animation: dnaStrandMove 14s linear infinite;
+      transform-origin: center;
+      border-radius: 5px;
+    }
+    .particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: rgba(74, 144, 226, 0.9);
+      border-radius: 50%;
+      animation: particleFloat 12s infinite ease-in-out;
+      box-shadow: 0 0 20px rgba(74, 144, 226, 0.8);
+    }
+    .input-field, select {
+      width: 100%;
+      padding: 18px;
+      margin: 15px 0;
+      border: 2px solid #bbdefb;
+      border-radius: 15px;
+      color: #333333;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      padding-left: 50px;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+    .input-field:focus, select:focus {
+      border-color: #4A90E2;
+      outline: none;
+      box-shadow: 0 0 15px rgba(74, 144, 226, 0.7) inset, 0 0 25px rgba(74, 144, 226, 0.5);
+    }
+    .btn {
+      background: linear-gradient(45deg, #4A90E2, #90caf9);
+      color: #ffffff;
+      padding: 18px;
+      border: none;
+      border-radius: 15px;
+      width: 100%;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(74, 144, 226, 0.6);
+    }
+    .btn:hover {
+      background: linear-gradient(45deg, #90caf9, #4A90E2);
+      transform: translateY(-3px);
+      box-shadow: 0 0 30px rgba(74, 144, 226, 0.8);
+    }
+    .btn:active::after {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      top: 50%;
+      left: 50%;
+      animation: rippleEffect 0.6s ease-out;
+    }
+    .glow {
+      box-shadow: 0 0 25px rgba(74, 144, 226, 0.9);
+    }
+    .glow-input:focus {
+      box-shadow: 0 0 25px rgba(74, 144, 226, 0.9), 0 0 15px rgba(74, 144, 226, 0.7) inset;
+    }
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4dabf5;
+      color: #ffffff;
+      padding: 15px 35px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      z-index: 1000;
+      animation: fadeIn 0.5s ease-in-out;
+      max-width: 90%;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+    }
+    .sub-form-container {
+      margin-top: 25px;
+      padding: 25px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      transition: all 0.3s ease-out;
+      overflow: hidden;
+      z-index: 20;
+      position: relative;
+      backdrop-filter: blur(5px);
+      max-width: 100%;
+      width: 100%;
+    }
+    .sub-form-container.closed {
+      max-height: 0;
+      opacity: 0;
+      padding: 0 25px;
+    }
+    .sub-form-container.open {
+      max-height: 800px;
+      opacity: 1;
+      width: 100%;
+    }
+    .sub-form-toggle {
+      background: #E6F0FA;
+      color: #333333;
+      padding: 12px;
+      border-radius: 12px;
+      width: 100%;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .sub-form-toggle:hover {
+      background: #90caf9;
+      color: #ffffff;
+      transform: scale(1.03);
+      box-shadow: 0 0 15px rgba(74, 144, 226, 0.3);
+    }
+    .dark-mode .sub-form-toggle {
+      background: #2d3748;
+      color: #e2e8f0;
+    }
+    .dark-mode .sub-form-container {
+      background: rgba(45, 55, 72, 0.5);
+    }
+    .progress-ring {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
+    .progress-ring.active {
+      display: block;
+    }
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    .modal.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 25px;
+      padding: 35px;
+      max-width: 600px;
+      width: 90%;
+      position: relative;
+      box-shadow: 0 0 40px rgba(74, 144, 226, 0.7);
+      animation: modalPop 0.3s ease-out;
+      overflow: hidden;
+    }
+    .dark-mode .modal-content {
+      background: rgba(30, 41, 59, 0.98);
+      color: #e2e8f0;
+    }
+    .modal-content::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #4A90E2, #ADD8E6);
+      border-radius: 25px;
+      filter: blur(15px);
+      z-index: -1;
+      opacity: 0.5;
+    }
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 28px;
+      cursor: pointer;
+      color: #4A90E2;
+      transition: all 0.3s ease;
+    }
+    .close-btn:hover {
+      color: #90caf9;
+      transform: rotate(90deg);
+    }
+    @keyframes dnaRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes dnaStrandMove {
+      0% { transform: translateY(-350px) rotate(0deg); }
+      100% { transform: translateY(100vh) rotate(360deg); }
+    }
+    @keyframes particleFloat {
+      0% { transform: translateY(0) scale(1); opacity: 0.9; }
+      50% { transform: translateY(-100px) scale(1.7); opacity: 0.6; }
+      100% { transform: translateY(0) scale(1); opacity: 0.9; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes rippleEffect {
+      to { width: 350px; height: 350px; opacity: 0; }
+    }
+    @keyframes modalPop {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @media (max-width: 640px) {
+      .box {
+        padding: 25px;
+        max-width: 100%;
+      }
+      .sub-form-container {
+        padding: 15px;
+      }
+      .sub-form-container .flex {
+        flex-direction: column;
+        gap: 15px;
+      }
+      .sub-form-container input {
+        width: 100%;
+      }
+      .modal-content {
+        padding: 20px;
+      }
+      .btn {
+        padding: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const MainLayout = ({ children, userRole, onLogout }) => {
+      const menus = {
+        Guest: ['Home', 'Services', 'Blog', 'Login'],
+        Customer: ['Home', 'Services', 'Results', 'Logout'],
+        Staff: ['Home', 'Sample Management', 'Logout'],
+        Manager: ['Home', 'Process Monitoring', 'Logout'],
+        Admin: ['Home', 'Dashboard', 'Logout']
+      };
+      return (
+        <div className="min-h-screen flex flex-col relative">
+          <header className="bg-[#4A90E2] text-[#ffffff] p-4 glow">
+            <div className="container mx-auto flex justify-between items-center">
+              <h1 className="text-3xl font-bold glow">🧬 Bloodline DNA</h1>
+              <nav className="flex space-x-6">
+                {menus[userRole].map((item, index) => (
+                  <a
+                    key={index}
+                    href={item === 'Logout' ? '#' : `#${item.toLowerCase()}`}
+                    onClick={item === 'Logout' ? onLogout : null}
+                    className="hover:glow text-[#ffffff] font-medium transition-colors duration-300"
+                    aria-label={`Navigate to ${item}`}
+                  >
+                    {item}
+                  </a>
+                ))}
+              </nav>
+            </div>
+          </header>
+          <main className="container mx-auto p-6 flex-grow relative">{children}</main>
+          <footer className="bg-[#E6F0FA] text-[#333333] text-center p-4 hover:glow">
+            <p className="font-semibold">Bloodline DNA Service</p>
+            <p>123 Health St, Hanoi, Vietnam | contact@bloodlinedna.com | +84 123 456 789</p>
+            <p>© 2025 All Rights Reserved</p>
+          </footer>
+          <div className="dna-decoration">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="dna-strand" style={{ left: `${i * 14.28}%`, animationDelay: `${i * 1.5}s` }}></div>
+            ))}
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div key={i} className="particle" style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 7}s` }}></div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    const App = () => {
+      const [isLogin, setIsLogin] = React.useState(true);
+      const [userRole, setUserRole] = React.useState('Guest');
+      const [isDarkMode, setIsDarkMode] = React.useState(false);
+      const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+      const [showForgotPassword, setShowForgotPassword] = React.useState(false);
+      const threeJsContainerRef = React.useRef(null);
+
+      React.useEffect(() => {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        threeJsContainerRef.current.appendChild(renderer.domElement);
+
+        const geometry = new THREE.BufferGeometry();
+        const vertices = [];
+        const colors = [];
+        for (let i = -50; i < 50; i += 0.05) {
+          const x = Math.sin(i * 0.6) * 4;
+          const y = i * 0.5;
+          const z = Math.cos(i * 0.6) * 4;
+          vertices.push(x, y, z);
+          vertices.push(-x, y, -z);
+          colors.push(0.29, 0.56, 0.89);
+          colors.push(0.68, 0.85, 0.90);
+        }
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+        const material = new THREE.LineBasicMaterial({ vertexColors: true, linewidth: 2 });
+        const helix = new THREE.LineSegments(geometry, material);
+        scene.add(helix);
+
+        camera.position.z = 30;
+
+        const animate = () => {
+          requestAnimationFrame(animate);
+          helix.rotation.y += 0.012;
+          helix.rotation.x += 0.008;
+          renderer.render(scene, camera);
+        };
+        animate();
+
+        const handleResize = () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        };
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+          window.removeEventListener('resize', handleResize);
+          threeJsContainerRef.current.removeChild(renderer.domElement);
+        };
+      }, []);
+
+      const toggleDarkMode = () => {
+        setIsDarkMode(!isDarkMode);
+        document.body.classList.toggle('dark-mode');
+      };
+
+      const handleLogout = () => {
+        setUserRole('Guest');
+        setIsAuthenticated(false);
+        alert('Logged out successfully!');
+      };
+
+      return (
+        <MainLayout userRole={userRole} onLogout={handleLogout}>
+          <div ref={threeJsContainerRef} className="absolute inset-0 z-0 opacity-30"></div>
+          <button
+            onClick={toggleDarkMode}
+            className="fixed top-4 right-4 bg-[#4A90E2] text-white p-3 rounded-full glow hover:scale-110 transition-transform duration-300 shadow-lg"
+            aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {isDarkMode ? '🌞' : '🌙'}
+          </button>
+          {isAuthenticated ? (
+            userRole === 'Staff' ? (
+              <StaffPage />
+            ) : userRole === 'Manager' ? (
+              <ManagerPage />
+            ) : userRole === 'Admin' ? (
+              <AdminPage />
+            ) : (
+              <CustomerPage />
+            )
+          ) : isLogin ? (
+            <LoginPage
+              onSwitchToRegister={() => setIsLogin(false)}
+              setUserRole={setUserRole}
+              setIsAuthenticated={setIsAuthenticated}
+              onForgotPassword={() => setShowForgotPassword(true)}
+            />
+          ) : (
+            <RegisterPage
+              onSwitchToLogin={() => setIsLogin(true)}
+              setUserRole={setUserRole}
+              setIsAuthenticated={setIsAuthenticated}
+            />
+          )}
+          <ForgotPasswordModal
+            isOpen={showForgotPassword}
+            onClose={() => setShowForgotPassword(false)}
+          />
+        </MainLayout>
+      );
+    };
+
+    const ForgotPasswordModal = ({ isOpen, onClose }) => {
+      const [email, setEmail] = React.useState('');
+      const [error, setError] = React.useState('');
+      const [isLoading, setIsLoading] = React.useState(false);
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+          setError('Please enter a valid email address');
+          return;
+        }
+        setIsLoading(true);
+        setTimeout(() => {
+          setError('');
+          alert('Password reset link sent to your email!');
+          setIsLoading(false);
+          setEmail('');
+          onClose();
+        }, 1000);
+      };
+
+      return (
+        <div className={`modal ${isOpen ? 'open' : ''}`}>
+          <div className="modal-content">
+            <span className="close-btn" onClick={onClose} aria-label="Close modal">×</span>
+            <h2 className="text-2xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Forgot Password</h2>
+            {error && (
+              <div className="notification" tabIndex="-1" role="alert">
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Email for password reset"
+                />
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <button
+                type="submit"
+                className="btn"
+                disabled={isLoading}
+                aria-label="Send Reset Link"
+              >
+                {isLoading ? (
+                  <svg className="progress-ring active w-6 h-6 animate-spin mx-auto" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="#ffffff" strokeWidth="4" fill="none" />
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#4A90E2" strokeWidth="4" fill="none" />
+                  </svg>
+                ) : (
+                  'Send Reset Link'
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    };
+
+    const LoginPage = ({ onSwitchToRegister, setUserRole, setIsAuthenticated, onForgotPassword }) => {
+      const [isVisible, setIsVisible] = React.useState(false);
+      const [uname, setUname] = React.useState('');
+      const [pass, setPass] = React.useState('');
+      const [role, setRole] = React.useState('Guest');
+      const [error, setError] = React.useState('');
+      const [isLoading, setIsLoading] = React.useState(false);
+      const [showSubForm, setShowSubForm] = React.useState(false);
+      const buttonRef = React.useRef(null);
+      let animationFrameId = null;
+
+      const validateInputs = () => {
+        if (!uname || !pass) return 'Please fill all fields to unlock your DNA insights!';
+        if (role === 'Customer' && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(uname)) {
+          return 'Please enter a valid email address';
+        }
+        return '';
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const validationError = validateInputs();
+        if (validationError) {
+          setError(validationError);
+          return;
+        }
+        setIsLoading(true);
+        setTimeout(() => {
+          setError('');
+          setUserRole(role);
+          setIsAuthenticated(true);
+          alert(`Login successful as ${role}!`);
+          setIsLoading(false);
+        }, 1000);
+      };
+
+      const handleSubFormSubmit = (type) => (e) => {
+        e.preventDefault();
+        const id = e.target.querySelector('input').value;
+        if (!id) {
+          setError(`Please enter a valid ${type} ID`);
+          return;
+        }
+        setIsLoading(true);
+        setTimeout(() => {
+          setError('');
+          setUserRole(type);
+          setIsAuthenticated(true);
+          alert(`Login successful as ${type}!`);
+          setIsLoading(false);
+        }, 1000);
+      };
+
+      const moveButtonAway = (e) => {
+        if (buttonRef.current && (!uname || !pass)) {
+          const rect = buttonRef.current.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left - rect.width / 2;
+          const mouseY = e.clientY - rect.top - rect.height / 2;
+          const distance = Math.sqrt(mouseX * mouseX + mouseY * mouseY);
+
+          if (distance < 70) {
+            cancelAnimationFrame(animationFrameId);
+            const animate = () => {
+              const offsetX = (mouseX / 7) * (Math.random() * 2 - 1) * 30;
+              const offsetY = (mouseY / 7) * (Math.random() * 2 - 1) * 30;
+              buttonRef.current.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+              animationFrameId = requestAnimationFrame(animate);
+            };
+            animate();
+          } else if (uname && pass) {
+            cancelAnimationFrame(animationFrameId);
+            buttonRef.current.style.transform = '';
+          }
+        }
+      };
+
+      React.useEffect(() => {
+        setIsVisible(true);
+        const savedUname = localStorage.getItem('username');
+        if (savedUname) setUname(savedUname);
+
+        return () => cancelAnimationFrame(animationFrameId);
+      }, []);
+
+      React.useEffect(() => {
+        if (error) {
+          const errorElement = document.querySelector('.notification');
+          if (errorElement) errorElement.focus();
+        }
+      }, [error]);
+
+      return (
+        <div className={`form-box ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'} transition-all duration-700 ease-out`} onMouseMove={moveButtonAway}>
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Unlock Your DNA Legacy!</h2>
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10" aria-live="polite">
+              {error && (
+                <div className="notification" tabIndex="-1" role="alert">
+                  {error}
+                </div>
+              )}
+              <div className="relative">
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Select user role"
+                >
+                  <option value="Guest">Guest</option>
+                  <option value="Customer">Customer</option>
+                </select>
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Username/Email/ID"
+                  value={uname}
+                  onChange={(e) => setUname(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Username or Email"
+                />
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Password"
+                />
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <div className="flex items-center justify-between text-lg text-[#333333]">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    onChange={(e) => localStorage.setItem('rememberMe', e.target.checked)}
+                    className="mr-3 glow-checkbox w-5 h-5"
+                    aria-label="Remember me"
+                  /> Remember me
+                </label>
+                <button
+                  type="button"
+                  onClick={onForgotPassword}
+                  className="text-[#4A90E2] hover:text-[#90caf9] transition-colors duration-300 font-medium underline"
+                  aria-label="Forgot Password"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+              <button
+                ref={buttonRef}
+                type="submit"
+                className={`btn relative ${!uname || !pass ? 'avoid-cursor opacity-70' : ''}`}
+                disabled={!uname || !pass || isLoading}
+                aria-label="Login"
+              >
+                {isLoading ? (
+                  <svg className="progress-ring active w-6 h-6 animate-spin mx-auto" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="#ffffff" strokeWidth="4" fill="none" />
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#4A90E2" strokeWidth="4" fill="none" />
+                  </svg>
+                ) : (
+                  'Login'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={onSwitchToRegister}
+                className="btn bg-transparent text-[#4A90E2] border-2 border-[#4A90E2] hover:bg-[#4A90E2] hover:text-white transition-all duration-300"
+                aria-label="Switch to Register"
+              >
+                Register
+              </button>
+            </form>
+            <div className="mt-8">
+              <button
+                onClick={() => setShowSubForm(!showSubForm)}
+                className="sub-form-toggle w-full bg-[#E6F0FA] text-[#333333] hover:bg-[#90caf9] hover:text-white transition-all duration-300 rounded-lg p-3 font-semibold shadow-md"
+                aria-expanded={showSubForm}
+                aria-label="Toggle Staff, Manager, Admin login options"
+              >
+                {showSubForm ? 'Hide Staff/Manager/Admin Login' : 'Show Staff/Manager/Admin Login'}
+              </button>
+              <div className={`sub-form-container ${showSubForm ? 'open' : 'closed'} bg-white shadow-lg rounded-lg p-5 mt-4 z-20`}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                  {['Staff', 'Manager', 'Admin'].map((type) => (
+                    <form key={type} onSubmit={handleSubFormSubmit(type)} className="flex flex-col items-center space-y-4 w-full">
+                      <input
+                        type="text"
+                        placeholder={`${type} ID`}
+                        className="input-field w-full p-3 rounded-lg border-2 border-[#bbdefb] focus:border-[#4A90E2] transition-all duration-300"
+                        aria-label={`${type} ID`}
+                      />
+                      <button
+                        type="submit"
+                        className="btn w-full py-3 rounded-lg text-white bg-[#4A90E2] hover:bg-[#90caf9] transition-all duration-300"
+                        aria-label={`${type} Login`}
+                      >
+                        {type} Login
+                      </button>
+                    </form>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const RegisterPage = ({ onSwitchToLogin, setUserRole, setIsAuthenticated }) => {
+      const [isVisible, setIsVisible] = React.useState(false);
+      const [uname, setUname] = React.useState('');
+      const [email, setEmail] = React.useState('');
+      const [pass, setPass] = React.useState('');
+      const [passConfirm, setPassConfirm] = React.useState('');
+      const [phone, setPhone] = React.useState('');
+      const [role, setRole] = React.useState('Guest');
+      const [error, setError] = React.useState('');
+      const [isLoading, setIsLoading] = React.useState(false);
+      const [showSubForm, setShowSubForm] = React.useState(false);
+      const [generatedId, setGeneratedId] = React.useState('');
+      const canvasChartRef = React.useRef(null);
+      const btnRef = React.useRef(null);
+
+      const generateSampleId = () => {
+        const id = `DNA-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        setGeneratedId(id);
+        return id;
+      };
+
+      React.useEffect(() => {
+        const ctxChart = canvasChartRef.current?.getContext('2d');
+        if (!ctxChart) return;
+
+        canvasChartRef.current.width = 150;
+        canvasChartRef.current.height = 150;
+        new Chart(ctxChart, {
+          type: 'doughnut',
+          data: {
+            labels: ['Registered', 'Pending'],
+            datasets: [{ data: [80, 20], backgroundColor: ['#4A90E2', '#ADD8E6'] }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+      }, []);
+
+      const validateInputs = () => {
+        if (!uname || !email || !pass || !passConfirm || !phone) {
+          return 'Complete all fields to start your DNA journey!';
+        }
+        if (pass !== passConfirm) {
+          return 'Passwords do not match!';
+        }
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
+          return 'Please enter a valid email address';
+        }
+        if (!/^\+?\d{10,15}$/.test(phone)) {
+          return 'Please enter a valid phone number';
+        }
+        if (pass.length < 8) {
+          return 'Password must be at least 8 characters long';
+        }
+        return '';
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const validationError = validateInputs();
+        if (validationError) {
+          setError(validationError);
+          return;
+        }
+        setIsLoading(true);
+        const sampleId = generateSampleId();
+        setTimeout(() => {
+          setError('');
+          setUserRole(role);
+          setIsAuthenticated(true);
+          alert(`Registration successful as ${role}! Your Sample ID: ${sampleId}`);
+          setIsLoading(false);
+        }, 1000);
+      };
+
+      const handleSubFormSubmit = (type) => (e) => {
+        e.preventDefault();
+        const id = e.target.querySelector('input').value;
+        if (!id) {
+          setError(`Please enter a valid ${type} ID`);
+          return;
+        }
+        setIsLoading(true);
+        const sampleId = generateSampleId();
+        setTimeout(() => {
+          setError('');
+          setUserRole(type);
+          setIsAuthenticated(true);
+          alert(`Registration successful as ${type}! Your ID: ${sampleId}`);
+          setIsLoading(false);
+        }, 1000);
+      };
+
+      React.useEffect(() => {
+        setIsVisible(true);
+        const checkForm = () => {
+          btnRef.current.disabled = !!validateInputs();
+        };
+        checkForm();
+      }, [uname, email, pass, passConfirm, phone]);
+
+      React.useEffect(() => {
+        if (error) {
+          const errorElement = document.querySelector('.notification');
+          if (errorElement) errorElement.focus();
+        }
+      }, [error]);
+
+      return (
+        <div className={`form-box ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'} transition-all duration-700 ease-out`}>
+          <canvas ref={canvasChartRef} className="absolute bottom-4 right-4 w-36 h-36 z-10 opacity-80"></canvas>
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Join the DNA Revolution!</h2>
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10" aria-live="polite">
+              {error && (
+                <div className="notification" tabIndex="-1" role="alert">
+                  {error}
+                </div>
+              )}
+              <div className="relative">
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Select user role"
+                >
+                  <option value="Guest">Guest</option>
+                  <option value="Customer">Customer</option>
+                  <option value="Staff">Staff</option>
+                  <option value="Manager">Manager</option>
+                  <option value="Admin">Admin</option>
+                </select>
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={uname}
+                  onChange={(e) => setUname(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Full Name"
+                />
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Email"
+                />
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Password"
+                />
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={passConfirm}
+                  onChange={(e) => setPassConfirm(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Confirm Password"
+                />
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="tel"
+                  placeholder="Phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="input-field glow-input"
+                  aria-label="Phone Number"
+                />
+                <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+              </div>
+              {generatedId && (
+                <div className="text-center text-[#4A90E2] font-semibold">
+                  Your Sample ID: <strong>{generatedId}</strong>
+                </div>
+              )}
+              <button
+                ref={btnRef}
+                type="submit"
+                className="btn relative"
+                disabled={isLoading}
+                aria-label="Register"
+              >
+                {isLoading ? (
+                  <svg className="progress-ring active w-6 h-6 animate-spin mx-auto" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="#ffffff" strokeWidth="4" fill="none" />
+                    <path d="M12 2a10 10 0 0 1 10 10" stroke="#4A90E2" strokeWidth="4" fill="none" />
+                  </svg>
+                ) : (
+                  'Register'
+                )}
+              </button>
+              <p className="text-center text-lg text-[#333333]">
+                Already have an account?{' '}
+                <a href="#" onClick={onSwitchToLogin} className="text-[#4A90E2] hover:text-[#90caf9] transition-colors duration-300 font-medium underline" aria-label="Switch to Login">
+                  Login
+                </a>
+              </p>
+            </form>
+            <div className="mt-8">
+              <button
+                onClick={() => setShowSubForm(!showSubForm)}
+                className="sub-form-toggle w-full bg-[#E6F0FA] text-[#333333] hover:bg-[#90caf9] hover:text-white transition-all duration-300 rounded-lg p-3 font-semibold shadow-md"
+                aria-expanded={showSubForm}
+                aria-label="Toggle Staff, Manager, Admin registration options"
+              >
+                {showSubForm ? 'Hide Staff/Manager/Admin Register' : 'Show Staff/Manager/Admin Register'}
+              </button>
+              <div className={`sub-form-container ${showSubForm ? 'open' : 'closed'} bg-white shadow-lg rounded-lg p-5 mt-4 z-20`}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                  {['Staff', 'Manager', 'Admin'].map((type) => (
+                    <form key={type} onSubmit={handleSubFormSubmit(type)} className="flex flex-col items-center space-y-4 w-full">
+                      <input
+                        type="text"
+                        placeholder={`${type} ID`}
+                        className="input-field w-full p-3 rounded-lg border-2 border-[#bbdefb] focus:border-[#4A90E2] transition-all duration-300"
+                        aria-label={`${type} ID`}
+                      />
+                      <button
+                        type="submit"
+                        className="btn w-full py-3 rounded-lg text-white bg-[#4A90E2] hover:bg-[#90caf9] transition-all duration-300"
+                        aria-label={`${type} Register`}
+                      >
+                        {type} Register
+                      </button>
+                    </form>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const HomePage = () => {
+      return (
+        <div className="form-box">
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Welcome to Bloodline DNA</h2>
+            <div className="space-y-6">
+              <p className="text-lg text-[#333333]">Bloodline DNA Testing Service Management System is a cutting-edge platform for managing DNA testing services at a leading healthcare facility in Vietnam. We offer:</p>
+              <ul className="list-disc pl-6 text-lg text-[#333333]">
+                <li>Civilian DNA testing (paternity, maternity, sibling)</li>
+                <li>Administrative DNA testing (legal purposes)</li>
+                <li>Self-collection kits or in-house sample collection</li>
+              </ul>
+              <p className="text-lg text-[#333333]">Learn more about our process and book your test today!</p>
+              <button className="btn" aria-label="Book a Test">Book a Test</button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ServicesPage = () => {
+      const [serviceType, setServiceType] = React.useState('Civilian');
+      const [collectionMethod, setCollectionMethod] = React.useState('Self');
+      const [appointmentDate, setAppointmentDate] = React.useState('');
+      const [error, setError] = React.useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!appointmentDate) {
+          setError('Please select a date for your appointment');
+          return;
+        }
+        alert(`Appointment booked for ${serviceType} DNA test (${collectionMethod}) on ${appointmentDate}!`);
+        setError('');
+        setAppointmentDate('');
+      };
+
+      return (
+        <div className="form-box">
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Our Services</h2>
+            <div className="space-y-6">
+              <p className="text-lg text-[#333333]">Choose your DNA testing service and collection method:</p>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="notification" tabIndex="-1" role="alert">
+                    {error}
+                  </div>
+                )}
+                <div className="relative">
+                  <select
+                    value={serviceType}
+                    onChange={(e) => setServiceType(e.target.value)}
+                    className="input-field glow-input"
+                    aria-label="Select service type"
+                  >
+                    <option value="Civilian">Civilian</option>
+                    <option value="Administrative">Administrative</option>
+                  </select>
+                  <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+                </div>
+                <div className="relative">
+                  <select
+                    value={collectionMethod}
+                    onChange={(e) => setCollectionMethod(e.target.value)}
+                    className="input-field glow-input"
+                    aria-label="Select collection method"
+                  >
+                    <option value="Self">Self-Collection (Kit)</option>
+                    <option value="InHouse">In-House Collection</option>
+                  </select>
+                  <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="date"
+                    value={appointmentDate}
+                    onChange={(e) => setAppointmentDate(e.target.value)}
+                    className="input-field glow-input"
+                    aria-label="Select appointment date"
+                  />
+                  <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+                </div>
+                <button type="submit" className="btn" aria-label="Book Appointment">Book Appointment</button>
+              </form>
+              <div className="text-lg text-[#333333]">
+                <h3 className="font-semibold">Pricing:</h3>
+                <ul className="list-disc pl-6">
+                  <li>Civilian Test (Self): $150</li>
+                  <li>Civilian Test (In-House): $200</li>
+                  <li>Administrative Test: $250</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const BlogPage = () => {
+      const [posts] = React.useState([
+        { title: 'Understanding DNA Testing', date: '2025-06-10', content: 'Learn the basics of DNA testing and how it can help you...' },
+        { title: 'Self-Collection Guide', date: '2025-06-12', content: 'Step-by-step guide to collecting your DNA sample at home...' },
+      ]);
+
+      return (
+        <div className="form-box">
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">DNA Knowledge Hub</h2>
+            <div className="space-y-6">
+              {posts.map((post, index) => (
+                <div key={index} className="p-4 bg-[#E6F0FA] rounded-lg hover:shadow-lg transition-shadow duration-300">
+                  <h3 className="text-xl font-semibold">{post.title}</h3>
+                  <p className="text-sm text-[#666666]">{post.date}</p>
+                  <p className="text-lg text-[#333333]">{post.content}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const StaffPage = () => {
+      const [samples, setSamples] = React.useState([
+        { id: 'DNA-12345', status: 'Received', updated: '2025-06-17', method: 'Self' },
+        { id: 'DNA-67890', status: 'Processing', updated: '2025-06-16', method: 'InHouse' },
+      ]);
+      const [newStatus, setNewStatus] = React.useState('');
+      const [sampleId, setSampleId] = React.useState('');
+
+      const updateSampleStatus = (e) => {
+        e.preventDefault();
+        if (!sampleId || !newStatus) {
+          alert('Please enter a valid Sample ID and Status');
+          return;
+        }
+        setSamples(samples.map(sample => 
+          sample.id === sampleId ? { ...sample, status: newStatus, updated: new Date().toISOString().split('T')[0] } : sample
+        ));
+        alert(`Sample ${sampleId} status updated to ${newStatus}`);
+        setSampleId('');
+        setNewStatus('');
+      };
+
+      return (
+        <div className="form-box">
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Sample Management</h2>
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold">Sample Tracking</h3>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#4A90E2] text-white">
+                    <th className="p-3">Sample ID</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3">Method</th>
+                    <th className="p-3">Last Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {samples.map(sample => (
+                    <tr key={sample.id} className="border-b hover:bg-[#E6F0FA] transition-colors duration-200">
+                      <td className="p-3">{sample.id}</td>
+                      <td className="p-3">{sample.status}</td>
+                      <td className="p-3">{sample.method}</td>
+                      <td className="p-3">{sample.updated}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <form onSubmit={updateSampleStatus} className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Sample ID"
+                    value={sampleId}
+                    onChange={(e) => setSampleId(e.target.value)}
+                    className="input-field glow-input"
+                    aria-label="Sample ID"
+                  />
+                  <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+                </div>
+                <div className="relative">
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value)}
+                    className="input-field glow-input"
+                    aria-label="Select sample status"
+                  >
+                    <option value="">Select Status</option>
+                    <option value="Received">Received</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Analyzed">Analyzed</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                  <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+                </div>
+                <button type="submit" className="btn" aria-label="Update Sample Status">
+                  Update Status
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const ManagerPage = () => {
+      const [tasks, setTasks] = React.useState([
+        { id: 'TASK-001', description: 'Analyze Sample DNA-12345', assignedTo: 'Staff1', status: 'In Progress' },
+        { id: 'TASK-002', description: 'Review Sample DNA-67890', assignedTo: 'Staff2', status: 'Pending' },
+      ]);
+      const [newTask, setNewTask] = React.useState('');
+      const [assignedTo, setAssignedTo] = React.useState('');
+
+      const assignTask = (e) => {
+        e.preventDefault();
+        if (!newTask || !assignedTo) {
+          alert('Please enter a task description and assignee');
+          return;
+        }
+        const taskId = `TASK-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
+        setTasks([...tasks, { id: taskId, description: newTask, assignedTo, status: 'Pending' }]);
+        alert(`Task ${taskId} assigned to ${assignedTo}`);
+        setNewTask('');
+        setAssignedTo('');
+      };
+
+      return (
+        <div className="form-box">
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Process Monitoring</h2>
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold">Task Overview</h3>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#4A90E2] text-white">
+                    <th className="p-3">Task ID</th>
+                    <th className="p-3">Description</th>
+                    <th className="p-3">Assigned To</th>
+                    <th className="p-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map(task => (
+                    <tr key={task.id} className="border-b hover:bg-[#E6F0FA] transition-colors duration-200">
+                      <td className="p-3">{task.id}</td>
+                      <td className="p-3">{task.description}</td>
+                      <td className="p-3">{task.assignedTo}</td>
+                      <td className="p-3">{task.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <form onSubmit={assignTask} className="space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Task Description"
+                    value={newTask}
+                    onChange={(e) => setNewTask(e.target.value)}
+                    className="input-field glow-input"
+                    aria-label="Task Description"
+                  />
+                  <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+                </div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Assign To (Staff ID)"
+                    value={assignedTo}
+                    onChange={(e) => setAssignedTo(e.target.value)}
+                    className="input-field glow-input"
+                    aria-label="Assign To"
+                  />
+                  <span className="absolute left-3 top-4 text-[#4A90E2] text-2xl">🧬</span>
+                </div>
+                <button type="submit" className="btn" aria-label="Assign Task">
+                  Assign Task
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const AdminPage = () => {
+      const canvasChartRef = React.useRef(null);
+
+      React.useEffect(() => {
+        const ctxChart = canvasChartRef.current?.getContext('2d');
+        if (!ctxChart) return;
+
+        canvasChartRef.current.width = 450;
+        canvasChartRef.current.height = 250;
+        new Chart(ctxChart, {
+          type: 'bar',
+          data: {
+            labels: ['Customers', 'Staff', 'Managers', 'Admins'],
+            datasets: [{
+              label: 'User Distribution',
+              data: [100, 20, 5, 2],
+              backgroundColor: ['#4A90E2', '#ADD8E6', '#90caf9', '#bbdefb']
+            }]
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }, []);
+
+      return (
+        <div className="form-box">
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Admin Dashboard</h2>
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold">System Overview</h3>
+              <canvas ref={canvasChartRef} className="w-full h-60"></canvas>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-[#E6F0FA] rounded-lg hover:shadow-lg transition-shadow duration-300">
+                  <h4 className="text-lg font-semibold">Recent Activity</h4>
+                  <ul className="list-disc pl-5">
+                    <li>Sample DNA-12345 analyzed</li>
+                    <li>New user registered: John Doe</li>
+                    <li>Task TASK-001 assigned</li>
+                  </ul>
+                </div>
+                <div className="p-4 bg-[#E6F0FA] rounded-lg hover:shadow-lg transition-shadow duration-300">
+                  <h4 className="text-lg font-semibold">System Stats</h4>
+                  <p>Total Samples: 150</p>
+                  <p>Active Users: 127</p>
+                  <p>Pending Tasks: 10</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const CustomerPage = () => {
+      const [results] = React.useState([
+        { id: 'DNA-12345', status: 'Completed', date: '2025-06-16', link: '#' },
+        { id: 'DNA-67890', status: 'Analyzed', date: '2025-06-15', link: '#' },
+      ]);
+
+      return (
+        <div className="form-box">
+          <div className="box relative">
+            <h2 className="text-4xl font-bold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">Customer Dashboard</h2>
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold">Your DNA Results</h3>
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-[#4A90E2] text-white">
+                    <th className="p-3">Sample ID</th>
+                    <th className="p-3">Status</th>
+                    <th className="p-3">Date</th>
+                    <th className="p-3">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map(result => (
+                    <tr key={result.id} className="border-b hover:bg-[#E6F0FA] transition-colors duration-200">
+                      <td className="p-3">{result.id}</td>
+                      <td className="p-3">{result.status}</td>
+                      <td className="p-3">{result.date}</td>
+                      <td className="p-3">
+                        <a href={result.link} className="btn w-full py-2 text-white bg-[#4A90E2] hover:bg-[#90caf9] transition-all duration-300" aria-label={`Download ${result.id}`}>Download</a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
