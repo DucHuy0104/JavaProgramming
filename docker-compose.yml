@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: dna_testing_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: dna_testing_db
+      MYSQL_USER: dna_user
+      MYSQL_PASSWORD: dna_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - dna_network
+
+  # phpMyAdmin (Optional - for database management)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: dna_testing_phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - dna_network
+
+  # Spring Boot Backend (will be added later)
+  # backend:
+  #   build: ./backend
+  #   container_name: dna_testing_backend
+  #   restart: always
+  #   ports:
+  #     - "8081:8081"
+  #   environment:
+  #     SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/dna_testing_db
+  #     SPRING_DATASOURCE_USERNAME: dna_user
+  #     SPRING_DATASOURCE_PASSWORD: dna_password
+  #   depends_on:
+  #     - mysql
+  #   networks:
+  #     - dna_network
+
+  # React Frontend (will be added later)
+  # frontend:
+  #   build: ./frontend
+  #   container_name: dna_testing_frontend
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - backend
+  #   networks:
+  #     - dna_network
+
+volumes:
+  mysql_data:
+
+networks:
+  dna_network:
+    driver: bridge
