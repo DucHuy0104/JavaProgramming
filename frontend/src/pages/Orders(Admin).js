@@ -19,53 +19,8 @@ const OrdersAdmin = () => {
       // const data = await response.json();
       // setOrders(data);
       
-      // Dữ liệu mẫu
-      setOrders([
-        {
-          id: 1,
-          orderNumber: 'ORD001',
-          customerName: 'Nguyễn Văn A',
-          serviceName: 'Xét nghiệm ADN cha con',
-          orderDate: '2024-03-01',
-          totalAmount: 5000000,
-          orderType: 'self_submission',
-          status: 'sample_in_transit',
-          paymentStatus: 'paid'
-        },
-        {
-          id: 2,
-          orderNumber: 'ORD002',
-          customerName: 'Trần Thị B',
-          serviceName: 'Xét nghiệm ADN huyết thống',
-          orderDate: '2024-03-05',
-          totalAmount: 7000000,
-          orderType: 'in_clinic',
-          status: 'pending_registration',
-          paymentStatus: 'pending'
-        },
-        {
-          id: 3,
-          orderNumber: 'ORD003',
-          customerName: 'Lê Văn C',
-          serviceName: 'Xét nghiệm ADN pháp lý',
-          orderDate: '2024-03-10',
-          totalAmount: 10000000,
-          orderType: 'self_submission',
-          status: 'results_delivered',
-          paymentStatus: 'paid'
-        },
-        {
-          id: 4,
-          orderNumber: 'ORD004',
-          customerName: 'Phạm Thị D',
-          serviceName: 'Xét nghiệm ADN theo yêu cầu',
-          orderDate: '2024-03-15',
-          totalAmount: 6000000,
-          orderType: 'in_clinic',
-          status: 'testing_in_progress',
-          paymentStatus: 'paid'
-        }
-      ]);
+      // Dữ liệu trống - chờ kết nối API
+      setOrders([]);
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu:', error);
     }

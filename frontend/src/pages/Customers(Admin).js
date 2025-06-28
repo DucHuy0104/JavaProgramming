@@ -27,39 +27,8 @@ const CustomersAdmin = () => {
       // const data = await response.json();
       // setCustomers(data);
       
-      // Dữ liệu mẫu
-      setCustomers([
-        {
-          id: 1,
-          fullName: 'Nguyễn Văn A',
-          email: 'nguyenvana@example.com',
-          phone: '0123456789',
-          address: '123 Đường ABC, Quận 1, TP.HCM',
-          status: 'active',
-          joinDate: '2024-01-01',
-          orderCount: 3
-        },
-        {
-          id: 2,
-          fullName: 'Trần Thị B',
-          email: 'tranthib@example.com',
-          phone: '0987654321',
-          address: '456 Đường XYZ, Quận 2, TP.HCM',
-          status: 'blocked',
-          joinDate: '2024-02-01',
-          orderCount: 1
-        },
-        {
-          id: 3,
-          fullName: 'Phạm Thị C',
-          email: 'phamthic@example.com',
-          phone: '0901234567',
-          address: '789 Đường DEF, Quận 3, TP.HCM',
-          status: 'active',
-          joinDate: '2024-03-15',
-          orderCount: 5
-        },
-      ]);
+      // Dữ liệu trống - chờ kết nối API
+      setCustomers([]);
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu:', error);
     }
@@ -72,23 +41,8 @@ const CustomersAdmin = () => {
       // const data = await response.json();
       // setOrderHistory(data);
       
-      // Dữ liệu mẫu
-      setOrderHistory([
-        {
-          id: 101,
-          serviceName: 'Xét nghiệm ADN cha con',
-          orderDate: '2024-03-01',
-          status: 'completed',
-          total: 5000000
-        },
-        {
-          id: 102,
-          serviceName: 'Xét nghiệm ADN huyết thống',
-          orderDate: '2024-03-10',
-          status: 'processing',
-          total: 7000000
-        }
-      ]);
+      // Dữ liệu trống - chờ kết nối API
+      setOrderHistory([]);
     } catch (error) {
       console.error('Lỗi khi tải lịch sử đặt hàng:', error);
     }

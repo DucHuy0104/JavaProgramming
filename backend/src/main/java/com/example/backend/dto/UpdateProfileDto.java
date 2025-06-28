@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-public class AdminUserCreationDto {
+public class UpdateProfileDto {
     
     @NotBlank(message = "Họ tên không được để trống")
     @Size(min = 2, max = 100, message = "Họ tên phải từ 2-100 ký tự")
@@ -18,20 +18,24 @@ public class AdminUserCreationDto {
     @Pattern(regexp = "^[0-9]{10,11}$|^$", message = "Số điện thoại phải có 10-11 chữ số hoặc để trống")
     private String phoneNumber;
 
-    @NotBlank(message = "Mật khẩu không được để trống")
-    @Size(min = 6, max = 100, message = "Mật khẩu phải từ 6-100 ký tự")
-    private String password;
-
-    @NotBlank(message = "Role không được để trống")
-    @Pattern(regexp = "^(ADMIN|MANAGER|STAFF)$", message = "Role phải là ADMIN, MANAGER hoặc STAFF")
-    private String role;
-
     private String address;
+
     private String dateOfBirth;
+
+    @Pattern(regexp = "^(Male|Female|Other)$", message = "Giới tính phải là Male, Female hoặc Other")
     private String gender;
 
     // Constructors
-    public AdminUserCreationDto() {}
+    public UpdateProfileDto() {}
+
+    public UpdateProfileDto(String fullName, String email, String phoneNumber, String address, String dateOfBirth, String gender) {
+        this.fullName = fullName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.dateOfBirth = dateOfBirth;
+        this.gender = gender;
+    }
 
     // Getters and Setters
     public String getFullName() {
@@ -56,22 +60,6 @@ public class AdminUserCreationDto {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 
     public String getAddress() {
@@ -100,12 +88,10 @@ public class AdminUserCreationDto {
 
     @Override
     public String toString() {
-        return "AdminUserCreationDto{" +
+        return "UpdateProfileDto{" +
                 "fullName='" + fullName + '\'' +
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", password='" + (password != null ? "***" : "null") + '\'' +
-                ", role='" + role + '\'' +
                 ", address='" + address + '\'' +
                 ", dateOfBirth='" + dateOfBirth + '\'' +
                 ", gender='" + gender + '\'' +

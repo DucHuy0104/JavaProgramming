@@ -4,6 +4,8 @@ import com.example.backend.dto.AuthResponseDto;
 import com.example.backend.dto.UserLoginDto;
 import com.example.backend.dto.UserRegistrationDto;
 import com.example.backend.dto.AdminUserCreationDto;
+import com.example.backend.dto.UpdateProfileDto;
+import com.example.backend.dto.ChangePasswordDto;
 import com.example.backend.entity.User;
 import com.example.backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -101,7 +103,7 @@ public class UserService {
     public User loginUser(UserLoginDto loginDto) {
         // Find user by email or phone number
         Optional<User> userOptional = userRepository.findByEmailOrPhoneNumber(loginDto.getEmailOrPhone());
-        
+
         if (userOptional.isEmpty()) {
             throw new RuntimeException("Tài khoản không tồn tại!");
         }
@@ -186,5 +188,80 @@ public class UserService {
     // Search users by name
     public List<User> searchUsersByName(String name) {
         return userRepository.findByFullNameContainingIgnoreCase(name);
+    }
+
+    // Update user profile
+    public User updateProfile(Long userId, UpdateProfileDto profileDto) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("Người dùng không tồn tại!");
+        }
+
+        User user = userOptional.get();
+
+        System.out.println("=== UPDATE PROFILE DEBUG ===");
+        System.out.println("Current user phone: '" + user.getPhoneNumber() + "'");
+        System.out.println("New phone from DTO: '" + profileDto.getPhoneNumber() + "'");
+        System.out.println("Current user email: '" + user.getEmail() + "'");
+        System.out.println("New email from DTO: '" + profileDto.getEmail() + "'");
+
+        // Check if email is being changed and already exists
+        if (!user.getEmail().equals(profileDto.getEmail()) &&
+            userRepository.existsByEmail(profileDto.getEmail())) {
+            throw new RuntimeException("Email đã được sử dụng!");
+        }
+
+        // Check if phone number is being changed and already exists
+        String newPhoneNumber = profileDto.getPhoneNumber();
+        String currentPhoneNumber = user.getPhoneNumber();
+
+        // Normalize empty strings to null for comparison
+        if (newPhoneNumber != null && newPhoneNumber.trim().isEmpty()) {
+            newPhoneNumber = null;
+        }
+        if (currentPhoneNumber != null && currentPhoneNumber.trim().isEmpty()) {
+            currentPhoneNumber = null;
+        }
+
+        // Only check for duplicates if phone number is actually changing and not empty
+        if (newPhoneNumber != null &&
+            !newPhoneNumber.equals(currentPhoneNumber) &&
+            userRepository.existsByPhoneNumber(newPhoneNumber)) {
+            throw new RuntimeException("Số điện thoại đã được sử dụng!");
+        }
+
+        // Update user fields
+        user.setFullName(profileDto.getFullName());
+        user.setEmail(profileDto.getEmail());
+        user.setPhoneNumber(profileDto.getPhoneNumber());
+        user.setAddress(profileDto.getAddress());
+        user.setDateOfBirth(profileDto.getDateOfBirth());
+        user.setGender(profileDto.getGender());
+
+        return userRepository.save(user);
+    }
+
+    // Change password
+    public void changePassword(Long userId, ChangePasswordDto passwordDto) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (userOptional.isEmpty()) {
+            throw new RuntimeException("Người dùng không tồn tại!");
+        }
+
+        User user = userOptional.get();
+
+        // Check if passwords match
+        if (!passwordDto.getNewPassword().equals(passwordDto.getConfirmPassword())) {
+            throw new RuntimeException("Mật khẩu xác nhận không khớp!");
+        }
+
+        // Verify current password
+        if (!passwordEncoder.matches(passwordDto.getCurrentPassword(), user.getPassword())) {
+            throw new RuntimeException("Mật khẩu hiện tại không đúng!");
+        }
+
+        // Update password
+        user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
+        userRepository.save(user);
     }
 }

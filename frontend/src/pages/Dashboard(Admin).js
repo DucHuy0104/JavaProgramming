@@ -56,37 +56,23 @@ const DashboardAdmin = () => {
       // setOrderChartData(data.orderChart);
       // setRevenueChartData(data.revenueChart);
 
-      // Dữ liệu mẫu
+      // Dữ liệu trống - chờ kết nối API
       setStats({
-        totalOrders: 150,
-        totalRevenue: 75000000,
-        totalCustomers: 45,
-        totalServices: 8
+        totalOrders: 0,
+        totalRevenue: 0,
+        totalCustomers: 0,
+        totalServices: 0
       });
 
-      // Dữ liệu biểu đồ đơn hàng mẫu
+      // Biểu đồ trống
       setOrderChartData({
-        labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'],
-        datasets: [
-          {
-            label: 'Số đơn hàng',
-            data: [12, 19, 15, 25, 22, 30],
-            borderColor: 'rgb(75, 192, 192)',
-            tension: 0.1
-          }
-        ]
+        labels: [],
+        datasets: []
       });
 
-      // Dữ liệu biểu đồ doanh thu mẫu
       setRevenueChartData({
-        labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'],
-        datasets: [
-          {
-            label: 'Doanh thu (triệu VND)',
-            data: [6, 9, 7, 12, 10, 15],
-            backgroundColor: 'rgba(54, 162, 235, 0.5)'
-          }
-        ]
+        labels: [],
+        datasets: []
       });
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu dashboard:', error);

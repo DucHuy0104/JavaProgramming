@@ -1,13 +1,15 @@
-import Navbar from 'react-bootstrap/Navbar'; 
+import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import { Link, useLocation } from 'react-router-dom';
-import { FaPhone, FaEnvelope, FaUser, FaCalendarAlt } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaUser, FaCalendarAlt, FaSignOutAlt, FaClipboardList } from 'react-icons/fa';
+import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
     const location = useLocation();
+    const { user, logout, isAuthenticated } = useAuth();
 
     return (
         <div className="header">
@@ -46,29 +48,62 @@ function Header() {
                                             Dịch vụ
                                         </Nav.Link>
                                         
-                                        <Nav.Link 
-                                            as={Link} 
-                                            to="/blog"
-                                            className={`nav-link ${location.pathname === '/blog' ? 'active' : ''}`}
+                                        <Nav.Link
+                                            as={Link}
+                                            to="/blogs"
+                                            className={`nav-link ${location.pathname === '/blogs' ? 'active' : ''}`}
                                         >
                                             Blog
                                         </Nav.Link>
 
-                                        <Nav.Link 
-                                            as={Link} 
+                                        <Nav.Link
+                                            as={Link}
                                             to="/reliability"
                                             className={`nav-link ${location.pathname === '/reliability' ? 'active' : ''}`}
                                         >
                                             Độ tin cậy
                                         </Nav.Link>
 
-                                        <Nav.Link 
-                                            as={Link} 
-                                            to="/login"
-                                            className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
-                                        >
-                                            Đăng nhập
-                                        </Nav.Link>
+                                        {/* Auth Section */}
+                                        {isAuthenticated ? (
+                                            <NavDropdown
+                                                title={
+                                                    <div className="user-avatar">
+                                                        <div className="avatar-circle">
+                                                            {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                                                        </div>
+                                                    </div>
+                                                }
+                                                id="user-dropdown"
+                                                className="user-dropdown"
+                                            >
+                                                <NavDropdown.Item className="user-info">
+                                                    <div className="user-details">
+                                                        <strong>{user?.fullName}</strong>
+                                                        <small>{user?.email}</small>
+                                                    </div>
+                                                </NavDropdown.Item>
+                                                <NavDropdown.Divider />
+                                                <NavDropdown.Item as={Link} to="/profile">
+                                                    <FaUser className="dropdown-icon" /> Thông tin tài khoản
+                                                </NavDropdown.Item>
+                                                <NavDropdown.Item as={Link} to="/orders">
+                                                    <FaClipboardList className="dropdown-icon" /> Đơn xét nghiệm
+                                                </NavDropdown.Item>
+                                                <NavDropdown.Divider />
+                                                <NavDropdown.Item onClick={logout}>
+                                                    <FaSignOutAlt className="dropdown-icon" /> Đăng xuất
+                                                </NavDropdown.Item>
+                                            </NavDropdown>
+                                        ) : (
+                                            <Nav.Link
+                                                as={Link}
+                                                to="/login"
+                                                className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
+                                            >
+                                                Đăng nhập
+                                            </Nav.Link>
+                                        )}
 
                                     </Nav>
                                 </Navbar.Collapse>
@@ -249,6 +284,94 @@ function Header() {
                 .nav-link:hover::after,
                 .nav-link.active::after {
                     width: 80%;
+                }
+
+                /* User Dropdown Styles */
+                .user-dropdown .dropdown-toggle {
+                    border: none !important;
+                    background: none !important;
+                    padding: 8px !important;
+                    margin: 0 10px;
+                }
+
+                .user-dropdown .dropdown-toggle::after {
+                    display: none;
+                }
+
+                .user-avatar {
+                    display: flex;
+                    align-items: center;
+                    cursor: pointer;
+                }
+
+                .avatar-circle {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #007bff, #0056b3);
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    font-size: 16px;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 2px 10px rgba(0,123,255,0.3);
+                }
+
+                .avatar-circle:hover {
+                    transform: scale(1.1);
+                    box-shadow: 0 4px 20px rgba(0,123,255,0.4);
+                }
+
+                .user-dropdown .dropdown-menu {
+                    border: none;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                    border-radius: 12px;
+                    padding: 10px 0;
+                    min-width: 250px;
+                    margin-top: 10px;
+                }
+
+                .user-info {
+                    padding: 15px 20px !important;
+                    background: #f8f9fa;
+                    margin-bottom: 5px;
+                }
+
+                .user-details {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .user-details strong {
+                    color: #333;
+                    font-size: 16px;
+                    margin-bottom: 2px;
+                }
+
+                .user-details small {
+                    color: #6c757d;
+                    font-size: 12px;
+                }
+
+                .dropdown-icon {
+                    margin-right: 10px;
+                    color: #007bff;
+                    width: 16px;
+                }
+
+                .user-dropdown .dropdown-item {
+                    padding: 12px 20px;
+                    transition: all 0.3s ease;
+                    border-radius: 8px;
+                    margin: 2px 10px;
+                }
+
+                .user-dropdown .dropdown-item:hover {
+                    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                    color: #007bff;
+                    transform: translateX(5px);
                 }
 
                 /* Mobile Toggle */

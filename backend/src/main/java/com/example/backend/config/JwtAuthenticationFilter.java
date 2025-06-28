@@ -30,18 +30,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
+        System.out.println("=== JWT FILTER DEBUG ===");
+        System.out.println("Request URI: " + request.getRequestURI());
+        System.out.println("Request Method: " + request.getMethod());
+        System.out.println("Auth Header: " + (authHeader != null ? authHeader.substring(0, Math.min(authHeader.length(), 20)) + "..." : "null"));
+
         // Check if Authorization header exists and starts with "Bearer "
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("No valid Authorization header, skipping JWT authentication");
             filterChain.doFilter(request, response);
             return;
         }
 
         // Extract JWT token
         jwt = authHeader.substring(7);
-        
+        System.out.println("Extracted JWT: " + jwt.substring(0, Math.min(jwt.length(), 20)) + "...");
+
         try {
             // Extract username from JWT
             userEmail = jwtService.extractUsername(jwt);
+            System.out.println("Extracted email: " + userEmail);
 
             // If user email exists and no authentication is set in context
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -50,20 +58,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 if (jwtService.isTokenValid(jwt, userEmail)) {
                     // Extract role from JWT
                     String role = jwtService.extractRole(jwt);
-                    
+                    System.out.println("Extracted role: " + role);
+
                     // Create authentication token with role
                     SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userEmail, 
-                            null, 
+                            userEmail,
+                            null,
                             Collections.singletonList(authority)
                     );
-                    
+
                     // Set authentication details
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    
+
                     // Set authentication in security context
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    System.out.println("Authentication set successfully for user: " + userEmail + " with role: ROLE_" + role);
+                } else {
+                    System.out.println("Token validation failed for user: " + userEmail);
                 }
             }
         } catch (Exception e) {

@@ -2,6 +2,20 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
+// Auth Context
+import { AuthProvider } from './contexts/AuthContext';
+
+// Route Protection Components
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
+
+// Auth Components
+import Login from './components/Login';
+import Register from './components/Register';
+import BlogList from './components/BlogList';
+import Profile from './components/Profile';
+import Orders from './components/Orders';
+
 // Components for user interface
 import Header from './component/header';
 import Footer from './component/footer';
@@ -21,6 +35,7 @@ import ReportsAdmin from './pages/Reports(Admin)';
 import FeedbackAdmin from './pages/Feedback(Admin)';
 import BlogAdmin from './pages/Blog(Admin)';
 import StaffAdmin from './pages/Staff(Admin)';
+import SettingsAdmin from './pages/Settings(Admin)';
 
 // Layout component for public pages
 const PublicLayout = ({ children }) => (
@@ -33,8 +48,28 @@ const PublicLayout = ({ children }) => (
 
 function App() {
   return (
-    <Router>
-      <Routes>
+    <AuthProvider>
+      <Router>
+        <Routes>
+        {/* Auth routes - chỉ cho phép truy cập khi chưa đăng nhập */}
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+
+        {/* Blog routes */}
+        <Route path="/blogs" element={<PublicLayout><BlogList /></PublicLayout>} />
+
+        {/* User routes - cần đăng nhập */}
+        <Route path="/profile" element={
+          <ProtectedRoute requiredRoles={['CUSTOMER']}>
+            <PublicLayout><Profile /></PublicLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/orders" element={
+          <ProtectedRoute requiredRoles={['CUSTOMER']}>
+            <PublicLayout><Orders /></PublicLayout>
+          </ProtectedRoute>
+        } />
+
         {/* Public (user) routes */}
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
         <Route path="/home" element={<PublicLayout><Home /></PublicLayout>} />
@@ -42,8 +77,12 @@ function App() {
         <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
 
-        {/* Admin routes with layout */}
-        <Route path="/admin" element={<LayoutAdmin />}>
+        {/* Admin routes - cần đăng nhập và có role ADMIN/MANAGER/STAFF */}
+        <Route path="/admin" element={
+          <ProtectedRoute requiredRoles={['ADMIN', 'MANAGER', 'STAFF']}>
+            <LayoutAdmin />
+          </ProtectedRoute>
+        }>
           <Route index element={<DashboardAdmin />} />
           <Route path="orders" element={<OrdersAdmin />} />
           <Route path="services" element={<ServicesAdmin />} />
@@ -53,6 +92,7 @@ function App() {
           <Route path="feedback" element={<FeedbackAdmin />} />
           <Route path="blog" element={<BlogAdmin />} />
           <Route path="staff" element={<StaffAdmin />} />
+          <Route path="settings" element={<SettingsAdmin />} />
         </Route>
 
         {/* Catch all route */}
@@ -64,8 +104,9 @@ function App() {
             </div>
           </PublicLayout>
         } />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 

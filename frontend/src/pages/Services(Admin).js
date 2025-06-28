@@ -34,47 +34,8 @@ const ServicesAdmin = () => {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Dữ liệu mẫu mở rộng
-      const sampleServices = [
-        {
-          id: 1,
-          name: 'Xét nghiệm ADN cha con',
-          description: 'Xét nghiệm xác định mối quan hệ huyết thống cha con với độ chính xác 99.9%',
-          price: 5000000,
-          duration: '3-5 ngày',
-          category: 'ADN',
-          status: 'active'
-        },
-        {
-          id: 2,
-          name: 'Xét nghiệm ADN huyết thống',
-          description: 'Xét nghiệm xác định mối quan hệ huyết thống tổng quát',
-          price: 7000000,
-          duration: '3-5 ngày',
-          category: 'ADN',
-          status: 'active'
-        },
-        {
-          id: 3,
-          name: 'Xét nghiệm máu tổng quát',
-          description: 'Xét nghiệm máu cơ bản để kiểm tra sức khỏe tổng thể',
-          price: 500000,
-          duration: '1-2 ngày',
-          category: 'Xét nghiệm máu',
-          status: 'active'
-        },
-        {
-          id: 4,
-          name: 'Xét nghiệm nước tiểu',
-          description: 'Xét nghiệm nước tiểu để kiểm tra chức năng thận',
-          price: 300000,
-          duration: '1 ngày',
-          category: 'Xét nghiệm nước tiểu',
-          status: 'inactive'
-        }
-      ];
-      
-      setServices(sampleServices);
+      // Dữ liệu trống - chờ kết nối API
+      setServices([]);
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu:', error);
       showNotification('Có lỗi xảy ra khi tải dữ liệu', 'danger');

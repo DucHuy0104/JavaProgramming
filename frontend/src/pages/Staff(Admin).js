@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { staffAPI } from '../services/api';
 import { 
   Container, 
   Row, 
@@ -31,6 +32,11 @@ import {
 
 const getRoleText = (role) => {
   const roleMap = {
+    'ADMIN': 'Admin',
+    'STAFF': 'Nhân viên',
+    'MANAGER': 'Quản lý',
+    'CUSTOMER': 'Khách hàng',
+    // Legacy support
     'admin': 'Admin',
     'staff': 'Nhân viên',
     'manager': 'Quản lý',
@@ -41,6 +47,11 @@ const getRoleText = (role) => {
 
 const getRoleBadgeVariant = (role) => {
   const variantMap = {
+    'ADMIN': 'danger',
+    'MANAGER': 'warning',
+    'STAFF': 'primary',
+    'CUSTOMER': 'success',
+    // Legacy support
     'admin': 'danger',
     'manager': 'warning',
     'supervisor': 'info',
@@ -50,7 +61,14 @@ const getRoleBadgeVariant = (role) => {
 };
 
 const getStatusVariant = (status) => {
-  switch (status) {
+  switch (status?.toUpperCase()) {
+    case 'ACTIVE':
+      return 'success';
+    case 'INACTIVE':
+      return 'secondary';
+    case 'PENDING':
+      return 'warning';
+    // Legacy support
     case 'active':
       return 'success';
     case 'inactive':
@@ -64,6 +82,10 @@ const getStatusVariant = (status) => {
 
 const getStatusText = (status) => {
   const statusMap = {
+    'ACTIVE': 'Hoạt động',
+    'INACTIVE': 'Không hoạt động',
+    'PENDING': 'Chờ duyệt',
+    // Legacy support
     'active': 'Hoạt động',
     'inactive': 'Không hoạt động',
     'pending': 'Chờ duyệt',
@@ -100,7 +122,6 @@ const StaffAdmin = () => {
     status: 'active',
     password: '',
     address: '',
-    department: '',
     hireDate: '',
     salary: '',
     avatar: '',
@@ -120,112 +141,66 @@ const StaffAdmin = () => {
     notes: ''
   });
 
-  // Sample data mở rộng
-  const sampleStaff = [
-    {
-      id: 1,
-      fullName: 'Nguyễn Văn Admin',
-      email: 'admin@example.com',
-      phone: '0912345678',
-      role: 'admin',
-      status: 'active',
-      address: 'Hà Nội',
-      department: 'IT',
-      hireDate: '2023-01-15',
-      salary: '25000000',
-     
-    },
-    {
-      id: 2,
-      fullName: 'Trần Thị Staff',
-      email: 'staff@example.com',
-      phone: '0987654321',
-      role: 'staff',
-      status: 'active',
-      address: 'TP.HCM',
-      department: 'Sales',
-      hireDate: '2023-03-20',
-      salary: '15000000',
-    
-    },
-    {
-      id: 3,
-      fullName: 'Lê Văn Manager',
-      email: 'manager@example.com',
-      phone: '0901122334',
-      role: 'manager',
-      status: 'active',
-      address: 'Đà Nẵng',
-      department: 'Marketing',
-      hireDate: '2022-11-10',
-      salary: '20000000',
-      
-    },
-    {
-      id: 4,
-      fullName: 'Phạm Thị Supervisor',
-      email: 'supervisor@example.com',
-      phone: '0977888999',
-      role: 'supervisor',
-      status: 'pending',
-      address: 'Cần Thơ',
-      department: 'HR',
-      hireDate: '2024-01-05',
-      salary: '18000000',
-      
-    },
-  ];
-
-  const sampleOrders = [
-    {
-      id: 1,
-      orderCode: 'ADN001',
-      collectionDate: '2024-01-15',
-      customerName: 'Nguyễn Văn A',
-      customerPhone: '0912345678',
-      serviceType: 'Xét nghiệm ADN cha con',
-      status: 'collected', // collected, processing, completed, delivered
-      notes: 'Thu mẫu tại nhà',
-      staffId: 1,
-      createdAt: '2024-01-15T08:00:00'
-    },
-    {
-      id: 2,
-      orderCode: 'ADN002',
-      collectionDate: '2024-01-16',
-      customerName: 'Trần Thị B',
-      customerPhone: '0987654321',
-      serviceType: 'Xét nghiệm ADN huyết thống',
-      status: 'processing',
-      notes: 'Khách hàng yêu cầu thu mẫu sáng sớm',
-      staffId: 2,
-      createdAt: '2024-01-16T09:30:00'
-    },
-    {
-      id: 3,
-      orderCode: 'ADN003',
-      collectionDate: '2024-01-17',
-      customerName: 'Lê Văn C',
-      customerPhone: '0901122334',
-      serviceType: 'Xét nghiệm máu tổng quát',
-      status: 'completed',
-      notes: '',
-      staffId: 1,
-      createdAt: '2024-01-17T10:15:00'
-    }
-  ];
+  // No sample data - using real API
 
   const loadStaff = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      let filtered = sampleStaff.filter(staff => {
+      // Kiểm tra user có token và role ADMIN không
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+      console.log('Current user:', user);
+      console.log('Token exists:', !!token);
+
+      if (!token) {
+        throw new Error('Bạn cần đăng nhập để truy cập trang này');
+      }
+
+      if (user.role !== 'ADMIN') {
+        throw new Error('Bạn không có quyền truy cập trang này (cần role ADMIN)');
+      }
+
+      // Thử gọi API admin/staff trước, nếu không được thì gọi từng role
+      let allStaff = [];
+
+      try {
+        const response = await staffAPI.getAdminStaffUsers();
+        if (response.success) {
+          allStaff = [
+            ...response.data.admins.map(user => ({ ...user, role: 'ADMIN' })),
+            ...response.data.managers.map(user => ({ ...user, role: 'MANAGER' })),
+            ...response.data.staff.map(user => ({ ...user, role: 'STAFF' }))
+          ];
+        }
+      } catch (adminError) {
+        console.log('Admin API failed, trying individual role APIs:', adminError);
+
+        // Fallback: gọi từng role riêng lẻ
+        const [adminResponse, managerResponse, staffResponse] = await Promise.allSettled([
+          staffAPI.getUsersByRole('ADMIN'),
+          staffAPI.getUsersByRole('MANAGER'),
+          staffAPI.getUsersByRole('STAFF')
+        ]);
+
+        const admins = adminResponse.status === 'fulfilled' && adminResponse.value.success ?
+          adminResponse.value.data.map(user => ({ ...user, role: 'ADMIN' })) : [];
+        const managers = managerResponse.status === 'fulfilled' && managerResponse.value.success ?
+          managerResponse.value.data.map(user => ({ ...user, role: 'MANAGER' })) : [];
+        const staff = staffResponse.status === 'fulfilled' && staffResponse.value.success ?
+          staffResponse.value.data.map(user => ({ ...user, role: 'STAFF' })) : [];
+
+        allStaff = [...admins, ...managers, ...staff];
+      }
+
+      setStaffList(allStaff);
+
+      // Apply filters
+      let filtered = allStaff.filter(staff => {
         const matchesSearch = (
           staff.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           staff.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          staff.phone.includes(searchQuery)
+          (staff.phoneNumber && staff.phoneNumber.includes(searchQuery))
         );
         const matchesRole = roleFilter ? staff.role === roleFilter : true;
         const matchesStatus = statusFilter ? staff.status === statusFilter : true;
@@ -236,12 +211,12 @@ const StaffAdmin = () => {
       filtered.sort((a, b) => {
         let aValue = a[sortField];
         let bValue = b[sortField];
-        
+
         if (typeof aValue === 'string') {
           aValue = aValue.toLowerCase();
           bValue = bValue.toLowerCase();
         }
-        
+
         if (sortDirection === 'asc') {
           return aValue > bValue ? 1 : -1;
         } else {
@@ -250,9 +225,12 @@ const StaffAdmin = () => {
       });
 
       setFilteredStaff(filtered);
+      showNotification(`Đã tải ${allStaff.length} nhân viên thành công`, 'success');
     } catch (error) {
       console.error('Error loading staff:', error);
-      showNotification('Có lỗi xảy ra khi tải dữ liệu', 'danger');
+      showNotification('Có lỗi xảy ra khi tải dữ liệu: ' + error.message, 'danger');
+      setStaffList([]);
+      setFilteredStaff([]);
     } finally {
       setIsLoading(false);
     }
@@ -281,7 +259,6 @@ const StaffAdmin = () => {
       status: 'active',
       password: '',
       address: '',
-      department: '',
       hireDate: '',
       salary: '',
       avatar: '',
@@ -300,14 +277,45 @@ const StaffAdmin = () => {
     setShowViewModal(true);
   };
 
-  const handleDeleteStaff = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa nhân viên này?')) {
+  const handleDeleteStaff = async (id, staffName) => {
+    // Kiểm tra không cho xóa chính mình
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (currentUser.id === id) {
+      showNotification('Bạn không thể xóa chính mình!', 'warning');
+      return;
+    }
+
+    if (window.confirm(`Bạn có chắc chắn muốn xóa nhân viên "${staffName}"?\n\nHành động này không thể hoàn tác!`)) {
       setIsLoading(true);
-      setTimeout(() => {
-        setStaffList(staffList.filter(staff => staff.id !== id));
-        showNotification('Nhân viên đã được xóa thành công');
+
+      try {
+        console.log('Deleting staff with ID:', id);
+        const response = await staffAPI.deleteUser(id);
+
+        if (response.success) {
+          showNotification('Nhân viên đã được xóa thành công!', 'success');
+          // Reload staff list để cập nhật từ server
+          loadStaff();
+        } else {
+          throw new Error(response.message || 'Không thể xóa nhân viên');
+        }
+      } catch (error) {
+        console.error('Error deleting staff:', error);
+
+        let errorMessage = 'Có lỗi xảy ra khi xóa nhân viên';
+
+        if (error.message) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+
+        showNotification(errorMessage, 'danger');
+      } finally {
         setIsLoading(false);
-      }, 500);
+      }
     }
   };
 
@@ -322,7 +330,6 @@ const StaffAdmin = () => {
       status: 'active',
       password: '',
       address: '',
-      department: '',
       hireDate: '',
       salary: '',
       avatar: '',
@@ -334,25 +341,82 @@ const StaffAdmin = () => {
     setCurrentStaff(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    setTimeout(() => {
+
+    console.log('=== FORM SUBMIT DEBUG ===');
+    console.log('Current staff data:', currentStaff);
+    console.log('Is editing:', isEditing);
+
+    try {
       if (isEditing) {
-        setStaffList(staffList.map(s => 
-          s.id === currentStaff.id ? { ...currentStaff, password: currentStaff.password || s.password } : s
-        ));
-        showNotification('Thông tin nhân viên đã được cập nhật thành công!');
+        // TODO: Implement update user API
+        showNotification('Chức năng cập nhật đang được phát triển', 'warning');
       } else {
-        const newId = Math.max(...staffList.map(s => s.id), 0) + 1;
-        const newStaff = { ...currentStaff, id: newId };
-        setStaffList([...staffList, newStaff]);
-        showNotification('Nhân viên đã được thêm thành công!');
+        // Validation
+        console.log('Validating form data...');
+        console.log('fullName:', currentStaff.fullName);
+        console.log('email:', currentStaff.email);
+        console.log('password:', currentStaff.password ? '***' : 'empty');
+        console.log('role:', currentStaff.role);
+
+        if (!currentStaff.fullName || !currentStaff.email || !currentStaff.password || !currentStaff.role) {
+          console.log('Validation failed - missing required fields');
+          showNotification('Vui lòng điền đầy đủ thông tin bắt buộc!', 'danger');
+          setIsLoading(false);
+          return;
+        }
+
+        if (currentStaff.password.length < 6) {
+          showNotification('Mật khẩu phải có ít nhất 6 ký tự!', 'danger');
+          setIsLoading(false);
+          return;
+        }
+
+        // Tạo admin user mới
+        const userData = {
+          fullName: currentStaff.fullName,
+          email: currentStaff.email,
+          phoneNumber: currentStaff.phone || null,
+          password: currentStaff.password,
+          address: currentStaff.address || null,
+          dateOfBirth: currentStaff.hireDate || null,
+          gender: 'Male', // Default
+          role: currentStaff.role
+        };
+
+        console.log('Sending user data:', userData);
+        const response = await staffAPI.createAdminUser(userData);
+        console.log('Create user response:', response);
+
+        if (response.success) {
+          showNotification('Nhân viên đã được thêm thành công!', 'success');
+          handleCloseModal();
+          // Reload staff list
+          loadStaff();
+        } else {
+          throw new Error(response.message || 'Không thể tạo nhân viên');
+        }
       }
-      handleCloseModal();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      console.error('Error details:', error);
+
+      let errorMessage = 'Có lỗi xảy ra khi tạo nhân viên';
+
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+
+      showNotification(errorMessage, 'danger');
+    } finally {
       setIsLoading(false);
-    }, 500);
+    }
   };
 
   const handleSort = (field) => {
@@ -456,7 +520,6 @@ const StaffAdmin = () => {
                 <option value="">Tất cả vai trò</option>
                 <option value="admin">Admin</option>
                 <option value="manager">Quản lý</option>
-                <option value="supervisor">Giám sát</option>
                 <option value="staff">Nhân viên</option>
               </Form.Select>
             </Col>
@@ -531,7 +594,6 @@ const StaffAdmin = () => {
                         />
                       </div>
                     </th>
-                    <th>Phòng ban</th>
                     <th>
                       <div className="d-flex align-items-center">
                         Trạng thái
@@ -558,13 +620,12 @@ const StaffAdmin = () => {
                         </div>
                       </td>
                       <td>{staff.email}</td>
-                      <td>{staff.phone}</td>
+                      <td>{staff.phoneNumber || staff.phone || 'N/A'}</td>
                       <td>
                         <Badge bg={getRoleBadgeVariant(staff.role)}>
                           {getRoleText(staff.role)}
                         </Badge>
                       </td>
-                      <td>{staff.department}</td>
                       <td>
                         <Badge bg={getStatusVariant(staff.status)}>
                           {getStatusText(staff.status)}
@@ -588,10 +649,10 @@ const StaffAdmin = () => {
                           >
                             <FaEdit />
                           </Button>
-                          <Button 
-                            variant="outline-danger" 
-                            size="sm" 
-                            onClick={() => handleDeleteStaff(staff.id)}
+                          <Button
+                            variant="outline-danger"
+                            size="sm"
+                            onClick={() => handleDeleteStaff(staff.id, staff.fullName)}
                             title="Xóa"
                           >
                             <FaTrash />
@@ -602,7 +663,7 @@ const StaffAdmin = () => {
                   ))}
                   {currentItems.length === 0 && (
                     <tr>
-                      <td colSpan="8" className="text-center py-4">
+                      <td colSpan="7" className="text-center py-4">
                         <div className="text-muted">
                           <FaUsers size={48} className="mb-3" />
                           <p>Không tìm thấy nhân viên nào.</p>
@@ -680,7 +741,7 @@ const StaffAdmin = () => {
               </tr>
             </thead>
             <tbody>
-              {sampleOrders.map((order) => (
+              {[].map((order) => (
                 <tr key={order.id}>
                   <td>
                     <strong>{order.orderCode}</strong>
@@ -805,27 +866,15 @@ const StaffAdmin = () => {
                     required
                   >
                     <option value="">Chọn vai trò</option>
-                    <option value="admin">Admin</option>
-                    <option value="manager">Quản lý</option>
-                    <option value="supervisor">Giám sát</option>
-                    <option value="staff">Nhân viên</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="MANAGER">Quản lý</option>
+                    <option value="STAFF">Nhân viên</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
             </Row>
 
             <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Phòng ban</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="department"
-                    value={currentStaff.department}
-                    onChange={handleFormChange}
-                  />
-                </Form.Group>
-              </Col>
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Ngày thuê</Form.Label>
@@ -937,7 +986,6 @@ const StaffAdmin = () => {
             <Col md={6}>
               <p><strong>Email:</strong> {currentStaff.email}</p>
               <p><strong>Số điện thoại:</strong> {currentStaff.phone}</p>
-              <p><strong>Phòng ban:</strong> {currentStaff.department}</p>
             </Col>
             <Col md={6}>
               <p><strong>Ngày thuê:</strong> {currentStaff.hireDate}</p>

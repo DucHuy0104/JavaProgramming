@@ -3,6 +3,20 @@ body {
   margin: 0;
   background: #f4f6fa;
 }
+
+/* Admin Layout Styles */
+.hover-bg-primary:hover {
+  background-color: rgba(37, 99, 235, 0.3) !important;
+  transform: translateX(5px);
+}
+
+.admin-header {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.admin-sidebar {
+  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+}
 .admin-container {
   display: flex;
   min-height: 100vh;
