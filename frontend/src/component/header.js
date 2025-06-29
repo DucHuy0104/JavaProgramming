@@ -2,9 +2,8 @@ import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import Container from 'react-bootstrap/Container';
-import Button from 'react-bootstrap/Button';
 import { Link, useLocation } from 'react-router-dom';
-import { FaPhone, FaEnvelope, FaUser, FaCalendarAlt, FaSignOutAlt, FaClipboardList } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaClipboardList } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
 function Header() {
@@ -39,7 +38,15 @@ function Header() {
                                         >
                                             Trang Chủ
                                         </Nav.Link>
-                                        
+
+                                        <Nav.Link
+                                            as={Link}
+                                            to="/introduce"
+                                            className={`nav-link ${location.pathname === '/introduce' ? 'active' : ''}`}
+                                        >
+                                            Giới thiệu
+                                        </Nav.Link>
+
                                         <Nav.Link 
                                             as={Link} 
                                             to="/services" 
@@ -53,61 +60,62 @@ function Header() {
                                             to="/blogs"
                                             className={`nav-link ${location.pathname === '/blogs' ? 'active' : ''}`}
                                         >
-                                            Blog
+                                            Tin tức
                                         </Nav.Link>
 
                                         <Nav.Link
                                             as={Link}
-                                            to="/reliability"
-                                            className={`nav-link ${location.pathname === '/reliability' ? 'active' : ''}`}
+                                            to="/contact"
+                                            className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}
                                         >
-                                            Độ tin cậy
+                                            Liên hệ
                                         </Nav.Link>
-
-                                        {/* Auth Section */}
-                                        {isAuthenticated ? (
-                                            <NavDropdown
-                                                title={
-                                                    <div className="user-avatar">
-                                                        <div className="avatar-circle">
-                                                            {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
-                                                        </div>
-                                                    </div>
-                                                }
-                                                id="user-dropdown"
-                                                className="user-dropdown"
-                                            >
-                                                <NavDropdown.Item className="user-info">
-                                                    <div className="user-details">
-                                                        <strong>{user?.fullName}</strong>
-                                                        <small>{user?.email}</small>
-                                                    </div>
-                                                </NavDropdown.Item>
-                                                <NavDropdown.Divider />
-                                                <NavDropdown.Item as={Link} to="/profile">
-                                                    <FaUser className="dropdown-icon" /> Thông tin tài khoản
-                                                </NavDropdown.Item>
-                                                <NavDropdown.Item as={Link} to="/orders">
-                                                    <FaClipboardList className="dropdown-icon" /> Đơn xét nghiệm
-                                                </NavDropdown.Item>
-                                                <NavDropdown.Divider />
-                                                <NavDropdown.Item onClick={logout}>
-                                                    <FaSignOutAlt className="dropdown-icon" /> Đăng xuất
-                                                </NavDropdown.Item>
-                                            </NavDropdown>
-                                        ) : (
-                                            <Nav.Link
-                                                as={Link}
-                                                to="/login"
-                                                className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
-                                            >
-                                                Đăng nhập
-                                            </Nav.Link>
-                                        )}
-
                                     </Nav>
                                 </Navbar.Collapse>
                             </Navbar>
+                        </div>
+
+                        {/* Auth Section - Right Side */}
+                        <div className="header-auth">
+                            {isAuthenticated ? (
+                                <NavDropdown
+                                    title={
+                                        <div className="user-avatar">
+                                            <div className="avatar-circle">
+                                                {user?.fullName?.charAt(0)?.toUpperCase() || 'U'}
+                                            </div>
+                                        </div>
+                                    }
+                                    id="user-dropdown"
+                                    className="user-dropdown"
+                                >
+                                    <NavDropdown.Item className="user-info">
+                                        <div className="user-details">
+                                            <strong>{user?.fullName}</strong>
+                                            <small>{user?.email}</small>
+                                        </div>
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Divider />
+                                    <NavDropdown.Item as={Link} to="/profile">
+                                        <FaUser className="dropdown-icon" /> Thông tin tài khoản
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item as={Link} to="/orders">
+                                        <FaClipboardList className="dropdown-icon" /> Đơn xét nghiệm
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Divider />
+                                    <NavDropdown.Item onClick={logout}>
+                                        <FaSignOutAlt className="dropdown-icon" /> Đăng xuất
+                                    </NavDropdown.Item>
+                                </NavDropdown>
+                            ) : (
+                                <Nav.Link
+                                    as={Link}
+                                    to="/login"
+                                    className={`nav-link auth-link ${location.pathname === '/login' ? 'active' : ''}`}
+                                >
+                                    Đăng nhập
+                                </Nav.Link>
+                            )}
                         </div>
                     </div>
                 </Container>
@@ -495,6 +503,15 @@ function Header() {
                     font-size: 1.2em;
                     color: #555;
                     margin-bottom: 15px;
+                }
+
+                .nav-link.auth-link {
+                    color: #217dbb !important;
+                    font-weight: 600;
+                }
+                .nav-link.auth-link:hover,
+                .nav-link.auth-link.active {
+                    color: #145a8a !important;
                 }
             `}</style>
         </div>

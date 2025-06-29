@@ -22,7 +22,7 @@ import Footer from './component/footer';
 import Home from './pages/Home';
 import Services from './pages/Services';
 import Contact from './pages/Contact';
-import Reliability from './pages/Reliability';
+import Introduce from './pages/Introduce';
 
 // Components for admin interface
 import LayoutAdmin from './component/Layout(Admin)';
@@ -73,7 +73,7 @@ function App() {
         {/* Public (user) routes */}
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
         <Route path="/home" element={<PublicLayout><Home /></PublicLayout>} />
-        <Route path="/reliability" element={<PublicLayout><Reliability /></PublicLayout>} />
+        <Route path="/introduce" element={<PublicLayout><Introduce /></PublicLayout>} />
         <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
 

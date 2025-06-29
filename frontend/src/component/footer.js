@@ -2,7 +2,7 @@ import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { Link } from 'react-router-dom';
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebook, FaTwitter, FaInstagram, FaArrowUp } from 'react-icons/fa';
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaFacebook, FaTwitter, FaInstagram, FaArrowUp, FaLinkedin } from 'react-icons/fa';
 
 function Footer() {
     const scrollToTop = () => {
@@ -34,6 +34,9 @@ function Footer() {
                                 <a href="#" className="social-link">
                                     <FaInstagram />
                                 </a>
+                                <a href="#" className="social-link">
+                                    <FaLinkedin />
+                                </a>
                             </div>
                         </div>
                     </Col>
@@ -45,9 +48,10 @@ function Footer() {
                             <div className="footer-links-grid">
                                 <Link to="/home">Trang chủ</Link>
                                 <Link to="/services">Dịch vụ</Link>
-                                <Link to="/blog">Blog</Link>
-                                <Link to="/reliability">Độ tin cậy</Link>
+                                <Link to="/blog">Tin tức</Link>
+                                <Link to="/introduce">Giới thiệu</Link>
                                 <Link to="/login">Đăng nhập</Link>
+                                <Link to="/contact">Liên hệ</Link>
                             </div>
                         </div>
                     </Col>

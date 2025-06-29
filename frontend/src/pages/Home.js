@@ -3,54 +3,318 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
-import { FaDna, FaShieldAlt, FaClock, FaUserCheck, FaFileAlt, FaGlobe } from 'react-icons/fa';
+import { FaDna, FaShieldAlt, FaClock, FaUserCheck, FaFileAlt } from 'react-icons/fa';
 
 function Home() {
     return (
         <>
+            <div className="content">
+                {/* Welcome Section */}
+                <section className="welcome-section">
+                    <Container>
+                        <Row className="align-items-center">
+                            <Col lg={7} md={12}>
+                                <div className="welcome-content text-lg-start text-center">
+                                    <h1 className="welcome-title mb-3">
+                                        CHÀO MỪNG ĐẾN VỚI <span className="brand-name">BLOODLINE DNA</span>
+                                    </h1>
+                                    <h2 className="welcome-subtitle mb-4">
+                                        Địa chỉ tin cậy cho dịch vụ xét nghiệm ADN dân sự & hành chính
+                                    </h2>
+                                    <ul className="welcome-list mb-4">
+                                        <li><span className="welcome-icon"><FaUserCheck /></span> Đội ngũ chuyên gia giàu kinh nghiệm</li>
+                                        <li><span className="welcome-icon"><FaShieldAlt /></span> Trang thiết bị hiện đại, quy trình bảo mật</li>
+                                        <li><span className="welcome-icon"><FaFileAlt /></span> Kết quả chính xác, nhanh chóng, giá trị pháp lý</li>
+                                    </ul>
+                                    <div className="welcome-buttons">
+                                        <Button variant="primary" size="lg" className="me-3 mb-2">
+                                            Đặt lịch xét nghiệm
+                                        </Button>
+                                        <Button variant="outline-primary" size="lg" className="mb-2">
+                                            Tư vấn miễn phí
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col lg={5} md={12} className="text-center mt-4 mt-lg-0">
+                                <div className="welcome-logo-wrapper">
+                                    <img src={require('../assets/image.png')} alt="Bloodline DNA Logo" className="welcome-logo" />
+                                </div>
+                            </Col>
+                        </Row>
+                    </Container>
+                </section>
+
+                {/* Services Section */}
+                <section className="services-section">
+                    <Container>
+                        <div className="section-header text-center">
+                            <h2 className="section-title">Dịch vụ của chúng tôi</h2>
+                            <p className="section-description">
+                                Cung cấp đầy đủ các loại xét nghiệm DNA phục vụ mọi nhu cầu
+                            </p>
+                        </div>
+                        <Row>
+                            <Col lg={4} md={6} sm={12} className="mb-4">
+                                <Card className="service-card">
+                                    <Card.Body className="text-center">
+                                        <div className="service-icon">
+                                            <FaFileAlt />
+                                        </div>
+                                        <Card.Title>Xét nghiệm ADN hành chính</Card.Title>
+                                        <Card.Text>
+                                            Xét nghiệm ADN phục vụ thủ tục hành chính như làm giấy khai sinh, 
+                                            thẻ căn cước, hộ chiếu. Kết quả có giá trị pháp lý.
+                                        </Card.Text>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                            <Col lg={4} md={6} sm={12} className="mb-4">
+                                <Card className="service-card">
+                                    <Card.Body className="text-center">
+                                        <div className="service-icon">
+                                            <FaDna />
+                                        </div>
+                                        <Card.Title>Xét nghiệm ADN dân sự</Card.Title>
+                                        <Card.Text>
+                                            Xét nghiệm ADN để xác định mối quan hệ huyết thống cho mục đích cá nhân. 
+                                            Độ chính xác 99.9%, kết quả nhanh chóng trong 3-5 ngày.
+                                        </Card.Text>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                            <Col lg={4} md={6} sm={12} className="mb-4">
+                                <Card className="service-card">
+                                    <Card.Body className="text-center">
+                                        <div className="service-icon">
+                                            <FaUserCheck />
+                                        </div>
+                                        <Card.Title>Xét nghiệm ADN huyết thống</Card.Title>
+                                        <Card.Text>
+                                            Xác định các mối quan hệ huyết thống khác như:
+                                            <div className="relationship-list">
+                                                <div className="relationship-item">Cha – con (mẹ – con)</div>
+                                                <div className="relationship-item">Ông – cháu (nội, ngoại)</div>
+                                                <div className="relationship-item">Anh – em (chị – em)</div>
+                                            </div>
+                                        </Card.Text>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        </Row>
+                    </Container>
+                </section>
+
+                {/* Features Section */}
+                <section className="features-section">
+                    <Container>
+                        <Row className="align-items-center">
+                            <Col lg={6} md={12}>
+                                <div className="features-content">
+                                    <h2 className="features-title">Tại sao chọn chúng tôi?</h2>
+                                    <div className="feature-item">
+                                        <div className="feature-icon">
+                                            <FaShieldAlt />
+                                        </div>
+                                        <div className="feature-text">
+                                            <h5>Chính xác – Bảo mật – Có giá trị pháp lý</h5>
+                                            <p>Thông tin cá nhân và kết quả xét nghiệm được bảo mật 100%</p>
+                                        </div>
+                                    </div>
+                                    <div className="feature-item">
+                                        <div className="feature-icon">
+                                            <FaClock />
+                                        </div>
+                                        <div className="feature-text">
+                                            <h5>Kết quả nhanh chóng</h5>
+                                            <p>Nhận kết quả trong 3-5 ngày làm việc</p>
+                                        </div>
+                                    </div>
+                                    <div className="feature-item">
+                                        <div className="feature-icon">
+                                            <FaFileAlt />
+                                        </div>
+                                        <div className="feature-text">
+                                            <h5>Thiết bị đạt chuẩn quốc tế, quy trình đạt ISO</h5>
+                                            <p>Kết quả được công nhận tại hơn 150 quốc gia</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Col>
+                            <Col lg={6} md={12}>
+                                <div className="features-image">
+                                    <img src={require('../assets/image.png')} alt="Features" />
+                                </div>
+                            </Col>
+                        </Row>
+                    </Container>
+                </section>
+
+                {/* Process Section */}
+                <section className="process-section">
+                    <Container>
+                        <div className="section-header text-center">
+                            <h2 className="section-title">Quy trình xét nghiệm</h2>
+                            <p className="section-description">
+                                Quy trình đơn giản, nhanh chóng và chuyên nghiệp
+                            </p>
+                        </div>
+                        <Row>
+                            <Col lg={3} md={6} sm={12} className="mb-4">
+                                <div className="process-step">
+                                    <div className="step-number">1</div>
+                                    <h5>Đặt lịch</h5>
+                                    <p>Liên hệ và đặt lịch xét nghiệm qua điện thoại hoặc online</p>
+                                </div>
+                            </Col>
+                            <Col lg={3} md={6} sm={12} className="mb-4">
+                                <div className="process-step">
+                                    <div className="step-number">2</div>
+                                    <h5>Thu mẫu</h5>
+                                    <p>Thu thập mẫu DNA tại nhà hoặc tại trung tâm của chúng tôi</p>
+                                </div>
+                            </Col>
+                            <Col lg={3} md={6} sm={12} className="mb-4">
+                                <div className="process-step">
+                                    <div className="step-number">3</div>
+                                    <h5>Phân tích</h5>
+                                    <p>Phân tích mẫu trong phòng thí nghiệm hiện đại</p>
+                                </div>
+                            </Col>
+                            <Col lg={3} md={6} sm={12} className="mb-4">
+                                <div className="process-step">
+                                    <div className="step-number">4</div>
+                                    <h5>Kết quả</h5>
+                                    <p>Nhận kết quả qua email hoặc bưu điện</p>
+                                </div>
+                            </Col>
+                        </Row>
+                    </Container>
+                </section>
+
+                {/* CTA Section */}
+                <section className="cta-section">
+                    <Container>
+                        <Row className="justify-content-center">
+                            <Col lg={8} md={10} sm={12} className="text-center">
+                                <h2 className="cta-title">Sẵn sàng bắt đầu?</h2>
+                                <p className="cta-description">
+                                    Liên hệ ngay với chúng tôi để được tư vấn miễn phí và đặt lịch xét nghiệm
+                                </p>
+                                <div className="cta-buttons">
+                                    <Button variant="primary" size="lg" className="me-3">
+                                        Liên hệ ngay
+                                    </Button>
+                                    <Button variant="outline-primary" size="lg">
+                                        Tư vấn miễn phí
+                                    </Button>
+                                </div>
+                            </Col>
+                        </Row>
+                    </Container>
+                </section>
+            </div>
             <style>
                 {`
-                /* Hero Section */
-                .hero-section {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: #ffffff;
-                    padding: 80px 0;
-                    min-height: 80vh;
+                /* Welcome Section */
+                .welcome-section {
+                    background: linear-gradient(120deg, #e0e7ff 0%, #f8fafc 100%);
+                    padding: 70px 0 50px 0;
+                    border-bottom: 1px solid #e3e6f0;
+                    min-height: 420px;
+                }
+                .welcome-content {
+                    max-width: 600px;
+                    margin: 0 auto 0 0;
+                }
+                .welcome-title {
+                    font-size: 2.7rem;
+                    font-weight: 800;
+                    color: #2c3e50;
+                    line-height: 1.15;
+                }
+                .brand-name {
+                    color: #6c63ff;
+                    text-shadow: 0 2px 8px rgba(108,99,255,0.08);
+                }
+                .welcome-subtitle {
+                    font-size: 1.3rem;
+                    font-weight: 600;
+                    color: #34495e;
+                    line-height: 1.4;
+                }
+                .welcome-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0 0 24px 0;
+                }
+                .welcome-list li {
+                    font-size: 1.08rem;
+                    color: #495057;
+                    margin-bottom: 12px;
                     display: flex;
                     align-items: center;
+                    font-weight: 500;
                 }
-
-                .hero-content {
-                    padding-right: 30px;
+                .welcome-icon {
+                    color: #6c63ff;
+                    font-size: 1.3rem;
+                    margin-right: 12px;
+                    display: inline-flex;
+                    align-items: center;
                 }
-
-                .hero-title {
-                    font-size: 3.5rem;
-                    font-weight: 700;
-                    margin-bottom: 20px;
-                    line-height: 1.2;
+                .welcome-buttons .btn {
+                    min-width: 180px;
+                    font-size: 1.08rem;
+                    font-weight: 600;
                 }
-
-                .hero-description {
-                    font-size: 1.2rem;
-                    margin-bottom: 30px;
-                    line-height: 1.6;
-                    opacity: 0.9;
+                .welcome-logo-wrapper {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100%;
                 }
-
-                .hero-buttons {
-                    margin-top: 30px;
+                .welcome-logo {
+                    max-width: 320px;
+                    width: 100%;
+                    border-radius: 22px;
+                    box-shadow: 0 8px 32px rgba(108,99,255,0.13);
+                    background: #fff;
+                    padding: 18px 18px 10px 18px;
                 }
-
-                .hero-image {
-                    text-align: center;
+                @media (max-width: 992px) {
+                    .welcome-title {
+                        font-size: 2.1rem;
+                    }
+                    .welcome-logo {
+                        max-width: 220px;
+                    }
                 }
-
-                .hero-image img {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 10px;
-                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                @media (max-width: 768px) {
+                    .welcome-section {
+                        padding: 40px 0 30px 0;
+                    }
+                    .welcome-title {
+                        font-size: 1.5rem;
+                    }
+                    .welcome-subtitle {
+                        font-size: 1.05rem;
+                    }
+                    .welcome-logo {
+                        max-width: 160px;
+                        padding: 10px;
+                    }
+                }
+                @media (max-width: 576px) {
+                    .welcome-title {
+                        font-size: 1.1rem;
+                    }
+                    .welcome-subtitle {
+                        font-size: 0.95rem;
+                    }
+                    .welcome-list li {
+                        font-size: 0.95rem;
+                    }
                 }
 
                 /* Services Section */
@@ -107,6 +371,21 @@ function Home() {
                     color: #6c757d;
                     line-height: 1.6;
                     margin-bottom: 20px;
+                }
+
+                .relationship-list {
+                    margin-top: 10px;
+                    text-align: center;
+                }
+
+                .relationship-item {
+                    color: #495057;
+                    margin-bottom: 5px;
+                    padding-left: 5px;
+                }
+
+                .relationship-item:last-child {
+                    margin-bottom: 0;
                 }
 
                 /* Features Section */
@@ -232,313 +511,8 @@ function Home() {
                 .cta-buttons {
                     margin-top: 30px;
                 }
-
-                /* Responsive Design */
-                @media (max-width: 992px) {
-                    .hero-title {
-                        font-size: 2.5rem;
-                    }
-                    
-                    .hero-content {
-                        padding-right: 0;
-                        margin-bottom: 40px;
-                    }
-                    
-                    .features-content {
-                        margin-bottom: 40px;
-                    }
-                    
-                    .section-title,
-                    .features-title,
-                    .cta-title {
-                        font-size: 2rem;
-                    }
-                }
-
-                @media (max-width: 768px) {
-                    .hero-section {
-                        padding: 60px 0;
-                        min-height: auto;
-                    }
-                    
-                    .hero-title {
-                        font-size: 2rem;
-                    }
-                    
-                    .hero-description {
-                        font-size: 1rem;
-                    }
-                    
-                    .services-section,
-                    .features-section,
-                    .process-section,
-                    .cta-section {
-                        padding: 60px 0;
-                    }
-                    
-                    .section-title,
-                    .features-title,
-                    .cta-title {
-                        font-size: 1.8rem;
-                    }
-                    
-                    .service-card,
-                    .process-step {
-                        margin-bottom: 30px;
-                    }
-                    
-                    .feature-item {
-                        margin-bottom: 25px;
-                    }
-                    
-                    .hero-buttons .btn {
-                        margin-bottom: 10px;
-                        width: 100%;
-                    }
-                    
-                    .cta-buttons .btn {
-                        margin-bottom: 10px;
-                        width: 100%;
-                    }
-                }
-
-                @media (max-width: 576px) {
-                    .hero-title {
-                        font-size: 1.8rem;
-                    }
-                    
-                    .hero-description {
-                        font-size: 0.9rem;
-                    }
-                    
-                    .section-title,
-                    .features-title,
-                    .cta-title {
-                        font-size: 1.5rem;
-                    }
-                    
-                    .section-description,
-                    .cta-description {
-                        font-size: 1rem;
-                    }
-                    
-                    .service-icon {
-                        font-size: 2.5rem;
-                    }
-                    
-                    .feature-icon {
-                        font-size: 1.5rem;
-                    }
-                    
-                    .step-number {
-                        width: 50px;
-                        height: 50px;
-                        font-size: 1.2rem;
-                    }
-                }
                 `}
             </style>
-            <div className="content">
-                {/* Hero Section */}
-                <section className="hero-section">
-                    <Container>
-                        <Row className="align-items-center">
-                            <Col lg={6} md={12}>
-                                <div className="hero-content">
-                                    <h1 className="hero-title">
-                                        Xét nghiệm DNA chính xác và đáng tin cậy
-                                    </h1>
-                                    <p className="hero-description">
-                                        Chúng tôi cung cấp các dịch vụ xét nghiệm DNA hàng đầu với độ chính xác 99.9%. 
-                                        Kết quả nhanh chóng, bảo mật tuyệt đối và được công nhận quốc tế.
-                                    </p>
-                                    <div className="hero-buttons">
-                                        <Button variant="primary" size="lg" className="me-3">
-                                            Đặt lịch xét nghiệm
-                                        </Button>
-                                        <Button variant="outline-primary" size="lg">
-                                            Tìm hiểu thêm
-                                        </Button>
-                                    </div>
-                                </div>
-                            </Col>
-                            <Col lg={6} md={12}>
-                                <div className="hero-image">
-                                    <img src={require('../assets/image.png')} alt="DNA Testing" />
-                                </div>
-                            </Col>
-                        </Row>
-                    </Container>
-                </section>
-
-                {/* Services Section */}
-                <section className="services-section">
-                    <Container>
-                        <div className="section-header text-center">
-                            <h2 className="section-title">Dịch vụ của chúng tôi</h2>
-                            <p className="section-description">
-                                Cung cấp đầy đủ các loại xét nghiệm DNA phục vụ mọi nhu cầu
-                            </p>
-                        </div>
-                        <Row>
-                            <Col lg={4} md={6} sm={12} className="mb-4">
-                                <Card className="service-card">
-                                    <Card.Body className="text-center">
-                                        <div className="service-icon">
-                                            <FaDna />
-                                        </div>
-                                        <Card.Title>Xét nghiệm ADN</Card.Title>
-                                        <Card.Text>
-                                            Xác định mối quan hệ với độ chính xác 99.9%. 
-                                            Kết quả có trong 3-5 ngày làm việc.
-                                        </Card.Text>
-                                        <Button variant="outline-primary">Chi tiết</Button>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            <Col lg={4} md={6} sm={12} className="mb-4">
-                                <Card className="service-card">
-                                    <Card.Body className="text-center">
-                                        <div className="service-icon">
-                                            <FaGlobe />
-                                        </div>
-                                        <Card.Title>Xét nghiệm di truyền</Card.Title>
-                                        <Card.Text>
-                                            Hỗ trợ thủ tục di truyền với chứng nhận DNA được công nhận quốc tế. 
-                                            Tuân thủ các tiêu chuẩn pháp lý.
-                                        </Card.Text>
-                                        <Button variant="outline-primary">Chi tiết</Button>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                            <Col lg={4} md={6} sm={12} className="mb-4">
-                                <Card className="service-card">
-                                    <Card.Body className="text-center">
-                                        <div className="service-icon">
-                                            <FaUserCheck />
-                                        </div>
-                                        <Card.Title>Xét nghiệm quan hệ huyết thống</Card.Title>
-                                        <Card.Text>
-                                            Xác định các mối quan hệ huyết thống khác như anh chị em, 
-                                            ông bà, chú bác.
-                                        </Card.Text>
-                                        <Button variant="outline-primary">Chi tiết</Button>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </Container>
-                </section>
-
-                {/* Features Section */}
-                <section className="features-section">
-                    <Container>
-                        <Row className="align-items-center">
-                            <Col lg={6} md={12}>
-                                <div className="features-content">
-                                    <h2 className="features-title">Tại sao chọn chúng tôi?</h2>
-                                    <div className="feature-item">
-                                        <div className="feature-icon">
-                                            <FaShieldAlt />
-                                        </div>
-                                        <div className="feature-text">
-                                            <h5>Bảo mật tuyệt đối</h5>
-                                            <p>Thông tin cá nhân và kết quả xét nghiệm được bảo mật 100%</p>
-                                        </div>
-                                    </div>
-                                    <div className="feature-item">
-                                        <div className="feature-icon">
-                                            <FaClock />
-                                        </div>
-                                        <div className="feature-text">
-                                            <h5>Kết quả nhanh chóng</h5>
-                                            <p>Nhận kết quả trong 3-5 ngày làm việc</p>
-                                        </div>
-                                    </div>
-                                    <div className="feature-item">
-                                        <div className="feature-icon">
-                                            <FaFileAlt />
-                                        </div>
-                                        <div className="feature-text">
-                                            <h5>Chứng nhận quốc tế</h5>
-                                            <p>Kết quả được công nhận tại hơn 150 quốc gia</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Col>
-                            <Col lg={6} md={12}>
-                                <div className="features-image">
-                                    <img src={require('../assets/image.png')} alt="Features" />
-                                </div>
-                            </Col>
-                        </Row>
-                    </Container>
-                </section>
-
-                {/* Process Section */}
-                <section className="process-section">
-                    <Container>
-                        <div className="section-header text-center">
-                            <h2 className="section-title">Quy trình xét nghiệm</h2>
-                            <p className="section-description">
-                                Quy trình đơn giản, nhanh chóng và chuyên nghiệp
-                            </p>
-                        </div>
-                        <Row>
-                            <Col lg={3} md={6} sm={12} className="mb-4">
-                                <div className="process-step">
-                                    <div className="step-number">1</div>
-                                    <h5>Đặt lịch</h5>
-                                    <p>Liên hệ và đặt lịch xét nghiệm qua điện thoại hoặc online</p>
-                                </div>
-                            </Col>
-                            <Col lg={3} md={6} sm={12} className="mb-4">
-                                <div className="process-step">
-                                    <div className="step-number">2</div>
-                                    <h5>Thu mẫu</h5>
-                                    <p>Thu thập mẫu DNA tại nhà hoặc tại trung tâm của chúng tôi</p>
-                                </div>
-                            </Col>
-                            <Col lg={3} md={6} sm={12} className="mb-4">
-                                <div className="process-step">
-                                    <div className="step-number">3</div>
-                                    <h5>Phân tích</h5>
-                                    <p>Phân tích mẫu trong phòng thí nghiệm hiện đại</p>
-                                </div>
-                            </Col>
-                            <Col lg={3} md={6} sm={12} className="mb-4">
-                                <div className="process-step">
-                                    <div className="step-number">4</div>
-                                    <h5>Kết quả</h5>
-                                    <p>Nhận kết quả qua email hoặc bưu điện</p>
-                                </div>
-                            </Col>
-                        </Row>
-                    </Container>
-                </section>
-
-                {/* CTA Section */}
-                <section className="cta-section">
-                    <Container>
-                        <Row className="justify-content-center">
-                            <Col lg={8} md={10} sm={12} className="text-center">
-                                <h2 className="cta-title">Sẵn sàng bắt đầu?</h2>
-                                <p className="cta-description">
-                                    Liên hệ ngay với chúng tôi để được tư vấn miễn phí và đặt lịch xét nghiệm
-                                </p>
-                                <div className="cta-buttons">
-                                    <Button variant="primary" size="lg" className="me-3">
-                                        Liên hệ ngay
-                                    </Button>
-                                    <Button variant="outline-primary" size="lg">
-                                        Tư vấn miễn phí
-                                    </Button>
-                                </div>
-                            </Col>
-                        </Row>
-                    </Container>
-                </section>
-            </div>
         </>
     );
 }

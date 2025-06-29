@@ -3,9 +3,108 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
-import { FaHome, FaUserNurse, FaHospital, FaArrowRight, FaCheckCircle, FaClock, FaShieldAlt, FaFileAlt } from 'react-icons/fa';
+import Modal from 'react-bootstrap/Modal';
+import Form from 'react-bootstrap/Form';
+import { useState } from 'react';
+import { FaHome, FaUserNurse, FaHospital, FaArrowRight, FaCheckCircle, FaClock, FaShieldAlt, FaFileAlt, FaTimes } from 'react-icons/fa';
 
 function Services() {
+    const [showModal, setShowModal] = useState(false);
+    const [selectedService, setSelectedService] = useState(null);
+    const [formData, setFormData] = useState({
+        fullName: '',
+        phone: '',
+        email: '',
+        address: '',
+        serviceType: '',
+        preferredDate: '',
+        preferredTime: '',
+        notes: ''
+    });
+
+    const handleServiceSelect = (service) => {
+        setSelectedService(service);
+        setFormData(prev => ({ ...prev, serviceType: service.title }));
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedService(null);
+        setFormData({
+            fullName: '',
+            phone: '',
+            email: '',
+            address: '',
+            serviceType: '',
+            preferredDate: '',
+            preferredTime: '',
+            notes: ''
+        });
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Xử lý gửi form đặt dịch vụ
+        console.log('Form data:', formData);
+        alert('Yêu cầu đặt dịch vụ đã được gửi thành công! Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.');
+        handleCloseModal();
+    };
+
+    const services = [
+        {
+            id: 1,
+            title: 'Tự lấy mẫu tại nhà',
+            icon: FaHome,
+            color: '#007bff',
+            price: '2,500,000 VNĐ',
+            features: [
+                'Bộ kit được gửi tận nhà',
+                'Hướng dẫn chi tiết',
+                'Tiết kiệm thời gian',
+                'Phù hợp mọi lứa tuổi'
+            ],
+            description: 'Bộ kit tự lấy mẫu được gửi đến nhà bạn. Bạn tự thực hiện lấy mẫu theo hướng dẫn và gửi lại cho chúng tôi để phân tích.'
+        },
+        {
+            id: 2,
+            title: 'Nhân viên thu mẫu tại nhà',
+            icon: FaUserNurse,
+            color: '#28a745',
+            price: '3,500,000 VNĐ',
+            features: [
+                'Nhân viên chuyên nghiệp',
+                'Thu mẫu tại nhà',
+                'Đảm bảo chất lượng',
+                'Hỗ trợ mọi lứa tuổi'
+            ],
+            description: 'Nhân viên chuyên nghiệp sẽ đến tận nhà để thu mẫu. Dịch vụ tiện lợi, an toàn và đảm bảo chất lượng mẫu.',
+            featured: true
+        },
+        {
+            id: 3,
+            title: 'Thu mẫu tại cơ sở',
+            icon: FaHospital,
+            color: '#dc3545',
+            price: '4,000,000 VNĐ',
+            features: [
+                'Trang thiết bị hiện đại',
+                'Đội ngũ y tế chuyên nghiệp',
+                'Kết quả chính xác nhất',
+                'Chứng nhận pháp lý'
+            ],
+            description: 'Đến trực tiếp cơ sở của chúng tôi để được thu mẫu bởi đội ngũ y tế chuyên nghiệp với trang thiết bị hiện đại.'
+        }
+    ];
+
     return (
         <div className="services-page">
             {/* Hero Section */}
@@ -27,144 +126,205 @@ function Services() {
             <section className="services-grid py-5">
                 <Container>
                     <Row>
-                        <Col lg={4} md={6} sm={12} className="mb-4">
-                            <Card className="h-100 border-0 shadow-lg service-card">
-                                <Card.Body className="text-center p-4">
-                                    <div className="service-icon mb-4">
-                                        <FaHome size={60} color="#007bff" />
-                                    </div>
-                                    <Card.Title className="fw-bold mb-3">Tự lấy mẫu tại nhà</Card.Title>
-                                    <Card.Text className="text-muted">
-                                        Bộ kit tự lấy mẫu được gửi đến nhà bạn. Bạn tự thực hiện lấy mẫu 
-                                        theo hướng dẫn và gửi lại cho chúng tôi để phân tích.
-                                    </Card.Text>
-                                    <div className="service-features mb-3">
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Bộ kit được gửi tận nhà</span>
+                        {services.map((service) => (
+                            <Col lg={4} md={6} sm={12} className="mb-4" key={service.id}>
+                                <Card className={`h-100 border-0 shadow-lg service-card ${service.featured ? 'featured' : ''}`}>
+                                    <Card.Body className="text-center p-4">
+                                        {service.featured && (
+                                            <div className="featured-badge">Phổ biến</div>
+                                        )}
+                                        <div className="service-icon mb-4">
+                                            <service.icon size={60} color={service.color} />
                                         </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Hướng dẫn chi tiết</span>
+                                        <Card.Title className="fw-bold mb-3">{service.title}</Card.Title>
+                                        <Card.Text className="text-muted">
+                                            {service.description}
+                                        </Card.Text>
+                                        <div className="service-features mb-3">
+                                            {service.features.map((feature, index) => (
+                                                <div className="feature-item" key={index}>
+                                                    <FaCheckCircle className="text-success me-2" />
+                                                    <span>{feature}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Tiết kiệm thời gian</span>
+                                        <div className="service-price mb-3">
+                                            <span className="price-label">Giá từ:</span>
+                                            <span className="price-amount">{service.price}</span>
                                         </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Phù hợp mọi lứa tuổi</span>
+                                        <div className="mt-3">
+                                            <Button 
+                                                variant={service.featured ? "success" : "primary"} 
+                                                className="me-2"
+                                                onClick={() => handleServiceSelect(service)}
+                                            >
+                                                Đặt dịch vụ <FaArrowRight className="ms-2" />
+                                            </Button>
                                         </div>
-                                    </div>
-                                    <div className="service-price mb-3">
-                                        <span className="price-label">Giá từ:</span>
-                                        <span className="price-amount">2,500,000 VNĐ</span>
-                                    </div>
-                                    <div className="mt-3">
-                                        <Button variant="primary" className="me-2">
-                                            Đặt dịch vụ <FaArrowRight className="ms-2" />
-                                        </Button>
-                                        <Button variant="outline-primary">
-                                            Chi tiết
-                                        </Button>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-
-                        <Col lg={4} md={6} sm={12} className="mb-4">
-                            <Card className="h-100 border-0 shadow-lg service-card featured">
-                                <Card.Body className="text-center p-4">
-                                    <div className="featured-badge">Phổ biến</div>
-                                    <div className="service-icon mb-4">
-                                        <FaUserNurse size={60} color="#28a745" />
-                                    </div>
-                                    <Card.Title className="fw-bold mb-3">Nhân viên thu mẫu tại nhà</Card.Title>
-                                    <Card.Text className="text-muted">
-                                        Nhân viên chuyên nghiệp sẽ đến tận nhà để thu mẫu. 
-                                        Dịch vụ tiện lợi, an toàn và đảm bảo chất lượng mẫu.
-                                    </Card.Text>
-                                    <div className="service-features mb-3">
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Nhân viên chuyên nghiệp</span>
-                                        </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Thu mẫu tại nhà</span>
-                                        </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Đảm bảo chất lượng</span>
-                                        </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Hỗ trợ mọi lứa tuổi</span>
-                                        </div>
-                                    </div>
-                                    <div className="service-price mb-3">
-                                        <span className="price-label">Giá từ:</span>
-                                        <span className="price-amount">3,500,000 VNĐ</span>
-                                    </div>
-                                    <div className="mt-3">
-                                        <Button variant="success" className="me-2">
-                                            Đặt dịch vụ <FaArrowRight className="ms-2" />
-                                        </Button>
-                                        <Button variant="outline-success">
-                                            Chi tiết
-                                        </Button>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-
-                        <Col lg={4} md={6} sm={12} className="mb-4">
-                            <Card className="h-100 border-0 shadow-lg service-card">
-                                <Card.Body className="text-center p-4">
-                                    <div className="service-icon mb-4">
-                                        <FaHospital size={60} color="#dc3545" />
-                                    </div>
-                                    <Card.Title className="fw-bold mb-3">Thu mẫu tại cơ sở</Card.Title>
-                                    <Card.Text className="text-muted">
-                                        Đến trực tiếp cơ sở của chúng tôi để được thu mẫu bởi 
-                                        đội ngũ y tế chuyên nghiệp với trang thiết bị hiện đại.
-                                    </Card.Text>
-                                    <div className="service-features mb-3">
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Trang thiết bị hiện đại</span>
-                                        </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Đội ngũ y tế chuyên nghiệp</span>
-                                        </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Kết quả chính xác nhất</span>
-                                        </div>
-                                        <div className="feature-item">
-                                            <FaCheckCircle className="text-success me-2" />
-                                            <span>Chứng nhận pháp lý</span>
-                                        </div>
-                                    </div>
-                                    <div className="service-price mb-3">
-                                        <span className="price-label">Giá từ:</span>
-                                        <span className="price-amount">4,000,000 VNĐ</span>
-                                    </div>
-                                    <div className="mt-3">
-                                        <Button variant="primary" className="me-2">
-                                            Đặt dịch vụ <FaArrowRight className="ms-2" />
-                                        </Button>
-                                        <Button variant="outline-primary">
-                                            Chi tiết
-                                        </Button>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        ))}
                     </Row>
                 </Container>
             </section>
+
+            {/* Modal Đặt Dịch Vụ */}
+            <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
+                <Modal.Header closeButton className="bg-primary text-white">
+                    <Modal.Title>
+                        <FaFileAlt className="me-2" />
+                        Đặt dịch vụ xét nghiệm DNA
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-4">
+                    {selectedService && (
+                        <div className="selected-service-info mb-4 p-3 bg-light rounded">
+                            <h6 className="fw-bold mb-2">Dịch vụ đã chọn:</h6>
+                            <div className="d-flex align-items-center">
+                                <selectedService.icon size={30} color={selectedService.color} className="me-3" />
+                                <div>
+                                    <h6 className="mb-1">{selectedService.title}</h6>
+                                    <p className="text-muted mb-0">Giá: {selectedService.price}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    
+                    <Form onSubmit={handleSubmit}>
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Họ và tên *</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="fullName"
+                                        value={formData.fullName}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="Nhập họ và tên đầy đủ"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Số điện thoại *</Form.Label>
+                                    <Form.Control
+                                        type="tel"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleInputChange}
+                                        required
+                                        placeholder="Nhập số điện thoại"
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Email</Form.Label>
+                                    <Form.Control
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleInputChange}
+                                        placeholder="Nhập email (không bắt buộc)"
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Loại dịch vụ *</Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        name="serviceType"
+                                        value={formData.serviceType}
+                                        onChange={handleInputChange}
+                                        required
+                                        readOnly
+                                        className="bg-light"
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        
+                        <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold">Địa chỉ *</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                name="address"
+                                value={formData.address}
+                                onChange={handleInputChange}
+                                required
+                                placeholder="Nhập địa chỉ chi tiết"
+                            />
+                        </Form.Group>
+                        
+                        <Row>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Ngày mong muốn *</Form.Label>
+                                    <Form.Control
+                                        type="date"
+                                        name="preferredDate"
+                                        value={formData.preferredDate}
+                                        onChange={handleInputChange}
+                                        required
+                                        min={new Date().toISOString().split('T')[0]}
+                                    />
+                                </Form.Group>
+                            </Col>
+                            <Col md={6}>
+                                <Form.Group className="mb-3">
+                                    <Form.Label className="fw-bold">Thời gian mong muốn</Form.Label>
+                                    <Form.Select
+                                        name="preferredTime"
+                                        value={formData.preferredTime}
+                                        onChange={handleInputChange}
+                                    >
+                                        <option value="">Chọn thời gian</option>
+                                        <option value="08:00-10:00">08:00 - 10:00</option>
+                                        <option value="10:00-12:00">10:00 - 12:00</option>
+                                        <option value="14:00-16:00">14:00 - 16:00</option>
+                                        <option value="16:00-18:00">16:00 - 18:00</option>
+                                    </Form.Select>
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                        
+                        <Form.Group className="mb-3">
+                            <Form.Label className="fw-bold">Ghi chú</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                rows={3}
+                                name="notes"
+                                value={formData.notes}
+                                onChange={handleInputChange}
+                                placeholder="Nhập thông tin bổ sung hoặc yêu cầu đặc biệt (nếu có)"
+                            />
+                        </Form.Group>
+                        
+                        <div className="alert alert-info">
+                            <small>
+                                <strong>Lưu ý:</strong> Sau khi gửi yêu cầu, chúng tôi sẽ liên hệ với bạn trong vòng 24 giờ để xác nhận và sắp xếp lịch hẹn.
+                            </small>
+                        </div>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleCloseModal}>
+                        <FaTimes className="me-2" />
+                        Hủy
+                    </Button>
+                    <Button variant="primary" onClick={handleSubmit}>
+                        <FaFileAlt className="me-2" />
+                        Gửi yêu cầu
+                    </Button>
+                </Modal.Footer>
+            </Modal>
 
             {/* Comparison Section */}
             <section className="comparison-section py-5 bg-light">

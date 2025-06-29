@@ -1,34 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { staffAPI } from '../services/api';
-import { 
-  Container, 
-  Row, 
-  Col, 
-  Form, 
-  Button, 
-  Table, 
-  Modal, 
-  Badge, 
-  Card,
-  InputGroup,
-  Dropdown,
-  Alert,
-  Spinner,
-  Pagination
-} from 'react-bootstrap';
-import { 
-  FaSearch, 
-  FaPlus, 
-  FaEdit, 
-  FaTrash, 
-  FaEye, 
-  FaFilter,
-  FaSort,
-  FaDownload,
-  FaUserPlus,
-  FaUsers,
-  FaClipboardList
-} from 'react-icons/fa';
+import { Container, Row, Col, Form, Button, Table, Modal, Badge, Card, InputGroup, Dropdown, Alert, Spinner, Pagination} from 'react-bootstrap';
+import { FaSearch, FaPlus, FaEdit, FaTrash, FaEye, FaFilter, FaSort, FaDownload, FaUserPlus, FaUsers, FaClipboardList} from 'react-icons/fa';
 
 const getRoleText = (role) => {
   const roleMap = {
