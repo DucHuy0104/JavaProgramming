@@ -15,6 +15,10 @@ import Register from './components/Register';
 import BlogList from './components/BlogList';
 import Profile from './components/Profile';
 import Orders from './components/Orders';
+import ForgotPassword from './components/ForgotPassword';
+
+import Results from './components/Results';
+
 
 // Components for user interface
 import Header from './component/header';
@@ -54,7 +58,10 @@ function App() {
         {/* Auth routes - chỉ cho phép truy cập khi chưa đăng nhập */}
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
+        <Route path="/results" element={<Results />} />
+        
         {/* Blog routes */}
         <Route path="/blogs" element={<PublicLayout><BlogList /></PublicLayout>} />
 

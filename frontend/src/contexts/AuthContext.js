@@ -77,6 +77,9 @@ export const AuthProvider = ({ children }) => {
     loading
   };
 
+  const resetPassword = async (email) => { return new Promise((resolve) => {setTimeout(() => resolve({ success: true, message: 'Password reset link sent!' }), 1000);});};
+
+
   return (
     <AuthContext.Provider value={value}>
       {children}

@@ -1,163 +1,98 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
-const Login = () => {
+const ForgotPassword = () => {
   const [isVisible, setIsVisible] = useState(false);
-  const [uname, setUname] = useState('');
-  const [pass, setPass] = useState('');
-  const [role, setRole] = useState('Guest');
+  const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSubForm, setShowSubForm] = useState(false);
-  const buttonRef = useRef(null);
-  let animationFrameId = null;
+  const [success, setSuccess] = useState('');
 
-  const { login } = useAuth();
+  const { resetPassword } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const validateInputs = () => {
-    if (!uname || !pass) return 'Please fill all fields to unlock your DNA insights!';
-    if (role === 'Customer' && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(uname)) {
+  const validateEmail = () => {
+    if (!email) return 'Please enter your email to reset your password!';
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email)) {
       return 'Please enter a valid email address';
     }
     return '';
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationError = validateInputs();
+    const validationError = validateEmail();
     if (validationError) {
       setError(validationError);
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      const result = { success: true, redirectUrl: '/home' };
-      if (result.success) {
-        const from = location.state?.from?.pathname || result.redirectUrl || '/home';
-        navigate(from, { replace: true });
-      } else {
-        setError('Login failed');
-      }
-      setIsLoading(false);
-    }, 1000);
-  };
+    setError('');
+    setSuccess('');
 
-  const handleSubFormSubmit = (type) => (e) => {
-    e.preventDefault();
-    const id = e.target.querySelector('input').value;
-    if (!id) {
-      setError(`Please enter a valid ${type} ID`);
-      return;
+    try {
+      const result = await resetPassword(email);
+      if (result.success) {
+        setSuccess('Password reset link sent! Check your email.');
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        setError(result.message || 'Failed to send reset link.');
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.');
     }
-    setIsLoading(true);
-    setTimeout(() => {
-      setError('');
-      setTimeout(() => {
-        const result = { success: true, redirectUrl: '/home' };
-        if (result.success) {
-          const from = location.state?.from?.pathname || result.redirectUrl || '/home';
-          navigate(from, { replace: true });
-        }
-      }, 1000);
-      setIsLoading(false);
-    }, 1000);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     setIsVisible(true);
-    const savedUname = localStorage.getItem('username');
-    if (savedUname) setUname(savedUname);
-    return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
   useEffect(() => {
-    if (error) {
-      const errorElement = document.querySelector('.notification');
-      if (errorElement) errorElement.focus();
+    if (error || success) {
+      const notification = document.querySelector('.notification');
+      if (notification) notification.focus();
     }
-  }, [error]);
+  }, [error, success]);
 
   return (
     <div
       className={`form-box ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-full'} transition-all duration-700 ease-out`}
     >
       <Link
-        to="/home"
+        to="/login"
         className="back-to-home absolute top-4 left-4 z-50"
-        aria-label="Back to Home"
+        aria-label="Back to Login"
       >
-        <span className="back-icon">🏠</span> Back to Home
+        <span className="back-icon">⬅</span> Back to Login
       </Link>
       <div className="box relative">
         <h2 className="text-3xl font-bold mb-6 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#4A90E2] to-[#ADD8E6] animate-pulse">
-          Unlock Your DNA Legacy!
+          Reset Your DNA Access!
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4 relative z-10" aria-live="polite">
-          {error && (
+          {(error || success) && (
             <div className="notification" tabIndex="-1" role="alert">
-              {error}
+              {error || success}
             </div>
           )}
           <div className="relative">
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="input-field glow-input"
-              aria-label="Select user role"
-            >
-              <option value="Guest">Guest</option>
-              <option value="Customer">Customer</option>
-            </select>
-            <span className="absolute left-2 top-3 text-[#4A90E2] text-xl">🧬</span>
-          </div>
-          <div className="relative">
             <input
-              type="text"
-              placeholder="Username/Email/ID"
-              value={uname}
-              onChange={(e) => setUname(e.target.value)}
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="input-field glow-input"
-              aria-label="Username or Email"
+              aria-label="Email for password reset"
             />
             <span className="absolute left-2 top-3 text-[#4A90E2] text-xl">🧬</span>
-          </div>
-          <div className="relative">
-            <input
-              type="password"
-              placeholder="Password"
-              value={pass}
-              onChange={(e) => setPass(e.target.value)}
-              className="input-field glow-input"
-              aria-label="Password"
-            />
-            <span className="absolute left-2 top-3 text-[#4A90E2] text-xl">🧬</span>
-          </div>
-          <div className="flex items-center justify-between text-base text-[#333333]">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                onChange={(e) => localStorage.setItem('rememberMe', e.target.checked)}
-                className="mr-2 glow-checkbox w-4 h-4"
-                aria-label="Remember me"
-              /> Remember me
-            </label>
-            <Link
-              to="/forgot-password"
-              className="text-[#4A90E2] hover:text-[#90caf9] transition-colors duration-300 font-medium underline"
-              aria-label="Forgot Password"
-            >
-              Forgot Password?
-            </Link>
           </div>
           <button
-            ref={buttonRef}
             type="submit"
             className="btn relative mb-4"
-            disabled={!uname || !pass || isLoading}
-            aria-label="Login"
+            disabled={isLoading || !email}
+            aria-label="Reset Password"
           >
             {isLoading ? (
               <svg className="progress-ring active w-5 h-5 animate-spin mx-auto" viewBox="0 0 24 24">
@@ -165,48 +100,10 @@ const Login = () => {
                 <path d="M12 2a10 10 0 0 1 10 10" stroke="#4A90E2" strokeWidth="3" fill="none" />
               </svg>
             ) : (
-              'Login'
+              'Reset Password'
             )}
           </button>
-          <Link
-            to="/register"
-            className="btn bg-transparent text-[#4A90E2] border-2 border-[#4A90E2] hover:bg-[#4A90E2] hover:text-white transition-all duration-300 mb-4"
-            aria-label="Switch to Register"
-          >
-            Register
-          </Link>
         </form>
-        <div className="mt-6">
-          <button
-            onClick={() => setShowSubForm(!showSubForm)}
-            className="sub-form-toggle w-full bg-[#E6F0FA] text-[#333333] hover:bg-[#90caf9] hover:text-white transition-all duration-300 rounded-md p-2 font-semibold shadow-md"
-            aria-expanded={showSubForm}
-            aria-label="Toggle Staff, Manager, Admin login options"
-          >
-            {showSubForm ? 'Hide Staff/Manager/Admin Login' : 'Show Staff/Manager/Admin Login'}
-          </button>
-          <div className={`sub-form-container ${showSubForm ? 'open' : 'closed'} bg-white shadow-lg rounded-md p-4 mt-3 z-20`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-              {['Staff', 'Manager', 'Admin'].map((type) => (
-                <form key={type} onSubmit={handleSubFormSubmit(type)} className="flex flex-col items-center space-y-3 w-full">
-                  <input
-                    type="text"
-                    placeholder={`${type} ID`}
-                    className="input-field w-full p-2 rounded-md border-2 border-[#bbdefb] focus:border-[#4A90E2] transition-all duration-300"
-                    aria-label={`${type} ID`}
-                  />
-                  <button
-                    type="submit"
-                    className="btn w-full py-2 rounded-md text-white bg-[#4A90E2] hover:bg-[#90caf9] transition-all duration-300"
-                    aria-label={`${type} Login`}
-                  >
-                    {type} Login
-                  </button>
-                </form>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
       <div className="dna-decoration absolute inset-0 z-0 opacity-0.6">
         {Array.from({ length: 7 }).map((_, i) => (
@@ -244,8 +141,7 @@ const Login = () => {
           color: #e2e8f0;
           box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
         }
-        .dark-mode .input-field,
-        .dark-mode select {
+        .dark-mode .input-field {
           background: #2d3748;
           color: #e2e8f0;
           border-color: #4a5568;
@@ -326,7 +222,7 @@ const Login = () => {
           animation: particleFloat 12s infinite ease-in-out;
           box-shadow: 0 0 15px rgba(74, 144, 226, 0.7);
         }
-        .input-field, select {
+        .input-field {
           width: 100%;
           padding: 12px;
           margin: 10px 0;
@@ -339,7 +235,7 @@ const Login = () => {
           background: rgba(255, 255, 255, 0.95);
           box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
         }
-        .input-field:focus, select:focus {
+        .input-field:focus {
           border-color: #4A90E2;
           outline: none;
           box-shadow: 0 0 12px rgba(74, 144, 226, 0.6) inset, 0 0 20px rgba(74, 144, 226, 0.4);
@@ -398,63 +294,8 @@ const Login = () => {
           max-width: 90%;
           box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
         }
-        .sub-form-container {
-          margin-top: 20px;
-          padding: 15px;
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 10px;
-          transition: all 0.3s ease-out;
-          overflow: hidden;
-          z-index: 20;
-          position: relative;
-          backdrop-filter: blur(5px);
-          max-width: 100%;
-          width: 100%;
-        }
-        .sub-form-container.closed {
-          max-height: 0;
-          opacity: 0;
-          padding: 0 15px;
-        }
-        .sub-form-container.open {
-          max-height: 600px;
-          opacity: 1;
-          width: 100%;
-        }
-        .sub-form-toggle {
-          background: #E6F0FA;
-          color: #333333;
-          padding: 8px;
-          border-radius: 10px;
-          width: 100%;
-          text-align: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-weight: 600;
-          box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
-        }
-        .sub-form-toggle:hover {
-          background: #90caf9;
-          color: #ffffff;
-          transform: scale(1.02);
-          box-shadow: 0 0 12px rgba(74, 144, 226, 0.2);
-        }
-        .dark-mode .sub-form-toggle {
-          background: #2d3748;
-          color: #e2e8f0;
-        }
-        .dark-mode .sub-form-container {
-          background: rgba(45, 55, 72, 0.5);
-        }
-        .progress-ring {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          display: none;
-        }
-        .progress-ring.active {
-          display: block;
+        .notification.error {
+          background: #ff4d4d;
         }
         .back-to-home {
           position: absolute;
@@ -513,16 +354,6 @@ const Login = () => {
             padding: 20px;
             max-width: 100%;
           }
-          .sub-form-container {
-            padding: 10px;
-          }
-          .sub-form-container .flex {
-            flex-direction: column;
-            gap: 10px;
-          }
-          .sub-form-container input {
-            width: 100%;
-          }
           .back-to-home {
             top: 10px;
             left: 10px;
@@ -531,16 +362,8 @@ const Login = () => {
           }
         }
       `}</style>
-      <Link
-        to="/home"
-        className="back-to-home absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50"
-        aria-label="Back to Home"
-      >
-        <span className="back-icon">🏠</span> Back to Home
-      </Link>
     </div>
   );
-  
 };
 
-export default Login;
+export default ForgotPassword;
