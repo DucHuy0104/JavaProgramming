@@ -6,10 +6,8 @@ const Login = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [uname, setUname] = useState('');
   const [pass, setPass] = useState('');
-  const [role, setRole] = useState('Guest');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSubForm, setShowSubForm] = useState(false);
   const buttonRef = useRef(null);
   let animationFrameId = null;
 
@@ -19,52 +17,44 @@ const Login = () => {
 
   const validateInputs = () => {
     if (!uname || !pass) return 'Please fill all fields to unlock your DNA insights!';
-    if (role === 'Customer' && !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(uname)) {
+    if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(uname)) {
       return 'Please enter a valid email address';
     }
     return '';
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationError = validateInputs();
     if (validationError) {
       setError(validationError);
       return;
     }
+
     setIsLoading(true);
-    setTimeout(() => {
-      const result = { success: true, redirectUrl: '/home' };
+    setError('');
+
+    try {
+      const result = await login({
+        emailOrPhone: uname, // email hoặc phone
+        password: pass
+      });
+
       if (result.success) {
         const from = location.state?.from?.pathname || result.redirectUrl || '/home';
         navigate(from, { replace: true });
       } else {
-        setError('Login failed');
+        setError(result.message || 'Đăng nhập thất bại');
       }
+    } catch (error) {
+      setError('Có lỗi xảy ra khi đăng nhập');
+      console.error('Login error:', error);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const handleSubFormSubmit = (type) => (e) => {
-    e.preventDefault();
-    const id = e.target.querySelector('input').value;
-    if (!id) {
-      setError(`Please enter a valid ${type} ID`);
-      return;
-    }
-    setIsLoading(true);
-    setTimeout(() => {
-      setError('');
-      setTimeout(() => {
-        const result = { success: true, redirectUrl: '/home' };
-        if (result.success) {
-          const from = location.state?.from?.pathname || result.redirectUrl || '/home';
-          navigate(from, { replace: true });
-        }
-      }, 1000);
-      setIsLoading(false);
-    }, 1000);
-  };
+
 
   useEffect(() => {
     setIsVisible(true);
@@ -101,22 +91,11 @@ const Login = () => {
               {error}
             </div>
           )}
-          <div className="relative">
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="input-field glow-input"
-              aria-label="Select user role"
-            >
-              <option value="Guest">Guest</option>
-              <option value="Customer">Customer</option>
-            </select>
-            <span className="absolute left-2 top-3 text-[#4A90E2] text-xl">🧬</span>
-          </div>
+
           <div className="relative">
             <input
               type="text"
-              placeholder="Username/Email/ID"
+              placeholder="Email hoặc số điện thoại"
               value={uname}
               onChange={(e) => setUname(e.target.value)}
               className="input-field glow-input"
@@ -149,11 +128,11 @@ const Login = () => {
               className="text-[#4A90E2] hover:text-[#90caf9] transition-colors duration-300 font-medium underline"
               aria-label="Forgot Password"
             >
-              Forgot Password?
+            Forgot Password?
             </Link>
           </div>
           <button
-            ref={buttonRef}
+            ref={buttonRef} 
             type="submit"
             className="btn relative mb-4"
             disabled={!uname || !pass || isLoading}
@@ -176,37 +155,7 @@ const Login = () => {
             Register
           </Link>
         </form>
-        <div className="mt-6">
-          <button
-            onClick={() => setShowSubForm(!showSubForm)}
-            className="sub-form-toggle w-full bg-[#E6F0FA] text-[#333333] hover:bg-[#90caf9] hover:text-white transition-all duration-300 rounded-md p-2 font-semibold shadow-md"
-            aria-expanded={showSubForm}
-            aria-label="Toggle Staff, Manager, Admin login options"
-          >
-            {showSubForm ? 'Hide Staff/Manager/Admin Login' : 'Show Staff/Manager/Admin Login'}
-          </button>
-          <div className={`sub-form-container ${showSubForm ? 'open' : 'closed'} bg-white shadow-lg rounded-md p-4 mt-3 z-20`}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-              {['Staff', 'Manager', 'Admin'].map((type) => (
-                <form key={type} onSubmit={handleSubFormSubmit(type)} className="flex flex-col items-center space-y-3 w-full">
-                  <input
-                    type="text"
-                    placeholder={`${type} ID`}
-                    className="input-field w-full p-2 rounded-md border-2 border-[#bbdefb] focus:border-[#4A90E2] transition-all duration-300"
-                    aria-label={`${type} ID`}
-                  />
-                  <button
-                    type="submit"
-                    className="btn w-full py-2 rounded-md text-white bg-[#4A90E2] hover:bg-[#90caf9] transition-all duration-300"
-                    aria-label={`${type} Login`}
-                  >
-                    {type} Login
-                  </button>
-                </form>
-              ))}
-            </div>
-          </div>
-        </div>
+
       </div>
       <div className="dna-decoration absolute inset-0 z-0 opacity-0.6">
         {Array.from({ length: 7 }).map((_, i) => (
