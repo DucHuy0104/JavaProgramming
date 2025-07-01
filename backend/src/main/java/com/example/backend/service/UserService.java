@@ -1,6 +1,5 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.AuthResponseDto;
 import com.example.backend.dto.UserLoginDto;
 import com.example.backend.dto.UserRegistrationDto;
 import com.example.backend.dto.AdminUserCreationDto;

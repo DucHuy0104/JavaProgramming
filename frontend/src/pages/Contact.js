@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -15,6 +15,28 @@ function Contact() {
         subject: '',
         message: ''
     });
+
+    const [feedback, setFeedback] = useState({
+        name: '',
+        email: '',
+        message: '',
+        rating: '5',
+    });
+    const [feedbackSent, setFeedbackSent] = useState(false);
+    const [feedbackList, setFeedbackList] = useState([]);
+
+    // Load feedback từ localStorage khi mount
+    useEffect(() => {
+        const stored = localStorage.getItem('feedbackList');
+        if (stored) {
+            setFeedbackList(JSON.parse(stored));
+        }
+    }, []);
+
+    // Lưu feedbackList vào localStorage khi thay đổi
+    useEffect(() => {
+        localStorage.setItem('feedbackList', JSON.stringify(feedbackList));
+    }, [feedbackList]);
 
     const handleChange = (e) => {
         setFormData({
@@ -35,6 +57,26 @@ function Contact() {
             subject: '',
             message: ''
         });
+    };
+
+    const handleFeedbackChange = (e) => {
+        setFeedback({
+            ...feedback,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleFeedbackSubmit = (e) => {
+        e.preventDefault();
+        const newFeedback = {
+            ...feedback,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+        };
+        setFeedbackList([newFeedback, ...feedbackList]);
+        setFeedbackSent(true);
+        setFeedback({ name: '', email: '', message: '', rating: '5' });
+        setTimeout(() => setFeedbackSent(false), 3000);
     };
 
     return (
@@ -141,6 +183,100 @@ function Contact() {
                                         Gửi Tin Nhắn
                                     </Button>
                                 </Form>
+                            </Card.Body>
+                        </Card>
+
+                        {/* Feedback Form dưới form liên hệ */}
+                        <Card className="feedback-card mt-4 mb-4">
+                            <Card.Body className="p-4">
+                                <h3 className="form-title mb-4">Gửi Feedback của bạn</h3>
+                                {feedbackSent && (
+                                    <div className="alert alert-success" role="alert">
+                                        Cảm ơn bạn đã gửi feedback!
+                                    </div>
+                                )}
+                                <Form onSubmit={handleFeedbackSubmit}>
+                                    <Row>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Họ và tên *</Form.Label>
+                                                <Form.Control
+                                                    type="text"
+                                                    name="name"
+                                                    value={feedback.name}
+                                                    onChange={handleFeedbackChange}
+                                                    required
+                                                    placeholder="Nhập họ và tên"
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={6}>
+                                            <Form.Group className="mb-3">
+                                                <Form.Label>Email *</Form.Label>
+                                                <Form.Control
+                                                    type="email"
+                                                    name="email"
+                                                    value={feedback.email}
+                                                    onChange={handleFeedbackChange}
+                                                    required
+                                                    placeholder="Nhập email"
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                    <Form.Group className="mb-3">
+                                        <Form.Label>Nội dung feedback *</Form.Label>
+                                        <Form.Control
+                                            as="textarea"
+                                            rows={4}
+                                            name="message"
+                                            value={feedback.message}
+                                            onChange={handleFeedbackChange}
+                                            required
+                                            placeholder="Nhập nội dung feedback..."
+                                        />
+                                    </Form.Group>
+                                    <Form.Group className="mb-4">
+                                        <Form.Label>Đánh giá *</Form.Label>
+                                        <Form.Select
+                                            name="rating"
+                                            value={feedback.rating}
+                                            onChange={handleFeedbackChange}
+                                            required
+                                        >
+                                            <option value="5">5 sao - Tuyệt vời</option>
+                                            <option value="4">4 sao - Tốt</option>
+                                            <option value="3">3 sao - Bình thường</option>
+                                            <option value="2">2 sao - Chưa tốt</option>
+                                            <option value="1">1 sao - Rất tệ</option>
+                                        </Form.Select>
+                                    </Form.Group>
+                                    <Button type="submit" className="submit-btn" size="lg">
+                                        Gửi Feedback
+                                    </Button>
+                                </Form>
+                                {/* Hiện feedback vừa gửi */}
+                                <div className="mt-4">
+                                    <h5 className="mb-3">Feedback đã gửi (chờ duyệt)</h5>
+                                    {feedbackList.length === 0 && (
+                                        <div className="text-muted">Chưa có feedback nào.</div>
+                                    )}
+                                    {feedbackList.map((fb, idx) => (
+                                        <Card key={idx} className="mb-3 shadow-sm border-0 bg-light">
+                                            <Card.Body>
+                                                <div className="d-flex justify-content-between align-items-center mb-2">
+                                                    <div>
+                                                        <strong>{fb.name}</strong> &lt;{fb.email}&gt;
+                                                    </div>
+                                                    <span className="badge bg-warning text-dark">Chờ duyệt</span>
+                                                </div>
+                                                <div className="mb-2"><strong>Đánh giá:</strong> {Array.from({length: parseInt(fb.rating)}, (_, i) => '★').join('')} {fb.rating}/5</div>
+                                                <div className="mb-2"><strong>Nội dung:</strong> {fb.message}</div>
+                                                <div className="text-muted" style={{fontSize: '0.9rem'}}>Gửi lúc: {new Date(fb.createdAt).toLocaleString('vi-VN')}</div>
+                                            </Card.Body>
+                                        </Card>
+                                    ))}
+                                </div>
                             </Card.Body>
                         </Card>
                     </Col>
@@ -485,6 +621,13 @@ function Contact() {
                     .submit-btn {
                         width: 100%;
                     }
+                }
+
+                .feedback-card {
+                    border: none;
+                    border-radius: 20px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                    background: white;
                 }
             `}</style>
         </div>
