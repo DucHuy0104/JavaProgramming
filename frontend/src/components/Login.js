@@ -54,8 +54,6 @@ const Login = () => {
     }
   };
 
-
-
   useEffect(() => {
     setIsVisible(true);
     const savedUname = localStorage.getItem('username');

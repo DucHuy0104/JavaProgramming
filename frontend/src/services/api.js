@@ -256,8 +256,6 @@ export const settingsAPI = {
     }
   },
 
-
-
   // Lấy thông tin profile hiện tại
   getProfile: async () => {
     try {
