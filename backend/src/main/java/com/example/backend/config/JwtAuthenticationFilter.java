@@ -78,6 +78,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     System.out.println("Token validation failed for user: " + userEmail);
                 }
             }
+
+            String path = request.getServletPath();
+            if (path.equals("/api/feedback") && request.getMethod().equals("POST")) {
+                filterChain.doFilter(request, response);
+                return;
+            }
         } catch (Exception e) {
             // Log error and continue without authentication
             logger.error("JWT Authentication failed: " + e.getMessage());

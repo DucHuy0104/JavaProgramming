@@ -7,6 +7,8 @@ import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock, FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 
+const FEEDBACK_API = "http://localhost:8081/api/feedback";
+
 function Contact() {
     const [formData, setFormData] = useState({
         name: '',
@@ -24,19 +26,6 @@ function Contact() {
     });
     const [feedbackSent, setFeedbackSent] = useState(false);
     const [feedbackList, setFeedbackList] = useState([]);
-
-    // Load feedback từ localStorage khi mount
-    useEffect(() => {
-        const stored = localStorage.getItem('feedbackList');
-        if (stored) {
-            setFeedbackList(JSON.parse(stored));
-        }
-    }, []);
-
-    // Lưu feedbackList vào localStorage khi thay đổi
-    useEffect(() => {
-        localStorage.setItem('feedbackList', JSON.stringify(feedbackList));
-    }, [feedbackList]);
 
     const handleChange = (e) => {
         setFormData({
@@ -66,18 +55,48 @@ function Contact() {
         });
     };
 
-    const handleFeedbackSubmit = (e) => {
+    const handleFeedbackSubmit = async (e) => {
         e.preventDefault();
         const newFeedback = {
             ...feedback,
-            status: 'pending',
-            createdAt: new Date().toISOString(),
+            rating: parseInt(feedback.rating),
         };
-        setFeedbackList([newFeedback, ...feedbackList]);
-        setFeedbackSent(true);
-        setFeedback({ name: '', email: '', message: '', rating: '5' });
-        setTimeout(() => setFeedbackSent(false), 3000);
+        try {
+            const res = await fetch(FEEDBACK_API, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(newFeedback),
+            });
+            if (res.ok) {
+                setFeedbackSent(true);
+                setFeedback({ name: '', email: '', message: '', rating: '5' });
+                fetchFeedbackList();
+                setTimeout(() => setFeedbackSent(false), 3000);
+            } else {
+                alert("Gửi feedback thất bại!");
+            }
+        } catch (err) {
+            alert("Lỗi kết nối server!");
+        }
     };
+
+    const fetchFeedbackList = async () => {
+        try {
+            const res = await fetch(FEEDBACK_API);
+            if (res.ok) {
+                const data = await res.json();
+                setFeedbackList(data);
+            }
+        } catch (err) {
+            // Có thể log lỗi nếu cần
+        }
+    };
+
+    useEffect(() => {
+        fetchFeedbackList();
+        const interval = setInterval(fetchFeedbackList, 10000); // 10 giây
+        return () => clearInterval(interval);
+    }, []);
 
     return (
         <div className="contact-page">
@@ -255,30 +274,32 @@ function Contact() {
                                         Gửi Feedback
                                     </Button>
                                 </Form>
-                                {/* Hiện feedback vừa gửi */}
-                                <div className="mt-4">
-                                    <h5 className="mb-3">Feedback đã gửi (chờ duyệt)</h5>
-                                    {feedbackList.length === 0 && (
-                                        <div className="text-muted">Chưa có feedback nào.</div>
-                                    )}
-                                    {feedbackList.map((fb, idx) => (
-                                        <Card key={idx} className="mb-3 shadow-sm border-0 bg-light">
-                                            <Card.Body>
-                                                <div className="d-flex justify-content-between align-items-center mb-2">
-                                                    <div>
-                                                        <strong>{fb.name}</strong> &lt;{fb.email}&gt;
-                                                    </div>
-                                                    <span className="badge bg-warning text-dark">Chờ duyệt</span>
-                                                </div>
-                                                <div className="mb-2"><strong>Đánh giá:</strong> {Array.from({length: parseInt(fb.rating)}, (_, i) => '★').join('')} {fb.rating}/5</div>
-                                                <div className="mb-2"><strong>Nội dung:</strong> {fb.message}</div>
-                                                <div className="text-muted" style={{fontSize: '0.9rem'}}>Gửi lúc: {new Date(fb.createdAt).toLocaleString('vi-VN')}</div>
-                                            </Card.Body>
-                                        </Card>
-                                    ))}
-                                </div>
                             </Card.Body>
                         </Card>
+
+                        <div className="mt-4">
+                            <h5 className="mb-3">Feedback đã gửi</h5>
+                            {feedbackList.length === 0 && (
+                                <div className="text-muted">Chưa có feedback nào.</div>
+                            )}
+                            {feedbackList.map((fb, idx) => (
+                                <Card key={fb.id || idx} className="mb-3 shadow-sm border-0 bg-light">
+                                    <Card.Body>
+                                        <div className="d-flex justify-content-between align-items-center mb-2">
+                                            <div>
+                                                <strong>{fb.name}</strong> &lt;{fb.email}&gt;
+                                            </div>
+                                            <span className={`badge ${fb.status === 'approved' ? 'bg-success' : fb.status === 'pending' ? 'bg-warning text-dark' : 'bg-danger'}`}>
+                                                {fb.status === 'approved' ? 'Đã duyệt' : fb.status === 'pending' ? 'Chờ duyệt' : 'Từ chối'}
+                                            </span>
+                                        </div>
+                                        <div className="mb-2"><strong>Đánh giá:</strong> {Array.from({length: parseInt(fb.rating)}, (_, i) => '★').join('')} {fb.rating}/5</div>
+                                        <div className="mb-2"><strong>Nội dung:</strong> {fb.message}</div>
+                                        <div className="text-muted" style={{fontSize: '0.9rem'}}>Gửi lúc: {fb.createdAt ? new Date(fb.createdAt).toLocaleString('vi-VN') : ''}</div>
+                                    </Card.Body>
+                                </Card>
+                            ))}
+                        </div>
                     </Col>
 
                     {/* Contact Information */}

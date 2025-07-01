@@ -38,6 +38,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> authz
+                .requestMatchers(HttpMethod.POST, "/api/feedback").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/feedback").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/feedback/**").permitAll()
                 // Public endpoints
                 .requestMatchers("/users/register", "/users/login").permitAll()
                 .requestMatchers("/blogs", "/blogs/**").permitAll()

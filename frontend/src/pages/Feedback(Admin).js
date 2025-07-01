@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Form, Button, Table, Modal, Badge, Card } from 'react-bootstrap';
 
+const FEEDBACK_API = "http://localhost:8081/api/feedback";
+
 const generateStars = (rating) => {
   const fullStars = Math.floor(rating);
   const halfStar = rating % 1 >= 0.5;
@@ -53,28 +55,33 @@ const FeedbackAdmin = () => {
   const [selectedFeedback, setSelectedFeedback] = useState(null);
 
   // Lấy feedback từ localStorage
-  const loadFeedback = useCallback(() => {
-    const stored = localStorage.getItem('feedbackList');
-    let feedbacks = stored ? JSON.parse(stored) : [];
-    // Lọc theo search, rating, status, date
-    feedbacks = feedbacks.filter(feedback => {
-      const matchesSearch = feedback.message.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRating = ratingFilter ? parseInt(feedback.rating) === parseInt(ratingFilter) : true;
-      const matchesStatus = statusFilter ? feedback.status === statusFilter : true;
-      const matchesDate = dateFilter ? feedback.createdAt && feedback.createdAt.slice(0, 10) === dateFilter : true;
-      return matchesSearch && matchesRating && matchesStatus && matchesDate;
-    });
-    setFeedbackList(feedbacks);
-    // Tính toán thống kê
-    const total = feedbacks.length;
-    const sumRatings = feedbacks.reduce((acc, curr) => acc + parseInt(curr.rating), 0);
-    setTotalFeedback(total);
-    setAverageRating(total > 0 ? sumRatings / total : 0);
+  const loadFeedback = useCallback(async () => {
+    try {
+        const res = await fetch(FEEDBACK_API);
+        const data = await res.json();
+        // Lọc, tính toán như cũ
+        let feedbacks = data.filter(feedback => {
+            const matchesSearch = feedback.message.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesRating = ratingFilter ? parseInt(feedback.rating) === parseInt(ratingFilter) : true;
+            const matchesStatus = statusFilter ? feedback.status === statusFilter : true;
+            const matchesDate = dateFilter ? feedback.createdAt && feedback.createdAt.slice(0, 10) === dateFilter : true;
+            return matchesSearch && matchesRating && matchesStatus && matchesDate;
+        });
+        setFeedbackList(feedbacks);
+        const total = feedbacks.length;
+        const sumRatings = feedbacks.reduce((acc, curr) => acc + parseInt(curr.rating), 0);
+        setTotalFeedback(total);
+        setAverageRating(total > 0 ? sumRatings / total : 0);
+    } catch (err) {
+        alert("Không thể tải feedback từ server!");
+    }
   }, [searchQuery, ratingFilter, statusFilter, dateFilter]);
 
   useEffect(() => {
-    loadFeedback();
-  }, [loadFeedback]);
+    fetch("http://localhost:8081/api/feedback")
+      .then(res => res.json())
+      .then(data => setFeedbackList(data));
+  }, []);
 
   const handleViewDetails = (feedback) => {
     setSelectedFeedback(feedback);
@@ -86,19 +93,23 @@ const FeedbackAdmin = () => {
     setSelectedFeedback(null);
   };
 
-  const handleApproveReject = (id, status) => {
-    // Cập nhật trạng thái feedback trong localStorage
-    const stored = localStorage.getItem('feedbackList');
-    let feedbacks = stored ? JSON.parse(stored) : [];
-    feedbacks = feedbacks.map(fb =>
-      fb.createdAt === id ? { ...fb, status: status } : fb
-    );
-    localStorage.setItem('feedbackList', JSON.stringify(feedbacks));
-    loadFeedback();
-    if (selectedFeedback && selectedFeedback.createdAt === id) {
-      setSelectedFeedback(prev => ({ ...prev, status: status }));
+  const handleApproveReject = async (id, status) => {
+    try {
+        const res = await fetch(`${FEEDBACK_API}/${id}/status?status=${status}`, {
+            method: "PUT"
+        });
+        if (res.ok) {
+            loadFeedback();
+            if (selectedFeedback && selectedFeedback.id === id) {
+                setSelectedFeedback(prev => ({ ...prev, status: status }));
+            }
+            alert(`Feedback đã được ${status === 'approved' ? 'duyệt' : 'từ chối'}.`);
+        } else {
+            alert("Cập nhật trạng thái thất bại!");
+        }
+    } catch (err) {
+        alert("Lỗi kết nối server!");
     }
-    alert(`Feedback đã được ${status === 'approved' ? 'duyệt' : 'từ chối'}.`);
   };
 
   return (
@@ -191,8 +202,8 @@ const FeedbackAdmin = () => {
                 </Button>
                 {feedback.status === 'pending' && (
                   <>
-                    <Button variant="success" size="sm" className="me-2" onClick={() => handleApproveReject(feedback.createdAt, 'approved')}>Duyệt</Button>
-                    <Button variant="danger" size="sm" onClick={() => handleApproveReject(feedback.createdAt, 'rejected')}>Từ chối</Button>
+                    <Button variant="success" size="sm" className="me-2" onClick={() => handleApproveReject(feedback.id, 'approved')}>Duyệt</Button>
+                    <Button variant="danger" size="sm" onClick={() => handleApproveReject(feedback.id, 'rejected')}>Từ chối</Button>
                   </>
                 )}
               </td>
@@ -222,8 +233,8 @@ const FeedbackAdmin = () => {
               <p><strong>Trạng thái:</strong> <Badge bg={getStatusVariant(selectedFeedback.status)}>{getStatusText(selectedFeedback.status)}</Badge></p>
               {selectedFeedback.status === 'pending' && (
                 <div className="mt-3">
-                  <Button variant="success" className="me-2" onClick={() => handleApproveReject(selectedFeedback.createdAt, 'approved')}>Duyệt feedback</Button>
-                  <Button variant="danger" onClick={() => handleApproveReject(selectedFeedback.createdAt, 'rejected')}>Từ chối feedback</Button>
+                  <Button variant="success" className="me-2" onClick={() => handleApproveReject(selectedFeedback.id, 'approved')}>Duyệt feedback</Button>
+                  <Button variant="danger" onClick={() => handleApproveReject(selectedFeedback.id, 'rejected')}>Từ chối feedback</Button>
                 </div>
               )}
             </>
