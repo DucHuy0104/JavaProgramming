@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -5,10 +6,14 @@ import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import { useState } from 'react';
 import { FaHome, FaUserNurse, FaHospital, FaArrowRight, FaCheckCircle, FaClock, FaShieldAlt, FaFileAlt, FaTimes } from 'react-icons/fa';
 
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 function Services() {
+
+
+
     const [showModal, setShowModal] = useState(false);
     const [selectedService, setSelectedService] = useState(null);
     const [formData, setFormData] = useState({
@@ -104,6 +109,49 @@ function Services() {
             description: 'Đến trực tiếp cơ sở của chúng tôi để được thu mẫu bởi đội ngũ y tế chuyên nghiệp với trang thiết bị hiện đại.'
         }
     ];
+
+    const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [popupMessage, setPopupMessage] = useState('');
+  const [feedbackData, setFeedbackData] = useState([
+    { rating: 5, comment: 'Hệ thống rất dễ dùng, kết quả chính xác!', user: 'Người dùng A' },
+    { rating: 4, comment: 'Giao diện đẹp, nhưng muốn thêm biểu đồ.', user: 'Người dùng B' },
+  ]);
+
+  const closePopup = () => {
+    document.getElementById('notification-popup').classList.remove('show');
+  };
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Kết Quả Phân Tích DNA', 20, 20);
+    autoTable(doc, {
+      head: [['Mã Mẫu', 'Độ Dài Chuỗi', 'Tỷ Lệ GC (%)', 'Trạng Thái']],
+      body: [
+        ['DNA001', 1200, 45.5, 'Hoàn tất'],
+        ['DNA002', 850, 38.2, 'Đang xử lý'],
+        ['DNA003', 2000, 50.1, 'Hoàn tất'],
+      ],
+      startY: 30,
+      styles: { fillColor: [240, 248, 255] },
+      headStyles: { fillColor: [30, 144, 255] },
+    });
+    doc.save('ket_qua_dna.pdf');
+    setPopupMessage('Đã tải kết quả thành công!');
+    document.getElementById('notification-popup').classList.add('show');
+  };
+
+  const handleFeedbackSubmit = (e) => {
+    e.preventDefault();
+    if (rating === 0) return;
+    const newFeedback = { rating, comment, user: `Người dùng ${feedbackData.length + 1}` };
+    setFeedbackData([...feedbackData, newFeedback]);
+    setPopupMessage(`Phản hồi đã gửi! Đánh giá: ${rating} sao`);
+    document.getElementById('notification-popup').classList.add('show');
+    setRating(0);
+    setComment('');
+  };
 
     return (
         <div className="services-page">
@@ -467,6 +515,189 @@ function Services() {
                 </Container>
             </section>
 
+                                    {/* Results and Feedback Section */}
+            <section className="results-feedback-section bg-white py-8">
+              <Container>
+                <div className="section-header text-center mb-6">
+                  <h2 className="section-title">Kết Quả & Phản Hồi</h2>
+                  <p className="section-description">
+                    Xem kết quả phân tích DNA và chia sẻ ý kiến của bạn
+                  </p>
+                </div>
+
+                {/* Results Section */}
+                <Row className="mb-6">
+                  <Col>
+                    <Card className="service-card shadow-sm">
+                      <Card.Body>
+                        <Card.Title as="h3" className="mb-4 text-primary">
+                          Kết Quả Phân Tích
+                        </Card.Title>
+                        <div className="overflow-x-auto">
+                          <table className="w-full border-collapse">
+                            <thead>
+                              <tr className="bg-light">
+                                <th className="border p-2 text-left">Mã Mẫu</th>
+                                <th className="border p-2 text-left">Độ Dài Chuỗi</th>
+                                <th className="border p-2 text-left">Tỷ Lệ GC (%)</th>
+                                <th className="border p-2 text-left">Trạng Thái</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {[
+                                { id: 'DNA001', length: 1200, gcContent: 45.5, status: 'Hoàn tất' },
+                                { id: 'DNA002', length: 850, gcContent: 38.2, status: 'Đang xử lý' },
+                                { id: 'DNA003', length: 2000, gcContent: 50.1, status: 'Hoàn tất' },
+                              ].map((data, index) => (
+                                <tr key={index}>
+                                  <td className="border p-2">{data.id}</td>
+                                  <td className="border p-2">{data.length}</td>
+                                  <td className="border p-2">{data.gcContent}</td>
+                                  <td className="border p-2">{data.status}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <Button
+                          variant="primary"
+                          className="mt-4"
+                          onClick={() => {
+                            const { jsPDF } = window.jspdf;
+                            const doc = new jsPDF();
+                            doc.setFontSize(16);
+                            doc.text('Kết Quả Phân Tích DNA', 20, 20);
+                            autoTable(doc, {
+                              head: [['Mã Mẫu', 'Độ Dài Chuỗi', 'Tỷ Lệ GC (%)', 'Trạng Thái']],
+                              body: [
+                                ['DNA001', 1200, 45.5, 'Hoàn tất'],
+                                ['DNA002', 850, 38.2, 'Đang xử lý'],
+                                ['DNA003', 2000, 50.1, 'Hoàn tất'],
+                              ],
+                              startY: 30,
+                              styles: { fillColor: [240, 248, 255] },
+                              headStyles: { fillColor: [30, 144, 255] },
+                            });
+                            doc.save('ket_qua_dna.pdf');
+                          }}
+                        >
+                          Tải Kết Quả (PDF)
+                        </Button>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* Feedback Section */}
+                <Row>
+                  <Col>
+                    <Card className="service-card shadow-sm">
+                      <Card.Body>
+                        <Card.Title as="h3" className="mb-4 text-primary">
+                          Gửi Phản Hồi
+                        </Card.Title>
+                        <form onSubmit={(e) => {
+                          e.preventDefault();
+                          if (rating === 0) return;
+                          setFeedbackData([...feedbackData, { rating, comment, user: `Người dùng ${feedbackData.length + 1}` }]);
+                          setPopupMessage(`Phản hồi đã gửi! Đánh giá: ${rating} sao`);
+                          document.getElementById('notification-popup').classList.add('show');
+                          setRating(0);
+                          setComment('');
+                        }}>
+                          <div className="mb-4">
+                            <label className="form-label">Đánh Giá</label>
+                            <div className="d-flex flex-row-reverse justify-content-end">
+                              {[5, 4, 3, 2, 1].map((star) => (
+                                <React.Fragment key={star}>
+                                  <input
+                                    type="radio"
+                                    id={`star${star}`}
+                                    name="rating"
+                                    value={star}
+                                    checked={rating === star}
+                                    onChange={() => setRating(star)}
+                                    className="visually-hidden"
+                                    required
+                                  />
+                                  <label
+                                    htmlFor={`star${star}`}
+                                    className={`cursor-pointer text-2xl ${rating >= star ? 'text-primary' : 'text-secondary'}`}
+                                    style={{ marginLeft: '-0.5rem' }}
+                                  >
+                                    ★
+                                  </label>
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="mb-4">
+                            <label htmlFor="comment" className="form-label">Bình Luận</label>
+                            <textarea
+                              id="comment"
+                              value={comment}
+                              onChange={(e) => setComment(e.target.value)}
+                              rows="4"
+                              className="form-control"
+                              placeholder="Ý kiến của bạn..."
+                              required
+                            ></textarea>
+                          </div>
+                          <Button variant="primary" type="submit">
+                            Gửi Phản Hồi
+                          </Button>
+                        </form>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+
+                {/* Feedback List */}
+                <Row className="mt-6">
+                  <Col>
+                    <Card className="service-card shadow-sm">
+                      <Card.Body>
+                        <Card.Title as="h3" className="mb-4 text-primary">
+                          Phản Hồi Công Khai
+                        </Card.Title>
+                        <div>
+                          {[
+                            { rating: 5, comment: 'Hệ thống rất dễ dùng, kết quả chính xác!', user: 'Người dùng A' },
+                            { rating: 4, comment: 'Giao diện đẹp, nhưng muốn thêm biểu đồ.', user: 'Người dùng B' },
+                          ].map((data, index) => (
+                            <div key={index} className="border-bottom py-3">
+                              <div className="d-flex align-items-center mb-2">
+                                <span className="text-primary">
+                                  {Array(data.rating).fill('★').join('')}{Array(5 - data.rating).fill('☆').join('')}
+                                </span>
+                                <span className="ms-2 text-muted small">bởi {data.user}</span>
+                              </div>
+                              <p className="text-gray-700">{data.comment}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                </Row>
+              </Container>
+            </section>
+
+            {/* Notification Pop-up */}
+            <div
+              id="notification-popup"
+              className="popup fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-4 rounded-lg shadow-lg z-50 d-none"
+              style={{ animation: 'fadeIn 0.3s ease-in' }}
+            >
+              <p id="popup-message" className="text-gray-700">{popupMessage}</p>
+              <Button variant="primary" className="mt-4" onClick={closePopup}>
+                Đóng
+              </Button>
+            </div>
+
+
+
+
             {/* CTA Section */}
             <section className="cta-section py-5 bg-primary text-white">
                 <Container>
@@ -486,6 +717,8 @@ function Services() {
                     </Row>
                 </Container>
             </section>
+
+                
 
             <style jsx>{`
                 .services-page {
@@ -620,4 +853,5 @@ function Services() {
     );
 }
 
-export default Services; 
+export default Services;
+
