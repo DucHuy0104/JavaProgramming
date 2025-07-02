@@ -224,6 +224,33 @@ public class ServiceController {
         }
     }
 
+    // Kích hoạt lại dịch vụ (Admin only) - Temporary public for testing
+    @PutMapping("/{id}/reactivate")
+    public ResponseEntity<?> reactivateService(@PathVariable Long id) {
+        try {
+            ServiceDto reactivatedService = serviceService.reactivateService(id);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Kích hoạt lại dịch vụ thành công");
+            response.put("data", reactivatedService);
+
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Lỗi khi kích hoạt lại dịch vụ: " + e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
     // Xóa dịch vụ vĩnh viễn (hard delete - Admin only) - Temporary public for testing
     @DeleteMapping("/{id}/permanent")
     public ResponseEntity<?> hardDeleteService(@PathVariable Long id) {

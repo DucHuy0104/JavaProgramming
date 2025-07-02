@@ -120,6 +120,16 @@ public class ServiceService {
         serviceRepository.save(service);
     }
 
+    // Kích hoạt lại dịch vụ (Admin only)
+    public ServiceDto reactivateService(Long id) {
+        Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy dịch vụ với ID: " + id));
+
+        service.setIsActive(true);
+        Service reactivatedService = serviceRepository.save(service);
+        return convertToDto(reactivatedService);
+    }
+
     // Xóa dịch vụ vĩnh viễn (hard delete - Admin only)
     public void hardDeleteService(Long id) {
         Service service = serviceRepository.findById(id)

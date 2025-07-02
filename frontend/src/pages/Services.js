@@ -7,15 +7,21 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { FaHome, FaUserNurse, FaHospital, FaArrowRight, FaCheckCircle, FaClock, FaShieldAlt, FaFileAlt, FaTimes } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { createOrder } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 function Services() {
+    const { user, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
+
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedService, setSelectedService] = useState(null);
     const [formData, setFormData] = useState({
         fullName: '',
@@ -146,8 +152,21 @@ function Services() {
     };
 
     const handleServiceSelect = (service) => {
+        // Kiểm tra đăng nhập trước khi cho phép đặt dịch vụ
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+            return;
+        }
+
         setSelectedService(service);
-        setFormData(prev => ({ ...prev, serviceType: service.title }));
+        setFormData(prev => ({
+            ...prev,
+            serviceType: service.title,
+            // Pre-fill user info if available
+            fullName: user?.fullName || '',
+            email: user?.email || '',
+            phone: user?.phoneNumber || user?.phone || ''
+        }));
         setShowModal(true);
     };
 
@@ -490,6 +509,36 @@ function Services() {
                     <Button variant="primary" onClick={handleSubmit}>
                         <FaFileAlt className="me-2" />
                         Gửi yêu cầu
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Login Required Modal */}
+            <Modal show={showLoginModal} onHide={() => setShowLoginModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Yêu cầu đăng nhập</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center py-4">
+                    <div className="mb-3">
+                        <FaShieldAlt size={48} className="text-primary mb-3" />
+                        <h5>Bạn cần đăng nhập để đặt dịch vụ</h5>
+                        <p className="text-muted">
+                            Để đảm bảo an toàn và theo dõi đơn hàng, vui lòng đăng nhập trước khi đặt dịch vụ.
+                        </p>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center">
+                    <Button variant="secondary" onClick={() => setShowLoginModal(false)}>
+                        Hủy
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={() => {
+                            setShowLoginModal(false);
+                            navigate('/login', { state: { from: { pathname: '/services' } } });
+                        }}
+                    >
+                        Đăng nhập ngay
                     </Button>
                 </Modal.Footer>
             </Modal>
