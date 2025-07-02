@@ -70,6 +70,10 @@ public class SecurityConfig {
                 // Admin and Manager endpoints (MUST BE AFTER specific /users/profile rules)
                 .requestMatchers("/users", "/users/**").hasAnyRole("ADMIN", "MANAGER")
 
+                // Orders endpoints
+                .requestMatchers(HttpMethod.GET, "/api/orders").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
+
                 // All other requests need authentication
                 .anyRequest().authenticated()
             )

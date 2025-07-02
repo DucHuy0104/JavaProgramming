@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Container, Row, Col, Badge } from 'react-bootstrap';
+import { fetchOrders } from '../services/api';
 
 const OrdersAdmin = () => {
   const [orders, setOrders] = useState([]);
@@ -14,13 +15,8 @@ const OrdersAdmin = () => {
 
   const loadOrders = async () => {
     try {
-      // TODO: Thay thế bằng API call thực tế
-      // const response = await fetch('/api/orders');
-      // const data = await response.json();
-      // setOrders(data);
-      
-      // Dữ liệu trống - chờ kết nối API
-      setOrders([]);
+      const data = await fetchOrders();
+      setOrders(data);
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu:', error);
     }
@@ -146,6 +142,7 @@ const OrdersAdmin = () => {
             <th>Loại đơn</th>
             <th>Trạng thái</th>
             <th>Thanh toán</th>
+            <th>Ghi chú</th>
             <th>Hành động</th>
           </tr>
         </thead>
@@ -160,6 +157,7 @@ const OrdersAdmin = () => {
               <td>{order.orderType === 'self_submission' ? 'Tự gửi mẫu' : 'Tại CSYT'}</td>
               <td>{getStatusBadge(order.status)}</td>
               <td>{getPaymentStatusBadge(order.paymentStatus)}</td>
+              <td>{order.notes}</td>
               <td>
                 <Button
                   variant="outline-primary"
@@ -243,6 +241,7 @@ const OrdersAdmin = () => {
                   <p><strong>Dịch vụ:</strong> {selectedOrder.serviceName}</p>
                   <p><strong>Ngày đặt:</strong> {formatDate(selectedOrder.orderDate)}</p>
                   <p><strong>Loại đơn:</strong> {selectedOrder.orderType === 'self_submission' ? 'Tự gửi mẫu' : 'Tại CSYT'}</p>
+                  <p><strong>Ghi chú:</strong> {selectedOrder.notes}</p>
                 </Col>
                 <Col md={6}>
                   <h5>Trạng thái</h5>

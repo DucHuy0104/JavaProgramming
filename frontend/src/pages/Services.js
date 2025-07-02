@@ -10,6 +10,8 @@ import { FaHome, FaUserNurse, FaHospital, FaArrowRight, FaCheckCircle, FaClock, 
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { createOrder } from '../services/api';
+
 function Services() {
 
 
@@ -56,12 +58,25 @@ function Services() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Xử lý gửi form đặt dịch vụ
-        console.log('Form data:', formData);
-        alert('Yêu cầu đặt dịch vụ đã được gửi thành công! Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.');
-        handleCloseModal();
+        try {
+            await createOrder({
+                ...formData,
+                orderDate: new Date().toISOString(),
+                status: 'pending_registration',
+                paymentStatus: 'pending',
+                orderType: selectedService && selectedService.id === 1 ? 'self_submission' : 'in_clinic',
+                totalAmount: selectedService ? Number(selectedService.price.replace(/[^\d]/g, '')) : 0,
+                serviceName: selectedService ? selectedService.title : '',
+                customerName: formData.fullName,
+                notes: formData.notes
+            });
+            alert('Yêu cầu đặt dịch vụ đã được gửi thành công! Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.');
+            handleCloseModal();
+        } catch (error) {
+            alert('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại!');
+        }
     };
 
     const services = [
