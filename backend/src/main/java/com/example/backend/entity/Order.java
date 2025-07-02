@@ -14,10 +14,11 @@ public class Order {
     private String orderNumber;
     private String customerName;
     private String serviceName;
+    private String serviceCategory; // DNA_HOME, DNA_PROFESSIONAL, DNA_FACILITY
     @Column(name = "order_date")
     private LocalDateTime orderDate;
     private Double totalAmount;
-    private String orderType; // self_submission, in_clinic
+    private String orderType; // self_submission, home_collection, in_clinic
     private String status; // pending, processing, completed, cancelled, ...
     private String paymentStatus; // pending, paid, refunded, failed
     private String address;
@@ -37,6 +38,9 @@ public class Order {
 
     public String getServiceName() { return serviceName; }
     public void setServiceName(String serviceName) { this.serviceName = serviceName; }
+
+    public String getServiceCategory() { return serviceCategory; }
+    public void setServiceCategory(String serviceCategory) { this.serviceCategory = serviceCategory; }
 
     public LocalDateTime getOrderDate() { return orderDate; }
     public void setOrderDate(LocalDateTime orderDate) { this.orderDate = orderDate; }

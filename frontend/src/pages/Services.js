@@ -177,14 +177,39 @@ function Services() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            // Debug log
+            console.log('Selected Service:', selectedService);
+            console.log('Selected Service Category:', selectedService?.category);
+
+            // Xác định orderType dựa trên category của service
+            let orderType = 'in_clinic'; // default
+            if (selectedService) {
+                switch (selectedService.category) {
+                    case 'DNA_HOME':
+                        orderType = 'self_submission';
+                        break;
+                    case 'DNA_PROFESSIONAL':
+                        orderType = 'home_collection';
+                        break;
+                    case 'DNA_FACILITY':
+                        orderType = 'in_clinic';
+                        break;
+                    default:
+                        orderType = 'in_clinic';
+                }
+            }
+
+            console.log('Determined orderType:', orderType);
+
             await createOrder({
                 ...formData,
                 orderDate: new Date().toISOString(),
                 status: 'pending_registration',
                 paymentStatus: 'pending',
-                orderType: selectedService && selectedService.id === 1 ? 'self_submission' : 'in_clinic',
-                totalAmount: selectedService ? Number(selectedService.price.replace(/[^\d]/g, '')) : 0,
-                serviceName: selectedService ? selectedService.title : '',
+                orderType: orderType,
+                totalAmount: selectedService ? selectedService.price : 0,
+                serviceName: selectedService ? selectedService.name : '',
+                serviceCategory: selectedService ? selectedService.category : '',
                 customerName: formData.fullName,
                 notes: formData.notes
             });

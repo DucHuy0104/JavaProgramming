@@ -76,6 +76,19 @@ const OrdersAdmin = () => {
     }).format(price);
   };
 
+  const getOrderTypeText = (orderType) => {
+    switch (orderType) {
+      case 'self_submission':
+        return 'Tự lấy mẫu tại nhà';
+      case 'home_collection':
+        return 'Nhân viên thu mẫu tại nhà';
+      case 'in_clinic':
+        return 'Thu mẫu tại cơ sở';
+      default:
+        return orderType || 'Chưa xác định';
+    }
+  };
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       pending: { bg: 'warning', text: 'Chờ xử lý' },
@@ -154,7 +167,7 @@ const OrdersAdmin = () => {
               <td>{order.serviceName}</td>
               <td>{formatDate(order.orderDate)}</td>
               <td>{formatPrice(order.totalAmount)}</td>
-              <td>{order.orderType === 'self_submission' ? 'Tự gửi mẫu' : 'Tại CSYT'}</td>
+              <td>{getOrderTypeText(order.orderType)}</td>
               <td>{getStatusBadge(order.status)}</td>
               <td>{getPaymentStatusBadge(order.paymentStatus)}</td>
               <td>{order.notes}</td>
@@ -240,7 +253,7 @@ const OrdersAdmin = () => {
                   <p><strong>Khách hàng:</strong> {selectedOrder.customerName}</p>
                   <p><strong>Dịch vụ:</strong> {selectedOrder.serviceName}</p>
                   <p><strong>Ngày đặt:</strong> {formatDate(selectedOrder.orderDate)}</p>
-                  <p><strong>Loại đơn:</strong> {selectedOrder.orderType === 'self_submission' ? 'Tự gửi mẫu' : 'Tại CSYT'}</p>
+                  <p><strong>Loại đơn:</strong> {getOrderTypeText(selectedOrder.orderType)}</p>
                   <p><strong>Ghi chú:</strong> {selectedOrder.notes}</p>
                 </Col>
                 <Col md={6}>
