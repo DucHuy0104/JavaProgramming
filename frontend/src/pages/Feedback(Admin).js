@@ -95,20 +95,37 @@ const FeedbackAdmin = () => {
 
   const handleApproveReject = async (id, status) => {
     try {
-        const res = await fetch(`${FEEDBACK_API}/${id}/status?status=${status}`, {
-            method: "PUT"
+      if (status === 'rejected') {
+        // Xóa feedback vĩnh viễn
+        const res = await fetch(`${FEEDBACK_API}/${id}`, {
+          method: "DELETE"
         });
         if (res.ok) {
-            loadFeedback();
-            if (selectedFeedback && selectedFeedback.id === id) {
-                setSelectedFeedback(prev => ({ ...prev, status: status }));
-            }
-            alert(`Feedback đã được ${status === 'approved' ? 'duyệt' : 'từ chối'}.`);
+          loadFeedback();
+          if (selectedFeedback && selectedFeedback.id === id) {
+            setSelectedFeedback(null);
+            setShowModal(false);
+          }
+          alert("Feedback đã bị từ chối và xóa vĩnh viễn.");
         } else {
-            alert("Cập nhật trạng thái thất bại!");
+          alert("Xóa feedback thất bại!");
         }
+      } else {
+        const res = await fetch(`${FEEDBACK_API}/${id}/status?status=${status}`, {
+          method: "PUT"
+        });
+        if (res.ok) {
+          loadFeedback();
+          if (selectedFeedback && selectedFeedback.id === id) {
+            setSelectedFeedback(prev => ({ ...prev, status: status }));
+          }
+          alert("Feedback đã được duyệt.");
+        } else {
+          alert("Cập nhật trạng thái thất bại!");
+        }
+      }
     } catch (err) {
-        alert("Lỗi kết nối server!");
+      alert("Lỗi kết nối server!");
     }
   };
 

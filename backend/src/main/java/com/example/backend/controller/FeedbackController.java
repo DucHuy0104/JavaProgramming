@@ -28,8 +28,17 @@ public class FeedbackController {
         return feedbackService.getAllFeedback();
     }
 
+    @DeleteMapping("/{id}")
+    public void deleteFeedback(@PathVariable Long id) {
+        feedbackService.deleteFeedback(id);
+    }
+
     @PutMapping("/{id}/status")
     public Optional<Feedback> updateStatus(@PathVariable Long id, @RequestParam String status) {
+        if ("rejected".equals(status)) {
+            feedbackService.deleteFeedback(id);
+            return Optional.empty();
+        }
         return feedbackService.updateStatus(id, status);
     }
 }

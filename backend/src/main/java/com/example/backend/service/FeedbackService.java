@@ -29,4 +29,8 @@ public class FeedbackService {
         });
         return feedbackOpt;
     }
+
+    public void deleteFeedback(Long id) {
+        feedbackRepository.deleteById(id);
+    }
 }

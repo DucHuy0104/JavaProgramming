@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/feedback").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/feedback").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/feedback/**").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/api/feedback/**").permitAll()
                 // Public endpoints
                 .requestMatchers("/api/users/login", "/api/users/register").permitAll()
                 .requestMatchers("/blogs", "/blogs/**").permitAll()
