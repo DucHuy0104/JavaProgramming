@@ -72,6 +72,7 @@ function Contact() {
                 setFeedback({ name: '', email: '', message: '', rating: '5' });
                 fetchFeedbackList();
                 setTimeout(() => setFeedbackSent(false), 3000);
+                alert("Feedback đã được gửi thành công! Feedback sẽ được hiển thị sau khi được duyệt.");
             } else {
                 alert("Gửi feedback thất bại!");
             }
@@ -85,7 +86,9 @@ function Contact() {
             const res = await fetch(FEEDBACK_API);
             if (res.ok) {
                 const data = await res.json();
-                setFeedbackList(data);
+                // Chỉ hiển thị feedback đã được duyệt
+                const approvedFeedback = data.filter(fb => fb.status === 'approved');
+                setFeedbackList(approvedFeedback);
             }
         } catch (err) {
             // Có thể log lỗi nếu cần
@@ -285,13 +288,8 @@ function Contact() {
                             {feedbackList.map((fb, idx) => (
                                 <Card key={fb.id || idx} className="mb-3 shadow-sm border-0 bg-light">
                                     <Card.Body>
-                                        <div className="d-flex justify-content-between align-items-center mb-2">
-                                            <div>
-                                                <strong>{fb.name}</strong> &lt;{fb.email}&gt;
-                                            </div>
-                                            <span className={`badge ${fb.status === 'approved' ? 'bg-success' : fb.status === 'pending' ? 'bg-warning text-dark' : 'bg-danger'}`}>
-                                                {fb.status === 'approved' ? 'Đã duyệt' : fb.status === 'pending' ? 'Chờ duyệt' : 'Từ chối'}
-                                            </span>
+                                        <div className="mb-2">
+                                            <strong>{fb.name}</strong> &lt;{fb.email}&gt;
                                         </div>
                                         <div className="mb-2"><strong>Đánh giá:</strong> {Array.from({length: parseInt(fb.rating)}, (_, i) => '★').join('')} {fb.rating}/5</div>
                                         <div className="mb-2"><strong>Nội dung:</strong> {fb.message}</div>

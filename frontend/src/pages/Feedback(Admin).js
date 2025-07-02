@@ -94,38 +94,89 @@ const FeedbackAdmin = () => {
   };
 
   const handleApproveReject = async (id, status) => {
+    // Xác nhận trước khi từ chối (vì sẽ xóa luôn)
+    if (status === 'rejected') {
+        if (!window.confirm("Bạn có chắc chắn muốn từ chối feedback này không? Feedback sẽ bị xóa vĩnh viễn khỏi hệ thống.")) {
+            return;
+        }
+    }
+
     try {
-      if (status === 'rejected') {
-        // Xóa feedback vĩnh viễn
-        const res = await fetch(`${FEEDBACK_API}/${id}`, {
-          method: "DELETE"
-        });
-        if (res.ok) {
-          loadFeedback();
-          if (selectedFeedback && selectedFeedback.id === id) {
-            setSelectedFeedback(null);
-            setShowModal(false);
-          }
-          alert("Feedback đã bị từ chối và xóa vĩnh viễn.");
-        } else {
-          alert("Xóa feedback thất bại!");
-        }
-      } else {
         const res = await fetch(`${FEEDBACK_API}/${id}/status?status=${status}`, {
-          method: "PUT"
+            method: "PUT"
         });
+
         if (res.ok) {
-          loadFeedback();
-          if (selectedFeedback && selectedFeedback.id === id) {
-            setSelectedFeedback(prev => ({ ...prev, status: status }));
-          }
-          alert("Feedback đã được duyệt.");
+            const result = await res.json();
+            loadFeedback();
+
+            if (selectedFeedback && selectedFeedback.id === id) {
+                if (status === 'rejected') {
+                    // Đóng modal nếu feedback bị xóa
+                    handleCloseModal();
+                } else {
+                    setSelectedFeedback(prev => ({ ...prev, status: status }));
+                }
+            }
+
+            if (result.deleted) {
+                alert("Feedback đã được từ chối và xóa khỏi hệ thống.");
+            } else {
+                alert(`Feedback đã được ${status === 'approved' ? 'duyệt' : 'từ chối'}.`);
+            }
         } else {
-          alert("Cập nhật trạng thái thất bại!");
+            const errorResult = await res.json();
+            alert(errorResult.message || "Cập nhật trạng thái thất bại!");
         }
-      }
     } catch (err) {
-      alert("Lỗi kết nối server!");
+        alert("Lỗi kết nối server!");
+    }
+  };
+
+  const handleRejectAndDelete = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn từ chối và xóa feedback này không? Hành động này không thể hoàn tác.")) {
+        try {
+            const res = await fetch(`${FEEDBACK_API}/${id}/reject`, {
+                method: "DELETE"
+            });
+            if (res.ok) {
+                loadFeedback();
+                if (selectedFeedback && selectedFeedback.id === id) {
+                    handleCloseModal();
+                }
+                alert("Feedback đã được từ chối và xóa thành công.");
+            } else {
+                alert("Xóa feedback thất bại!");
+            }
+        } catch (err) {
+            alert("Lỗi kết nối server!");
+        }
+    }
+  };
+
+  const handleDeleteFeedback = async (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa feedback này không? Hành động này không thể hoàn tác.")) {
+        try {
+            const res = await fetch(`${FEEDBACK_API}/${id}`, {
+                method: "DELETE"
+            });
+
+            if (res.ok) {
+                const result = await res.json();
+                loadFeedback();
+                if (selectedFeedback && selectedFeedback.id === id) {
+                    handleCloseModal();
+                }
+                alert(result.message || "Feedback đã được xóa thành công.");
+            } else {
+                const errorResult = await res.json().catch(() => ({}));
+                console.error("Delete error:", res.status, errorResult);
+                alert(errorResult.message || `Xóa feedback thất bại! (Lỗi ${res.status})`);
+            }
+        } catch (err) {
+            console.error("Network error:", err);
+            alert("Lỗi kết nối server! Vui lòng kiểm tra kết nối mạng.");
+        }
     }
   };
 
@@ -220,8 +271,12 @@ const FeedbackAdmin = () => {
                 {feedback.status === 'pending' && (
                   <>
                     <Button variant="success" size="sm" className="me-2" onClick={() => handleApproveReject(feedback.id, 'approved')}>Duyệt</Button>
-                    <Button variant="danger" size="sm" onClick={() => handleApproveReject(feedback.id, 'rejected')}>Từ chối</Button>
+                    <Button variant="danger" size="sm" className="me-2" onClick={() => handleApproveReject(feedback.id, 'rejected')}>Từ chối & Xóa</Button>
+                    <Button variant="outline-danger" size="sm" onClick={() => handleDeleteFeedback(feedback.id)}>Xóa</Button>
                   </>
+                )}
+                {feedback.status !== 'pending' && (
+                  <Button variant="outline-danger" size="sm" onClick={() => handleDeleteFeedback(feedback.id)}>Xóa</Button>
                 )}
               </td>
             </tr>
@@ -251,7 +306,13 @@ const FeedbackAdmin = () => {
               {selectedFeedback.status === 'pending' && (
                 <div className="mt-3">
                   <Button variant="success" className="me-2" onClick={() => handleApproveReject(selectedFeedback.id, 'approved')}>Duyệt feedback</Button>
-                  <Button variant="danger" onClick={() => handleApproveReject(selectedFeedback.id, 'rejected')}>Từ chối feedback</Button>
+                  <Button variant="danger" className="me-2" onClick={() => handleApproveReject(selectedFeedback.id, 'rejected')}>Từ chối & Xóa feedback</Button>
+                  <Button variant="outline-danger" onClick={() => handleDeleteFeedback(selectedFeedback.id)}>Xóa feedback</Button>
+                </div>
+              )}
+              {selectedFeedback.status !== 'pending' && (
+                <div className="mt-3">
+                  <Button variant="outline-danger" onClick={() => handleDeleteFeedback(selectedFeedback.id)}>Xóa feedback</Button>
                 </div>
               )}
             </>

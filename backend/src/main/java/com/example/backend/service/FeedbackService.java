@@ -24,13 +24,35 @@ public class FeedbackService {
     public Optional<Feedback> updateStatus(Long id, String status) {
         Optional<Feedback> feedbackOpt = feedbackRepository.findById(id);
         feedbackOpt.ifPresent(fb -> {
-            fb.setStatus(status);
-            feedbackRepository.save(fb);
+            if ("rejected".equals(status)) {
+                // Tự động xóa feedback khi từ chối
+                feedbackRepository.delete(fb);
+            } else {
+                // Chỉ cập nhật status cho approved
+                fb.setStatus(status);
+                feedbackRepository.save(fb);
+            }
         });
         return feedbackOpt;
     }
 
-    public void deleteFeedback(Long id) {
-        feedbackRepository.deleteById(id);
+    // Xóa feedback
+    public boolean deleteFeedback(Long id) {
+        Optional<Feedback> feedbackOpt = feedbackRepository.findById(id);
+        if (feedbackOpt.isPresent()) {
+            feedbackRepository.delete(feedbackOpt.get());
+            return true;
+        }
+        return false;
+    }
+
+    // Từ chối và xóa feedback
+    public boolean rejectAndDeleteFeedback(Long id) {
+        Optional<Feedback> feedbackOpt = feedbackRepository.findById(id);
+        if (feedbackOpt.isPresent()) {
+            feedbackRepository.delete(feedbackOpt.get());
+            return true;
+        }
+        return false;
     }
 }
