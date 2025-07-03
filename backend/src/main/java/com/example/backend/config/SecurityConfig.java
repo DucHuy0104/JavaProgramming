@@ -41,9 +41,12 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/feedback").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/feedback").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/api/feedback/**").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/api/feedback/**").permitAll()
                 // Public endpoints
-                .requestMatchers("/api/users/login", "/api/users/register").permitAll()
+                .requestMatchers("/api/users/register", "/api/users/login").permitAll()
+                .requestMatchers("/users/register", "/users/login").permitAll()
                 .requestMatchers("/blogs", "/blogs/**").permitAll()
+                .requestMatchers("/api/services", "/api/services/**").permitAll()
                 .requestMatchers("/test", "/test/**").permitAll()
 
                 // Emergency endpoints (ONLY for development)
@@ -69,6 +72,11 @@ public class SecurityConfig {
                 // Admin and Manager endpoints (MUST BE AFTER specific /users/profile rules)
                 .requestMatchers("/users", "/users/**").hasAnyRole("ADMIN", "MANAGER")
 
+                // Orders endpoints
+                .requestMatchers(HttpMethod.GET, "/api/orders").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+                .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+
                 // All other requests need authentication
                 .anyRequest().authenticated()
             )
@@ -83,15 +91,10 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Allow specific origins
-        configuration.setAllowedOrigins(Arrays.asList(
-            "http://localhost:3000",
-            "http://localhost:3001",
-            "http://127.0.0.1:3000",
-            "http://127.0.0.1:3001"
-        ));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://127.0.0.1:3000", "http://127.0.0.1:3001", "http://127.0.0.1:3002"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(false);
+        configuration.setAllowCredentials(true);
 
         // Debug CORS
         System.out.println("CORS Configuration loaded:");

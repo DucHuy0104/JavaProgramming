@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -7,14 +7,21 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { FaHome, FaUserNurse, FaHospital, FaArrowRight, FaCheckCircle, FaClock, FaShieldAlt, FaFileAlt, FaTimes } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { createOrder } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+
 function Services() {
+    const { user, isAuthenticated } = useAuth();
+    const navigate = useNavigate();
 
-
-
+    const [services, setServices] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
     const [selectedService, setSelectedService] = useState(null);
     const [formData, setFormData] = useState({
         fullName: '',
@@ -27,9 +34,141 @@ function Services() {
         notes: ''
     });
 
+    // Fetch services from API
+    useEffect(() => {
+        fetchServices();
+        fetchApprovedFeedback();
+    }, []);
+
+    // Fetch approved feedback
+    const fetchApprovedFeedback = async () => {
+        try {
+            const response = await fetch('http://localhost:8081/api/feedback');
+            const result = await response.json();
+
+            if (result) {
+                // Chỉ lấy feedback đã được duyệt
+                const approvedFeedback = result.filter(fb => fb.status === 'approved')
+                    .map(fb => ({
+                        rating: fb.rating,
+                        comment: fb.message,
+                        user: fb.name
+                    }));
+                setFeedbackData(approvedFeedback);
+            }
+        } catch (error) {
+            console.error('Error fetching feedback:', error);
+        }
+    };
+
+    const fetchServices = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('http://localhost:8081/api/services');
+            const result = await response.json();
+
+            if (result.data) {
+                // Transform API data to match component structure
+                const transformedServices = result.data.map((service, index) => ({
+                    id: service.id,
+                    title: service.name,
+                    name: service.name, // Keep original name for order
+                    icon: getServiceIcon(service.category),
+                    color: getServiceColor(index),
+                    price: formatPrice(service.price), // Formatted price for display
+                    originalPrice: service.price, // Original numeric price for order
+                    features: service.features || getDefaultFeatures(service.category),
+                    description: service.description,
+                    featured: index === 1, // Make middle service featured
+                    durationDays: service.durationDays,
+                    category: service.category
+                }));
+                setServices(transformedServices);
+            }
+        } catch (error) {
+            console.error('Error fetching services:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Function to get icon based on category
+    const getServiceIcon = (category) => {
+        switch (category) {
+            case 'DNA_HOME':
+                return FaHome;
+            case 'DNA_PROFESSIONAL':
+                return FaUserNurse;
+            case 'DNA_FACILITY':
+                return FaHospital;
+            default:
+                return FaFileAlt;
+        }
+    };
+
+    // Function to get color based on index
+    const getServiceColor = (index) => {
+        const colors = ['#007bff', '#28a745', '#dc3545'];
+        return colors[index % colors.length];
+    };
+
+    // Function to format price
+    const formatPrice = (price) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(price);
+    };
+
+    // Function to get default features based on category
+    const getDefaultFeatures = (category) => {
+        switch (category) {
+            case 'DNA_HOME':
+                return [
+                    'Bộ kit được gửi tận nhà',
+                    'Hướng dẫn chi tiết',
+                    'Tiết kiệm thời gian',
+                    'Phù hợp mọi lứa tuổi'
+                ];
+            case 'DNA_PROFESSIONAL':
+                return [
+                    'Nhân viên chuyên nghiệp',
+                    'Thu mẫu tại nhà',
+                    'Đảm bảo chất lượng',
+                    'Hỗ trợ mọi lứa tuổi'
+                ];
+            case 'DNA_FACILITY':
+                return [
+                    'Trang thiết bị hiện đại',
+                    'Đội ngũ y tế chuyên nghiệp',
+                    'Kết quả chính xác nhất',
+                    'Chứng nhận pháp lý'
+                ];
+            default:
+                return [
+                    'Dịch vụ chuyên nghiệp',
+                    'Kết quả chính xác',
+                    'Hỗ trợ tận tình'
+                ];
+        }
+    };
+
     const handleServiceSelect = (service) => {
+        // Kiểm tra đăng nhập trước khi cho phép đặt dịch vụ
+        if (!isAuthenticated) {
+            setShowLoginModal(true);
+            return;
+        }
+
         setSelectedService(service);
-        setFormData(prev => ({ ...prev, serviceType: service.title }));
+        setFormData(prev => ({
+            ...prev,
+            serviceType: service.title,
+            // Pre-fill user info if available
+            fullName: user?.fullName || '',
+            email: user?.email || '',
+            phone: user?.phoneNumber || user?.phone || ''
+        }));
         setShowModal(true);
     };
 
@@ -56,67 +195,76 @@ function Services() {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Xử lý gửi form đặt dịch vụ
-        console.log('Form data:', formData);
-        alert('Yêu cầu đặt dịch vụ đã được gửi thành công! Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.');
-        handleCloseModal();
+        try {
+            // Check authentication
+            if (!isAuthenticated) {
+                alert('Bạn cần đăng nhập để đặt dịch vụ!');
+                return;
+            }
+
+            // Debug log
+            console.log('Selected Service:', selectedService);
+            console.log('Selected Service Category:', selectedService?.category);
+            console.log('User authenticated:', isAuthenticated);
+            console.log('User info:', user);
+
+            // Xác định orderType dựa trên category của service
+            let orderType = 'in_clinic'; // default
+            if (selectedService) {
+                switch (selectedService.category) {
+                    case 'DNA_HOME':
+                        orderType = 'self_submission';
+                        break;
+                    case 'DNA_PROFESSIONAL':
+                        orderType = 'home_collection';
+                        break;
+                    case 'DNA_FACILITY':
+                        orderType = 'in_clinic';
+                        break;
+                    default:
+                        orderType = 'in_clinic';
+                }
+            }
+
+            console.log('Determined orderType:', orderType);
+
+            const orderData = {
+                ...formData,
+                orderDate: new Date().toISOString(),
+                status: 'pending_registration',
+                paymentStatus: 'pending',
+                orderType: orderType,
+                totalAmount: selectedService ? selectedService.originalPrice : 0,
+                serviceName: selectedService ? selectedService.name : '',
+                serviceCategory: selectedService ? selectedService.category : '',
+                customerName: formData.fullName,
+                notes: formData.notes
+            };
+
+            console.log('Selected Service Details:', selectedService);
+            console.log('Service Name:', selectedService?.name);
+            console.log('Service Price:', selectedService?.price);
+            console.log('Service Category:', selectedService?.category);
+            console.log('Order data to send:', orderData);
+
+            await createOrder(orderData);
+            alert('Yêu cầu đặt dịch vụ đã được gửi thành công! Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.');
+            handleCloseModal();
+        } catch (error) {
+            console.error('Error creating order:', error);
+            console.error('Error response:', error.response?.data);
+            alert('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại!');
+        }
     };
 
-    const services = [
-        {
-            id: 1,
-            title: 'Tự lấy mẫu tại nhà',
-            icon: FaHome,
-            color: '#007bff',
-            price: '2,500,000 VNĐ',
-            features: [
-                'Bộ kit được gửi tận nhà',
-                'Hướng dẫn chi tiết',
-                'Tiết kiệm thời gian',
-                'Phù hợp mọi lứa tuổi'
-            ],
-            description: 'Bộ kit tự lấy mẫu được gửi đến nhà bạn. Bạn tự thực hiện lấy mẫu theo hướng dẫn và gửi lại cho chúng tôi để phân tích.'
-        },
-        {
-            id: 2,
-            title: 'Nhân viên thu mẫu tại nhà',
-            icon: FaUserNurse,
-            color: '#28a745',
-            price: '3,500,000 VNĐ',
-            features: [
-                'Nhân viên chuyên nghiệp',
-                'Thu mẫu tại nhà',
-                'Đảm bảo chất lượng',
-                'Hỗ trợ mọi lứa tuổi'
-            ],
-            description: 'Nhân viên chuyên nghiệp sẽ đến tận nhà để thu mẫu. Dịch vụ tiện lợi, an toàn và đảm bảo chất lượng mẫu.',
-            featured: true
-        },
-        {
-            id: 3,
-            title: 'Thu mẫu tại cơ sở',
-            icon: FaHospital,
-            color: '#dc3545',
-            price: '4,000,000 VNĐ',
-            features: [
-                'Trang thiết bị hiện đại',
-                'Đội ngũ y tế chuyên nghiệp',
-                'Kết quả chính xác nhất',
-                'Chứng nhận pháp lý'
-            ],
-            description: 'Đến trực tiếp cơ sở của chúng tôi để được thu mẫu bởi đội ngũ y tế chuyên nghiệp với trang thiết bị hiện đại.'
-        }
-    ];
+
 
     const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [popupMessage, setPopupMessage] = useState('');
-  const [feedbackData, setFeedbackData] = useState([
-    { rating: 5, comment: 'Hệ thống rất dễ dùng, kết quả chính xác!', user: 'Người dùng A' },
-    { rating: 4, comment: 'Giao diện đẹp, nhưng muốn thêm biểu đồ.', user: 'Người dùng B' },
-  ]);
+  const [feedbackData, setFeedbackData] = useState([]);
 
   const closePopup = () => {
     document.getElementById('notification-popup').classList.remove('show');
@@ -173,8 +321,16 @@ function Services() {
             {/* Services Grid */}
             <section className="services-grid py-5">
                 <Container>
-                    <Row>
-                        {services.map((service) => (
+                    {loading ? (
+                        <div className="text-center py-5">
+                            <div className="spinner-border text-primary" role="status" style={{width: '3rem', height: '3rem'}}>
+                                <span className="visually-hidden">Loading...</span>
+                            </div>
+                            <p className="mt-3 text-muted">Đang tải dịch vụ...</p>
+                        </div>
+                    ) : (
+                        <Row>
+                            {services.map((service) => (
                             <Col lg={4} md={6} sm={12} className="mb-4" key={service.id}>
                                 <Card className={`h-100 border-0 shadow-lg service-card ${service.featured ? 'featured' : ''}`}>
                                     <Card.Body className="text-center p-4">
@@ -185,17 +341,19 @@ function Services() {
                                             <service.icon size={60} color={service.color} />
                                         </div>
                                         <Card.Title className="fw-bold mb-3">{service.title}</Card.Title>
-                                        <Card.Text className="text-muted">
+                                        <Card.Text className="text-muted" style={{ whiteSpace: 'pre-line' }}>
                                             {service.description}
                                         </Card.Text>
-                                        <div className="service-features mb-3">
-                                            {service.features.map((feature, index) => (
-                                                <div className="feature-item" key={index}>
-                                                    <FaCheckCircle className="text-success me-2" />
-                                                    <span>{feature}</span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                        {service.features && service.features.length > 0 && (
+                                            <div className="service-features mb-3">
+                                                {service.features.map((feature, index) => (
+                                                    <div className="feature-item" key={index}>
+                                                        <FaCheckCircle className="text-success me-2" />
+                                                        <span>{feature}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                         <div className="service-price mb-3">
                                             <span className="price-label">Giá từ:</span>
                                             <span className="price-amount">{service.price}</span>
@@ -213,7 +371,8 @@ function Services() {
                                 </Card>
                             </Col>
                         ))}
-                    </Row>
+                        </Row>
+                    )}
                 </Container>
             </section>
 
@@ -230,7 +389,7 @@ function Services() {
                         <div className="selected-service-info mb-4 p-3 bg-light rounded">
                             <h6 className="fw-bold mb-2">Dịch vụ đã chọn:</h6>
                             <div className="d-flex align-items-center">
-                                <selectedService.icon size={30} color={selectedService.color} className="me-3" />
+                                {React.createElement(selectedService.icon, { size: 30, color: selectedService.color, className: "me-3" })}
                                 <div>
                                     <h6 className="mb-1">{selectedService.title}</h6>
                                     <p className="text-muted mb-0">Giá: {selectedService.price}</p>
@@ -374,6 +533,36 @@ function Services() {
                 </Modal.Footer>
             </Modal>
 
+            {/* Login Required Modal */}
+            <Modal show={showLoginModal} onHide={() => setShowLoginModal(false)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Yêu cầu đăng nhập</Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="text-center py-4">
+                    <div className="mb-3">
+                        <FaShieldAlt size={48} className="text-primary mb-3" />
+                        <h5>Bạn cần đăng nhập để đặt dịch vụ</h5>
+                        <p className="text-muted">
+                            Để đảm bảo an toàn và theo dõi đơn hàng, vui lòng đăng nhập trước khi đặt dịch vụ.
+                        </p>
+                    </div>
+                </Modal.Body>
+                <Modal.Footer className="justify-content-center">
+                    <Button variant="secondary" onClick={() => setShowLoginModal(false)}>
+                        Hủy
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={() => {
+                            setShowLoginModal(false);
+                            navigate('/login', { state: { from: { pathname: '/services' } } });
+                        }}
+                    >
+                        Đăng nhập ngay
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
             {/* Comparison Section */}
             <section className="comparison-section py-5 bg-light">
                 <Container>
@@ -383,85 +572,65 @@ function Services() {
                             <p className="lead text-muted">Chọn dịch vụ phù hợp nhất với nhu cầu của bạn</p>
                         </Col>
                     </Row>
-                    <Row>
-                        <Col lg={12}>
-                            <Card className="border-0 shadow-lg">
-                                <Card.Body className="p-0">
-                                    <div className="table-responsive">
-                                        <table className="table table-hover mb-0">
-                                            <thead className="table-primary">
-                                                <tr>
-                                                    <th className="text-center">Tính năng</th>
-                                                    <th className="text-center">Tự lấy mẫu tại nhà</th>
-                                                    <th className="text-center">Nhân viên thu mẫu tại nhà</th>
-                                                    <th className="text-center">Thu mẫu tại cơ sở</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td className="fw-bold">Thời gian</td>
-                                                    <td className="text-center">
-                                                        <FaClock className="text-warning me-2" />
-                                                        2-3 ngày
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <FaClock className="text-warning me-2" />
-                                                        1-2 ngày
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <FaClock className="text-warning me-2" />
-                                                        Ngay lập tức
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="fw-bold">Độ chính xác</td>
-                                                    <td className="text-center">99.5%</td>
-                                                    <td className="text-center">99.8%</td>
-                                                    <td className="text-center">99.9%</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="fw-bold">Giá cả</td>
-                                                    <td className="text-center text-success fw-bold">Thấp nhất</td>
-                                                    <td className="text-center text-warning fw-bold">Trung bình</td>
-                                                    <td className="text-center text-danger fw-bold">Cao nhất</td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="fw-bold">Tiện lợi</td>
-                                                    <td className="text-center">
-                                                        <FaCheckCircle className="text-success me-2" />
-                                                        Rất tiện lợi
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <FaCheckCircle className="text-success me-2" />
-                                                        Tiện lợi
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <FaCheckCircle className="text-success me-2" />
-                                                        Cần di chuyển
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="fw-bold">Chứng nhận pháp lý</td>
-                                                    <td className="text-center">
-                                                        <FaFileAlt className="text-info me-2" />
-                                                        Có
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <FaFileAlt className="text-info me-2" />
-                                                        Có
-                                                    </td>
-                                                    <td className="text-center">
-                                                        <FaFileAlt className="text-info me-2" />
-                                                        Có
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    </Row>
+                    {!loading && services.length > 0 && (
+                        <Row>
+                            <Col lg={12}>
+                                <Card className="border-0 shadow-lg">
+                                    <Card.Body className="p-0">
+                                        <div className="table-responsive">
+                                            <table className="table table-hover mb-0">
+                                                <thead className="table-primary">
+                                                    <tr>
+                                                        <th className="text-center">Tính năng</th>
+                                                        {services.map((service) => (
+                                                            <th key={service.id} className="text-center">
+                                                                {service.title}
+                                                            </th>
+                                                        ))}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td className="fw-bold">Giá dịch vụ</td>
+                                                        {services.map((service) => (
+                                                            <td key={service.id} className="text-center">
+                                                                <span className="fw-bold text-primary">
+                                                                    {service.price}
+                                                                </span>
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="fw-bold">Thời gian</td>
+                                                        {services.map((service) => (
+                                                            <td key={service.id} className="text-center">
+                                                                <FaClock className="text-warning me-2" />
+                                                                {service.durationDays} ngày
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="fw-bold">Độ chính xác</td>
+                                                        {services.map((service) => (
+                                                            <td key={service.id} className="text-center">99.9%</td>
+                                                        ))}
+                                                    </tr>
+                                                    <tr>
+                                                        <td className="fw-bold">Chứng nhận pháp lý</td>
+                                                        {services.map((service) => (
+                                                            <td key={service.id} className="text-center">
+                                                                <FaShieldAlt className="text-success" />
+                                                            </td>
+                                                        ))}
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </Card.Body>
+                                </Card>
+                            </Col>
+                        </Row>
+                    )}
                 </Container>
             </section>
 

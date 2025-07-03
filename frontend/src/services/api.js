@@ -256,6 +256,8 @@ export const settingsAPI = {
     }
   },
 
+
+
   // Lấy thông tin profile hiện tại
   getProfile: async () => {
     try {
@@ -266,5 +268,15 @@ export const settingsAPI = {
     }
   }
 };
+
+export async function createOrder(orderData) {
+  const response = await api.post('/orders', orderData);
+  return response.data;
+}
+
+export async function fetchOrders() {
+  const response = await api.get('/orders');
+  return response.data;
+}
 
 export default api;

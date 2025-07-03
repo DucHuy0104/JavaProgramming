@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Container, Row, Col, Badge, Card, Alert, Spinner, InputGroup} from 'react-bootstrap';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaSearch, FaFilter, FaDownload, FaCog} from 'react-icons/fa';
+import { FaPlus, FaEdit, FaEye, FaEyeSlash, FaSearch, FaFilter, FaDownload, FaCog} from 'react-icons/fa';
 
 const ServicesAdmin = () => {
   const [services, setServices] = useState([]);
@@ -31,16 +31,61 @@ const ServicesAdmin = () => {
   const loadServices = async () => {
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Dữ liệu trống - chờ kết nối API
-      setServices([]);
+      const response = await fetch('http://localhost:8081/api/services/admin/all');
+      const data = await response.json();
+
+      if (data.success) {
+        // Chuyển đổi dữ liệu từ backend sang format frontend
+        const formattedServices = data.data.map(service => ({
+          id: service.id,
+          name: service.name,
+          description: service.description,
+          price: service.price,
+          duration: service.durationDays ? `${service.durationDays} ngày` : 'Chưa xác định',
+          category: getCategoryDisplayName(service.category),
+          status: service.isActive ? 'active' : 'inactive',
+          isActive: service.isActive
+        }));
+        console.log('Formatted services:', formattedServices);
+        setServices(formattedServices);
+        showNotification('Tải dữ liệu thành công!', 'success');
+      } else {
+        throw new Error(data.message || 'Lỗi khi tải dữ liệu');
+      }
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu:', error);
-      showNotification('Có lỗi xảy ra khi tải dữ liệu', 'danger');
+      showNotification('Có lỗi xảy ra khi tải dữ liệu: ' + error.message, 'danger');
+      setServices([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Helper function để chuyển đổi category name
+  const getCategoryDisplayName = (category) => {
+    switch (category) {
+      case 'DNA_HOME':
+        return 'Tự lấy mẫu tại nhà';
+      case 'DNA_PROFESSIONAL':
+        return 'Nhân viên thu mẫu tại nhà';
+      case 'DNA_FACILITY':
+        return 'Thử mẫu tại cơ sở';
+      default:
+        return category || 'Chưa phân loại';
+    }
+  };
+
+  // Helper function để chuyển đổi ngược lại
+  const getCategoryBackendName = (displayName) => {
+    switch (displayName) {
+      case 'Tự lấy mẫu tại nhà':
+        return 'DNA_HOME';
+      case 'Nhân viên thu mẫu tại nhà':
+        return 'DNA_PROFESSIONAL';
+      case 'Thử mẫu tại cơ sở':
+        return 'DNA_FACILITY';
+      default:
+        return displayName;
     }
   };
 
@@ -64,6 +109,7 @@ const ServicesAdmin = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log('Input change:', name, value); // Debug log
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -73,34 +119,63 @@ const ServicesAdmin = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      // Chuẩn bị dữ liệu gửi lên backend
+      const serviceData = {
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        category: getCategoryBackendName(formData.category),
+        durationDays: formData.duration ? parseInt(formData.duration.replace(/\D/g, '')) : null,
+        isActive: formData.status === 'active',
+        features: [] // Có thể thêm sau
+      };
+
+      console.log('Sending data:', serviceData);
+
+      let response;
       if (selectedService) {
         // Cập nhật dịch vụ
-        setServices(services.map(service =>
-          service.id === selectedService.id
-            ? { ...service, ...formData, price: parseFloat(formData.price) }
-            : service
-        ));
-        showNotification('Dịch vụ đã được cập nhật thành công!');
+        console.log('Updating service ID:', selectedService.id);
+        response = await fetch(`http://localhost:8081/api/services/${selectedService.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(serviceData)
+        });
       } else {
         // Thêm dịch vụ mới
-        const newService = {
-          id: Math.max(...services.map(s => s.id), 0) + 1,
-          ...formData,
-          price: parseFloat(formData.price)
-        };
-        setServices([...services, newService]);
-        showNotification('Dịch vụ đã được thêm thành công!');
+        console.log('Creating new service');
+        response = await fetch('http://localhost:8081/api/services', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(serviceData)
+        });
       }
-      
-      handleCloseModal();
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        showNotification(selectedService ? 'Dịch vụ đã được cập nhật thành công!' : 'Dịch vụ đã được thêm thành công!');
+        handleCloseModal();
+        loadServices(); // Reload danh sách
+      } else {
+        throw new Error(result.message || 'Lỗi khi lưu dịch vụ');
+      }
     } catch (error) {
       console.error('Lỗi khi lưu dịch vụ:', error);
-      showNotification('Có lỗi xảy ra khi lưu dịch vụ', 'danger');
+      showNotification('Có lỗi xảy ra khi lưu dịch vụ: ' + error.message, 'danger');
     } finally {
       setIsLoading(false);
     }
@@ -119,14 +194,61 @@ const ServicesAdmin = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa dịch vụ này?')) {
+  const handleDelete = async (id) => {
+    if (window.confirm('Bạn có chắc chắn muốn vô hiệu hóa dịch vụ này? Dịch vụ sẽ không hiển thị cho khách hàng.')) {
       setIsLoading(true);
-      setTimeout(() => {
-        setServices(services.filter(service => service.id !== id));
-        showNotification('Dịch vụ đã được xóa thành công!');
+      try {
+        const response = await fetch(`http://localhost:8081/api/services/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          showNotification('Dịch vụ đã được vô hiệu hóa thành công!');
+          loadServices(); // Reload danh sách
+        } else {
+          throw new Error(result.message || 'Lỗi khi vô hiệu hóa dịch vụ');
+        }
+      } catch (error) {
+        console.error('Lỗi khi vô hiệu hóa dịch vụ:', error);
+        showNotification('Có lỗi xảy ra khi vô hiệu hóa dịch vụ: ' + error.message, 'danger');
+      } finally {
         setIsLoading(false);
-      }, 500);
+      }
+    }
+  };
+
+  const handleReactivate = async (id) => {
+    if (window.confirm('Bạn có chắc chắn muốn kích hoạt lại dịch vụ này?')) {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`http://localhost:8081/api/services/${id}/reactivate`, {
+          method: 'PUT'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          showNotification('Dịch vụ đã được kích hoạt thành công!');
+          loadServices(); // Reload danh sách
+        } else {
+          throw new Error(result.message || 'Lỗi khi kích hoạt dịch vụ');
+        }
+      } catch (error) {
+        console.error('Lỗi khi kích hoạt dịch vụ:', error);
+        showNotification('Có lỗi xảy ra khi kích hoạt dịch vụ: ' + error.message, 'danger');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -156,19 +278,7 @@ const ServicesAdmin = () => {
     });
   };
 
-  const handleToggleStatus = async (service) => {
-    try {
-      setServices(services.map(s =>
-        s.id === service.id
-          ? { ...s, status: s.status === 'active' ? 'inactive' : 'active' }
-          : s
-      ));
-      showNotification(`Dịch vụ đã được ${service.status === 'active' ? 'ngừng hoạt động' : 'kích hoạt'}!`);
-    } catch (error) {
-      console.error('Lỗi khi cập nhật trạng thái:', error);
-      showNotification('Có lỗi xảy ra khi cập nhật trạng thái', 'danger');
-    }
-  };
+
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -239,7 +349,7 @@ const ServicesAdmin = () => {
               <Form.Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                 <option value="">Tất cả trạng thái</option>
                 <option value="active">Hoạt động</option>
-                <option value="inactive">Ngừng hoạt động</option>
+                <option value="inactive">Vô hiệu hóa</option>
               </Form.Select>
             </Col>
             <Col md={3}>
@@ -300,8 +410,8 @@ const ServicesAdmin = () => {
                     </td>
                     <td>{service.duration}</td>
                     <td>
-                      <Badge bg={service.status === 'active' ? 'success' : 'danger'}>
-                        {service.status === 'active' ? 'Hoạt động' : 'Ngừng hoạt động'}
+                      <Badge bg={service.isActive ? 'success' : 'secondary'}>
+                        {service.isActive ? 'Hoạt động' : 'Vô hiệu hóa'}
                       </Badge>
                     </td>
                     <td>
@@ -314,22 +424,26 @@ const ServicesAdmin = () => {
                         >
                           <FaEdit />
                         </Button>
-                        <Button
-                          variant="outline-warning"
-                          size="sm"
-                          onClick={() => handleToggleStatus(service)}
-                          title={service.status === 'active' ? 'Ngừng hoạt động' : 'Kích hoạt'}
-                        >
-                          {service.status === 'active' ? 'Tắt' : 'Bật'}
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          onClick={() => handleDelete(service.id)}
-                          title="Xóa"
-                        >
-                          <FaTrash />
-                        </Button>
+                        {service.isActive ? (
+                          <Button
+                            variant="outline-warning"
+                            size="sm"
+                            onClick={() => handleDelete(service.id)}
+                            title="Vô hiệu hóa dịch vụ"
+                          >
+                            <FaEyeSlash />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline-success"
+                            size="sm"
+                            onClick={() => handleReactivate(service.id)}
+                            title="Kích hoạt lại dịch vụ"
+                          >
+                            <FaEye />
+                          </Button>
+                        )}
+
                       </div>
                     </td>
                   </tr>
@@ -373,14 +487,15 @@ const ServicesAdmin = () => {
 
             <Form.Group className="mb-3">
               <Form.Label>Mô tả <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
+              <textarea
+                className="form-control"
+                rows={4}
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
                 placeholder="Mô tả chi tiết về dịch vụ"
                 required
+                style={{ resize: 'vertical', minHeight: '100px' }}
               />
             </Form.Group>
 
@@ -408,11 +523,9 @@ const ServicesAdmin = () => {
                     onChange={handleInputChange}
                   >
                     <option value="">Chọn danh mục</option>
-                    <option value="ADN">ADN</option>
-                    <option value="Xét nghiệm máu">Xét nghiệm máu</option>
-                    <option value="Xét nghiệm nước tiểu">Xét nghiệm nước tiểu</option>
-                    <option value="Xét nghiệm sinh hóa">Xét nghiệm sinh hóa</option>
-                    <option value="Khác">Khác</option>
+                    <option value="Tự lấy mẫu tại nhà">Tự lấy mẫu tại nhà</option>
+                    <option value="Nhân viên thu mẫu tại nhà">Nhân viên thu mẫu tại nhà</option>
+                    <option value="Thử mẫu tại cơ sở">Thử mẫu tại cơ sở</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -441,7 +554,7 @@ const ServicesAdmin = () => {
                     required
                   >
                     <option value="active">Hoạt động</option>
-                    <option value="inactive">Ngừng hoạt động</option>
+                    <option value="inactive">Vô hiệu hóa</option>
                   </Form.Select>
                 </Form.Group>
               </Col>

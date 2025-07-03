@@ -54,6 +54,8 @@ const Login = () => {
     }
   };
 
+
+
   useEffect(() => {
     setIsVisible(true);
     const savedUname = localStorage.getItem('username');
@@ -92,12 +94,14 @@ const Login = () => {
 
           <div className="relative">
             <input
-              type="text"
-              placeholder="Email hoặc số điện thoại"
+              type="email"
+              placeholder="Email"
               value={uname}
               onChange={(e) => setUname(e.target.value)}
               className="input-field glow-input"
-              aria-label="Username or Email"
+              aria-label="Email"
+              autoComplete="email"
+              name="email"
             />
             <span className="absolute left-2 top-3 text-[#4A90E2] text-xl">🧬</span>
           </div>
@@ -109,6 +113,8 @@ const Login = () => {
               onChange={(e) => setPass(e.target.value)}
               className="input-field glow-input"
               aria-label="Password"
+              autoComplete="current-password"
+              name="password"
             />
             <span className="absolute left-2 top-3 text-[#4A90E2] text-xl">🧬</span>
           </div>
@@ -152,6 +158,7 @@ const Login = () => {
           >
             Register
           </Link>
+
         </form>
 
       </div>
