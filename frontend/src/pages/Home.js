@@ -123,7 +123,7 @@ function Home() {
                                                     {getServiceIcon(service.category)}
                                                 </div>
                                                 <Card.Title className="mb-3">{service.name}</Card.Title>
-                                                <Card.Text className="flex-grow-1 mb-3">
+                                                <Card.Text className="flex-grow-1 mb-3" style={{ whiteSpace: 'pre-line' }}>
                                                     {service.description}
                                                 </Card.Text>
 
