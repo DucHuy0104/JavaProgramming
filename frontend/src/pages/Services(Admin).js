@@ -109,6 +109,7 @@ const ServicesAdmin = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log('Input change:', name, value); // Debug log
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -486,14 +487,15 @@ const ServicesAdmin = () => {
 
             <Form.Group className="mb-3">
               <Form.Label>Mô tả <span className="text-danger">*</span></Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
+              <textarea
+                className="form-control"
+                rows={4}
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
                 placeholder="Mô tả chi tiết về dịch vụ"
                 required
+                style={{ resize: 'vertical', minHeight: '100px' }}
               />
             </Form.Group>
 

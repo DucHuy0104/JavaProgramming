@@ -74,7 +74,7 @@ public class SecurityConfig {
 
                 // Orders endpoints
                 .requestMatchers(HttpMethod.GET, "/api/orders").hasAnyRole("ADMIN", "MANAGER", "STAFF")
-                .requestMatchers(HttpMethod.POST, "/api/orders").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/orders/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
 
                 // All other requests need authentication

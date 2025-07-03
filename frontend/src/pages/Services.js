@@ -72,9 +72,11 @@ function Services() {
                 const transformedServices = result.data.map((service, index) => ({
                     id: service.id,
                     title: service.name,
+                    name: service.name, // Keep original name for order
                     icon: getServiceIcon(service.category),
                     color: getServiceColor(index),
-                    price: formatPrice(service.price),
+                    price: formatPrice(service.price), // Formatted price for display
+                    originalPrice: service.price, // Original numeric price for order
                     features: service.features || getDefaultFeatures(service.category),
                     description: service.description,
                     featured: index === 1, // Make middle service featured
@@ -196,9 +198,17 @@ function Services() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            // Check authentication
+            if (!isAuthenticated) {
+                alert('Bạn cần đăng nhập để đặt dịch vụ!');
+                return;
+            }
+
             // Debug log
             console.log('Selected Service:', selectedService);
             console.log('Selected Service Category:', selectedService?.category);
+            console.log('User authenticated:', isAuthenticated);
+            console.log('User info:', user);
 
             // Xác định orderType dựa trên category của service
             let orderType = 'in_clinic'; // default
@@ -220,21 +230,31 @@ function Services() {
 
             console.log('Determined orderType:', orderType);
 
-            await createOrder({
+            const orderData = {
                 ...formData,
                 orderDate: new Date().toISOString(),
                 status: 'pending_registration',
                 paymentStatus: 'pending',
                 orderType: orderType,
-                totalAmount: selectedService ? selectedService.price : 0,
+                totalAmount: selectedService ? selectedService.originalPrice : 0,
                 serviceName: selectedService ? selectedService.name : '',
                 serviceCategory: selectedService ? selectedService.category : '',
                 customerName: formData.fullName,
                 notes: formData.notes
-            });
+            };
+
+            console.log('Selected Service Details:', selectedService);
+            console.log('Service Name:', selectedService?.name);
+            console.log('Service Price:', selectedService?.price);
+            console.log('Service Category:', selectedService?.category);
+            console.log('Order data to send:', orderData);
+
+            await createOrder(orderData);
             alert('Yêu cầu đặt dịch vụ đã được gửi thành công! Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất.');
             handleCloseModal();
         } catch (error) {
+            console.error('Error creating order:', error);
+            console.error('Error response:', error.response?.data);
             alert('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại!');
         }
     };
@@ -321,7 +341,7 @@ function Services() {
                                             <service.icon size={60} color={service.color} />
                                         </div>
                                         <Card.Title className="fw-bold mb-3">{service.title}</Card.Title>
-                                        <Card.Text className="text-muted">
+                                        <Card.Text className="text-muted" style={{ whiteSpace: 'pre-line' }}>
                                             {service.description}
                                         </Card.Text>
                                         {service.features && service.features.length > 0 && (
@@ -369,7 +389,7 @@ function Services() {
                         <div className="selected-service-info mb-4 p-3 bg-light rounded">
                             <h6 className="fw-bold mb-2">Dịch vụ đã chọn:</h6>
                             <div className="d-flex align-items-center">
-                                <selectedService.icon size={30} color={selectedService.color} className="me-3" />
+                                {React.createElement(selectedService.icon, { size: 30, color: selectedService.color, className: "me-3" })}
                                 <div>
                                     <h6 className="mb-1">{selectedService.title}</h6>
                                     <p className="text-muted mb-0">Giá: {selectedService.price}</p>
