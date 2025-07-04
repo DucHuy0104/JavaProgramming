@@ -25,13 +25,13 @@ public interface TestResultRepository extends JpaRepository<TestResult, Long> {
     List<TestResult> findByStatus(String status);
 
     // Lấy danh sách kết quả xét nghiệm theo ID khách hàng.
-    List<TestResult> findByOrder_Customer_Id(Long customerId);
+    List<TestResult> findByOrderEmail(String email);
 
     // Lấy danh sách kết quả xét nghiệm theo trạng thái và nhân viên thực hiện.
     List<TestResult> findByStatusAndStaff(String status, User staff);
 
     // Lấy danh sách kết quả xét nghiệm theo trạng thái và ID khách hàng.
-    List<TestResult> findByStatusAndOrder_Customer_Id(String status, Long customerId);
+    List<TestResult> findByStatusAndOrderEmail(String status, String email);
 
     // Lấy danh sách kết quả xét nghiệm theo khoảng thời gian trả kết quả.
     List<TestResult> findByDeliveredAtBetween(LocalDateTime from, LocalDateTime to);
@@ -49,5 +49,8 @@ public interface TestResultRepository extends JpaRepository<TestResult, Long> {
     long countByStaff(User staff);
 
     // Đếm số lượng kết quả xét nghiệm theo trạng thái và nhân viên thực hiện.
-    long countByOrder_Customer_Id(Long customerId);
+    long countByOrderEmail(String email);
+
+    // Đúng (nếu Order có trường customerName)
+    List<TestResult> findByOrderCustomerName(String customerName);
 }

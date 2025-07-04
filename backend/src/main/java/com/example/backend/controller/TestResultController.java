@@ -1,11 +1,9 @@
 package com.example.backend.controller;
 
 import com.example.backend.entity.TestResult;
-import com.example.backend.entity.Order;
 import com.example.backend.entity.User;
 import com.example.backend.service.TestResultService;
 import com.example.backend.service.UserService;
-import com.example.backend.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +20,6 @@ public class TestResultController {
     private TestResultService testResultService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private OrderService orderService;
-
     // Tạo mới kết quả xét nghiệm (staff/admin)
     @PostMapping
     public ResponseEntity<?> createTestResult(@RequestBody TestResult testResult) {
@@ -62,8 +57,8 @@ public class TestResultController {
         // Nếu là khách hàng, chỉ cho xem kết quả của mình
         if (isCustomer(principal)) {
             User user = getCurrentUser(principal);
-            if (result.getOrder() == null || result.getOrder().getCustomer() == null ||
-                !result.getOrder().getCustomer().getId().equals(user.getId())) {
+            if (result.getOrder() == null || result.getOrder().getEmail() == null ||
+                !result.getOrder().getEmail().equals(user.getEmail())) {
                 return ResponseEntity.status(403).body("Bạn không có quyền xem kết quả này!");
             }
         }
@@ -79,8 +74,8 @@ public class TestResultController {
         // Nếu là khách hàng, chỉ cho xem kết quả của mình
         if (isCustomer(principal)) {
             User user = getCurrentUser(principal);
-            if (result.getOrder() == null || result.getOrder().getCustomer() == null ||
-                !result.getOrder().getCustomer().getId().equals(user.getId())) {
+            if (result.getOrder() == null || result.getOrder().getEmail() == null ||
+                !result.getOrder().getEmail().equals(user.getEmail())) {
                 return ResponseEntity.status(403).body("Bạn không có quyền xem kết quả này!");
             }
         }

@@ -34,6 +34,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, redirectUrl: finalRedirectUrl };
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, message: error.message || 'Đăng nhập thất bại' };
     }
   };

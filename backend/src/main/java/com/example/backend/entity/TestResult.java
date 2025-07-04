@@ -24,6 +24,9 @@ public class TestResult {
     @JoinColumn(name = "staff_id")
     private User staff;
 
+    @Column(name = "delivered_at")
+    private LocalDateTime deliveredAt;
+
     // Getter & Setter
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -42,4 +45,7 @@ public class TestResult {
 
     public User getStaff() { return staff; }
     public void setStaff(User staff) { this.staff = staff; }
+
+    public LocalDateTime getDeliveredAt() { return deliveredAt; }
+    public void setDeliveredAt(LocalDateTime deliveredAt) { this.deliveredAt = deliveredAt; }
 } 

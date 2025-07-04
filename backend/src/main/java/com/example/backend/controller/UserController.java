@@ -65,7 +65,7 @@ public class UserController {
 
     // Login user
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody UserLoginDto loginDto) {
+    public ResponseEntity<?> login(@RequestBody UserLoginDto loginDto) {
         try {
             User user = userService.loginUser(loginDto);
             
@@ -528,8 +528,6 @@ public class UserController {
         }
     }
 
-
-
     // Create sample data (ONLY for development)
     @PostMapping("/create-sample-data")
     public ResponseEntity<?> createSampleData() {
@@ -636,8 +634,6 @@ public class UserController {
             return ResponseEntity.badRequest().body(response);
         }
     }
-
-
 
     // Get current user profile
     @GetMapping("/profile")

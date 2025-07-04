@@ -182,7 +182,7 @@ public class ServiceService {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         // Tạo Specification cho filter
-        Specification<Service> spec = Specification.where(null);
+        Specification<Service> spec = (root, query, cb) -> cb.conjunction();
 
         if (search != null && !search.trim().isEmpty()) {
             spec = spec.and((root, query, criteriaBuilder) ->
