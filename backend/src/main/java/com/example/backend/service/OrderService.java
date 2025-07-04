@@ -29,12 +29,20 @@ public class OrderService {
     }
 
     public Order updateOrderStatus(Long id, String status) {
+        System.out.println("=== ORDER SERVICE UPDATE ===");
+        System.out.println("Looking for order ID: " + id);
         Optional<Order> orderOpt = orderRepository.findById(id);
+        System.out.println("Order found: " + orderOpt.isPresent());
         if (orderOpt.isPresent()) {
             Order order = orderOpt.get();
+            System.out.println("Current status: " + order.getStatus());
+            System.out.println("New status: " + status);
             order.setStatus(status);
-            return orderRepository.save(order);
+            Order saved = orderRepository.save(order);
+            System.out.println("Order saved successfully");
+            return saved;
         }
+        System.out.println("Order not found!");
         return null;
     }
 
@@ -47,4 +55,9 @@ public class OrderService {
         }
         return null;
     }
-} 
+
+    // Lấy orders theo email của user
+    public List<Order> getOrdersByUserEmail(String email) {
+        return orderRepository.findByEmailOrderByOrderDateDesc(email);
+    }
+}

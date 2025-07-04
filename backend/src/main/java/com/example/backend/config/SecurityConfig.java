@@ -74,8 +74,9 @@ public class SecurityConfig {
 
                 // Orders endpoints
                 .requestMatchers(HttpMethod.GET, "/api/orders").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+                .requestMatchers(HttpMethod.GET, "/api/orders/user").hasRole("CUSTOMER") // Customer xem orders của mình
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
-                .requestMatchers(HttpMethod.PATCH, "/api/orders/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+                .requestMatchers(HttpMethod.PATCH, "/api/orders/**").hasAnyRole("ADMIN", "MANAGER", "STAFF", "CUSTOMER") // Customer có thể hủy đơn
 
                 // All other requests need authentication
                 .anyRequest().authenticated()
