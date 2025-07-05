@@ -13,17 +13,54 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [testResults, setTestResults] = useState({});
+  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState(null);
+  const [previousOrders, setPreviousOrders] = useState([]);
+  const [hasUpdates, setHasUpdates] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
       fetchOrders();
+      
+      // Thiết lập auto-refresh mỗi 30 giây
+      const interval = setInterval(() => {
+        console.log('Auto-refreshing orders...');
+        fetchOrders();
+        setLastRefresh(new Date());
+      }, 30000); // 30 giây
+      
+      setAutoRefreshInterval(interval);
+      
+      return () => {
+        if (interval) {
+          clearInterval(interval);
+        }
+      };
     }
   }, [isAuthenticated]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const response = await getUserOrders();
+      
+      // Kiểm tra xem có cập nhật mới không
+      if (previousOrders.length > 0) {
+        const hasStatusChanges = response.some((newOrder, index) => {
+          const oldOrder = previousOrders[index];
+          return oldOrder && newOrder.status !== oldOrder.status;
+        });
+        
+        if (hasStatusChanges) {
+          setHasUpdates(true);
+          // Tự động ẩn thông báo sau 5 giây
+          setTimeout(() => setHasUpdates(false), 5000);
+        }
+      }
+      
+      setPreviousOrders(response);
       setOrders(response);
       
       // Fetch test results for each order
@@ -37,16 +74,20 @@ const Orders = () => {
         }
       }
       setTestResults(results);
+      setLastRefresh(new Date());
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
 
   const getStatusVariant = (status) => {
     const statusMap = {
       'pending_registration': 'warning',
+      'accepted': 'success',
       'kit_sent': 'info',
       'sample_collected_self': 'info',
       'sample_in_transit': 'info',
@@ -65,6 +106,7 @@ const Orders = () => {
   const getStatusText = (status) => {
     const statusMap = {
       'pending_registration': 'Chờ đăng ký',
+      'accepted': 'Đã nhận đơn',
       'kit_sent': 'Đã gửi kit',
       'sample_collected_self': 'Đã thu mẫu',
       'sample_in_transit': 'Đang chuyển mẫu',
@@ -110,6 +152,11 @@ const Orders = () => {
     setSelectedOrder(null);
   };
 
+  const handleManualRefresh = () => {
+    console.log('Manual refresh triggered');
+    fetchOrders(false); // Không hiển thị loading spinner
+  };
+
   if (loading) {
     return (
       <Container className="py-5">
@@ -135,7 +182,40 @@ const Orders = () => {
 
   return (
     <Container className="py-5">
-      <h2 className="mb-4">Đơn hàng của tôi</h2>
+              <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2>Đơn hàng của tôi</h2>
+          <div className="d-flex align-items-center gap-2">
+            <small className="text-muted">
+              <i className="fas fa-clock me-1"></i>
+              Cập nhật lần cuối: {lastRefresh.toLocaleTimeString('vi-VN')}
+            </small>
+            <div className="d-flex align-items-center gap-1">
+              <small className="text-success">
+                <i className="fas fa-sync-alt fa-spin me-1"></i>
+                Tự động cập nhật
+              </small>
+              <button 
+                className="btn btn-outline-primary btn-sm ms-2"
+                onClick={handleManualRefresh}
+                title="Làm mới dữ liệu ngay"
+              >
+                <i className="fas fa-sync-alt"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      
+      {/* Thông báo cập nhật */}
+      {hasUpdates && (
+        <div className="alert alert-success alert-dismissible fade show mb-4" role="alert">
+          <strong>🔄 Có cập nhật mới!</strong> Trạng thái đơn hàng đã được cập nhật.
+          <button 
+            type="button" 
+            className="btn-close" 
+            onClick={() => setHasUpdates(false)}
+          ></button>
+        </div>
+      )}
       
       {orders.length === 0 ? (
         <Card>
@@ -204,8 +284,25 @@ const Orders = () => {
                     </Col>
                   </Row>
 
+                  {/* Status Notifications */}
+                  {order.status === 'accepted' && (
+                    <div className="alert alert-success mb-3">
+                      <strong>🎉 Đơn hàng đã được nhận!</strong>
+                      <br />
+                      Admin đã xác nhận và nhận đơn hàng của bạn. Chúng tôi sẽ sớm gửi bộ kit xét nghiệm.
+                    </div>
+                  )}
+                  
+                  {order.status === 'kit_sent' && (
+                    <div className="alert alert-info mb-3">
+                      <strong>📦 Bộ kit đã được gửi!</strong>
+                      <br />
+                      Bộ kit xét nghiệm đã được gửi đến địa chỉ của bạn. Vui lòng kiểm tra và thu thập mẫu theo hướng dẫn.
+                    </div>
+                  )}
+
                   {/* Workflow Tracker */}
-                  <WorkflowTracker order={order} />
+                  <WorkflowTracker order={order} onRefresh={handleManualRefresh} />
 
                   {/* Test Result Viewer */}
                   <TestResultViewer 
@@ -308,8 +405,25 @@ const Orders = () => {
                 </Row>
               )}
 
+              {/* Status Notifications in Modal */}
+              {selectedOrder.status === 'accepted' && (
+                <div className="alert alert-success mb-3">
+                  <strong>🎉 Đơn hàng đã được nhận!</strong>
+                  <br />
+                  Admin đã xác nhận và nhận đơn hàng của bạn. Chúng tôi sẽ sớm gửi bộ kit xét nghiệm.
+                </div>
+              )}
+              
+              {selectedOrder.status === 'kit_sent' && (
+                <div className="alert alert-info mb-3">
+                  <strong>📦 Bộ kit đã được gửi!</strong>
+                  <br />
+                  Bộ kit xét nghiệm đã được gửi đến địa chỉ của bạn. Vui lòng kiểm tra và thu thập mẫu theo hướng dẫn.
+                </div>
+              )}
+
               {/* Detailed Workflow Tracker */}
-              <WorkflowTracker order={selectedOrder} />
+              <WorkflowTracker order={selectedOrder} onRefresh={handleManualRefresh} />
 
               {/* Detailed Test Result */}
               <TestResultViewer 

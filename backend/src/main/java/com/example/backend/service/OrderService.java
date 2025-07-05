@@ -18,6 +18,7 @@ public class OrderService {
     public static final class Status {
         // Common statuses
         public static final String PENDING_REGISTRATION = "pending_registration";
+        public static final String ACCEPTED = "accepted";
         public static final String CANCELLED = "cancelled";
         public static final String RESULTS_DELIVERED = "results_delivered";
         
@@ -89,6 +90,9 @@ public class OrderService {
         LocalDateTime now = LocalDateTime.now();
         
         switch (status) {
+            case Status.ACCEPTED:
+                order.setAcceptedDate(now);
+                break;
             case Status.KIT_SENT:
                 order.setKitSentDate(now);
                 break;
@@ -134,6 +138,16 @@ public class OrderService {
         }
         
         if (Status.PENDING_REGISTRATION.equals(currentStatus)) {
+            if ("self_submission".equals(orderType)) {
+                return List.of(Status.ACCEPTED, Status.KIT_SENT, Status.CANCELLED);
+            } else if ("in_clinic".equals(orderType)) {
+                return List.of(Status.ACCEPTED, Status.SAMPLE_COLLECTED_CLINIC, Status.CANCELLED);
+            } else if ("home_collection".equals(orderType)) {
+                return List.of(Status.ACCEPTED, Status.STAFF_DISPATCHED, Status.CANCELLED);
+            }
+        }
+        
+        if (Status.ACCEPTED.equals(currentStatus)) {
             if ("self_submission".equals(orderType)) {
                 return List.of(Status.KIT_SENT, Status.CANCELLED);
             } else if ("in_clinic".equals(orderType)) {

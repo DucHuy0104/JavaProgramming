@@ -30,6 +30,9 @@ public class Order {
     @Column(name = "appointment_date")
     private LocalDateTime appointmentDate; // Ngày hẹn xét nghiệm
     
+    @Column(name = "accepted_date")
+    private LocalDateTime acceptedDate; // Ngày admin nhận đơn
+    
     @Column(name = "kit_sent_date")
     private LocalDateTime kitSentDate; // Ngày gửi kit (cho self_submission)
     
@@ -109,6 +112,9 @@ public class Order {
     // New getters and setters
     public LocalDateTime getAppointmentDate() { return appointmentDate; }
     public void setAppointmentDate(LocalDateTime appointmentDate) { this.appointmentDate = appointmentDate; }
+    
+    public LocalDateTime getAcceptedDate() { return acceptedDate; }
+    public void setAcceptedDate(LocalDateTime acceptedDate) { this.acceptedDate = acceptedDate; }
     
     public LocalDateTime getKitSentDate() { return kitSentDate; }
     public void setKitSentDate(LocalDateTime kitSentDate) { this.kitSentDate = kitSentDate; }
