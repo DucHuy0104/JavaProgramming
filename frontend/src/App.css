@@ -36,3 +36,392 @@
     transform: rotate(360deg);
   }
 }
+
+/* Workflow Tracker Styles */
+.workflow-steps {
+  position: relative;
+}
+
+.workflow-step {
+  position: relative;
+  padding: 15px 0;
+}
+
+.step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: white;
+  z-index: 2;
+  position: relative;
+}
+
+.step-icon.success {
+  background-color: #28a745;
+}
+
+.step-icon.primary {
+  background-color: #007bff;
+}
+
+.step-icon.secondary {
+  background-color: #6c757d;
+}
+
+.step-connector {
+  position: absolute;
+  left: 20px;
+  top: 55px;
+  width: 2px;
+  height: 30px;
+  background-color: #dee2e6;
+  z-index: 1;
+}
+
+.step-connector.completed {
+  background-color: #28a745;
+}
+
+.workflow-step.completed .step-icon {
+  background-color: #28a745;
+}
+
+.workflow-step.current .step-icon {
+  background-color: #007bff;
+  animation: pulse 2s infinite;
+}
+
+.workflow-step.pending .step-icon {
+  background-color: #6c757d;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+/* Test Result Viewer Styles */
+.result-details {
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.result-details pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Order Status Badge Styles */
+.badge {
+  font-size: 0.75em;
+  padding: 0.5em 0.75em;
+}
+
+/* Progress Bar Styles */
+.progress {
+  height: 25px;
+  border-radius: 15px;
+}
+
+.progress-bar {
+  border-radius: 15px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+/* Modal Styles */
+.modal-lg {
+  max-width: 800px;
+}
+
+.modal-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Card Hover Effects */
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Button Styles */
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-outline-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .workflow-step {
+    padding: 10px 0;
+  }
+  
+  .step-icon {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+  
+  .step-connector {
+    left: 17.5px;
+    top: 45px;
+    height: 25px;
+  }
+  
+  .modal-lg {
+    max-width: 95%;
+  }
+}
+
+/* Loading Animation */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Alert Styles */
+.alert {
+  border-radius: 10px;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Form Styles */
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Table Styles */
+.table {
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.table thead th {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  font-weight: 600;
+}
+
+/* Navigation Styles */
+.navbar {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+/* Footer Styles */
+.footer {
+  background-color: #343a40;
+  color: white;
+  padding: 2rem 0;
+  margin-top: 3rem;
+}
+
+/* Hero Section Styles */
+.hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4rem 0;
+  margin-bottom: 3rem;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+/* Service Card Styles */
+.service-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.service-card .card-img-top {
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* Test Result Styles */
+.test-result-card {
+  border-left: 4px solid #007bff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.test-result-card.positive {
+  border-left-color: #28a745;
+}
+
+.test-result-card.negative {
+  border-left-color: #dc3545;
+}
+
+.test-result-card.inconclusive {
+  border-left-color: #ffc107;
+}
+
+/* Status Timeline */
+.status-timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.status-timeline::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #dee2e6;
+}
+
+.status-timeline .timeline-item {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.status-timeline .timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #007bff;
+  border: 2px solid white;
+  box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.status-timeline .timeline-item.completed::before {
+  background-color: #28a745;
+}
+
+.status-timeline .timeline-item.current::before {
+  background-color: #007bff;
+  animation: pulse 2s infinite;
+}
+
+/* Utility Classes */
+.text-primary-custom {
+  color: #007bff !important;
+}
+
+.bg-primary-custom {
+  background-color: #007bff !important;
+}
+
+.border-primary-custom {
+  border-color: #007bff !important;
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+  
+  .card {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+  }
+  
+  .badge {
+    border: 1px solid #000 !important;
+  }
+}

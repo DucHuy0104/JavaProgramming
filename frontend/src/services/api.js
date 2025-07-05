@@ -267,14 +267,113 @@ export const settingsAPI = {
   }
 };
 
+// Order APIs
+export const orderAPI = {
+  // Lấy tất cả orders (admin)
+  getAllOrders: async () => {
+    try {
+      const response = await api.get('/orders');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Lấy orders của user hiện tại
+  getUserOrders: async () => {
+    try {
+      const response = await api.get('/orders/user');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Tạo order mới
+  createOrder: async (orderData) => {
+    try {
+      const response = await api.post('/orders', orderData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Cập nhật trạng thái order
+  updateOrderStatus: async (orderId, status) => {
+    try {
+      const response = await api.patch(`/orders/${orderId}`, { status });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Cập nhật trạng thái thanh toán
+  updatePaymentStatus: async (orderId, paymentStatus) => {
+    try {
+      const response = await api.patch(`/orders/${orderId}/payment`, { paymentStatus });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  }
+};
+
+// Test Result APIs
+export const testResultAPI = {
+  // Lấy test result theo order ID
+  getTestResultByOrderId: async (orderId) => {
+    try {
+      const response = await api.get(`/test-results/order/${orderId}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Tạo test result mới
+  createTestResult: async (testResultData) => {
+    try {
+      const response = await api.post('/test-results', testResultData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Cập nhật test result
+  updateTestResult: async (testResultId, testResultData) => {
+    try {
+      const response = await api.put(`/test-results/${testResultId}`, testResultData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Duyệt test result
+  approveTestResult: async (testResultId) => {
+    try {
+      const response = await api.post(`/test-results/${testResultId}/approve`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  }
+};
+
+// Legacy exports for backward compatibility
 export async function createOrder(orderData) {
-  const response = await api.post('/orders', orderData);
-  return response.data;
+  return orderAPI.createOrder(orderData);
 }
 
 export async function fetchOrders() {
-  const response = await api.get('/orders');
-  return response.data;
+  return orderAPI.getAllOrders();
+}
+
+export async function getUserOrders() {
+  return orderAPI.getUserOrders();
 }
 
 export default api;
