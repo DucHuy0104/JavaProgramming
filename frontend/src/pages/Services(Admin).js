@@ -375,7 +375,7 @@ const ServicesAdmin = () => {
             </div>
           ) : (
             <Table striped bordered hover responsive>
-              <thead className="table-dark">
+              <thead className="table-primary">
                 <tr>
                   <th>Tên dịch vụ</th>
                   <th>Mô tả</th>
