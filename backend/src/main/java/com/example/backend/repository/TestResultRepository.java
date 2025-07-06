@@ -16,7 +16,7 @@ public interface TestResultRepository extends JpaRepository<TestResult, Long> {
     Optional<TestResult> findByOrder(Order order);
 
     // Tìm kết quả xét nghiệm theo ID đơn hàng.
-    Optional<TestResult> findByOrderId(Long orderId);
+    Optional<TestResult> findByOrder_Id(Long orderId);
 
     // Lấy danh sách kết quả xét nghiệm theo nhân viên thực hiện.
     List<TestResult> findByStaff(User staff);

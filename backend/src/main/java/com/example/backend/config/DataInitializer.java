@@ -2,8 +2,12 @@ package com.example.backend.config;
 
 import com.example.backend.entity.Blog;
 import com.example.backend.entity.User;
+import com.example.backend.entity.Order;
+import com.example.backend.entity.TestResult;
 import com.example.backend.repository.BlogRepository;
 import com.example.backend.repository.UserRepository;
+import com.example.backend.repository.OrderRepository;
+import com.example.backend.repository.TestResultRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,6 +25,12 @@ public class DataInitializer implements CommandLineRunner {
     private BlogRepository blogRepository;
 
     @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private TestResultRepository testResultRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -28,6 +38,8 @@ public class DataInitializer implements CommandLineRunner {
         // Initialize sample data if database is empty
         initializeUsers();
         initializeBlogs();
+        initializeOrders();
+        initializeTestResults();
     }
 
     private void initializeUsers() {
@@ -107,6 +119,82 @@ public class DataInitializer implements CommandLineRunner {
 
             System.out.println("✅ Sample blogs created successfully!");
         }
+    }
+
+    private void initializeOrders() {
+        if (orderRepository.count() == 0) {
+            // Lấy user customer để tạo orders
+            User customer = userRepository.findByEmail("customer@example.com").orElse(null);
+            if (customer == null) {
+                System.out.println("⚠️ Customer user not found, skipping order initialization");
+                return;
+            }
+
+            // Tạo các đơn hàng mẫu
+            createOrder(customer, "ORD001", "self_submission", "accepted", "Xét nghiệm ADN cha con");
+            createOrder(customer, "ORD002", "in_clinic", "testing_in_progress", "Xét nghiệm ADN huyết thống");
+            createOrder(customer, "ORD003", "home_collection", "results_delivered", "Xét nghiệm ADN tổ tiên");
+            createOrder(customer, "ORD004", "self_submission", "kit_sent", "Xét nghiệm ADN sàng lọc");
+            createOrder(customer, "ORD005", "in_clinic", "sample_collected_clinic", "Xét nghiệm ADN pháp y");
+
+            System.out.println("✅ Sample orders created successfully!");
+        }
+    }
+
+    private void initializeTestResults() {
+        if (testResultRepository.count() == 0) {
+            // Lấy user admin để làm staff
+            User admin = userRepository.findByEmail("admin@dnatesting.com").orElse(null);
+            if (admin == null) {
+                System.out.println("⚠️ Admin user not found, skipping test result initialization");
+                return;
+            }
+
+            // Tạo test results cho các orders đã hoàn thành
+            createTestResult(admin, "ORD003", "negative", "approved", "Xét nghiệm ADN tổ tiên - Kết quả âm tính");
+            createTestResult(admin, "ORD005", "positive", "approved", "Xét nghiệm ADN pháp y - Kết quả dương tính");
+
+            System.out.println("✅ Sample test results created successfully!");
+        }
+    }
+
+    private void createOrder(User customer, String orderNumber, String orderType, String status, String serviceName) {
+        Order order = new Order();
+        order.setOrderNumber(orderNumber);
+        order.setCustomerName(customer.getFullName());
+        order.setEmail(customer.getEmail());
+        order.setPhone(customer.getPhoneNumber());
+        order.setAddress(customer.getAddress());
+        order.setOrderType(orderType);
+        order.setStatus(status);
+        order.setServiceName(serviceName);
+        order.setTotalAmount(2000000.0);
+        order.setPaymentStatus("PAID");
+        order.setOrderDate(java.time.LocalDateTime.now());
+        orderRepository.save(order);
+    }
+
+    private void createTestResult(User staff, String orderNumber, String result, String status, String labNotes) {
+        // Tìm order theo orderNumber
+        Order order = orderRepository.findByOrderNumber(orderNumber).orElse(null);
+        if (order == null) {
+            System.out.println("⚠️ Order not found: " + orderNumber);
+            return;
+        }
+
+        TestResult testResult = new TestResult();
+        testResult.setResult(result);
+        testResult.setStatus(status);
+        testResult.setTestDate(java.time.LocalDateTime.now());
+        testResult.setCreatedAt(java.time.LocalDateTime.now());
+        testResult.setTestMethod("PCR Test");
+        testResult.setConfidenceLevel(99.5);
+        testResult.setLabNotes(labNotes);
+        testResult.setPdfUrl("https://example.com/results/" + orderNumber + ".pdf");
+        testResult.setIsUrgent(false);
+        testResult.setStaff(staff);
+        testResult.setOrder(order);
+        testResultRepository.save(testResult);
     }
 
     private void createBlog(String title, String summary, String content, String category, 

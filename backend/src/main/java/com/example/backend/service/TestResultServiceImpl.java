@@ -48,7 +48,7 @@ public class TestResultServiceImpl implements TestResultService {
 
     @Override
     public Optional<TestResult> getByOrderId(Long orderId) {
-        return testResultRepository.findByOrderId(orderId);
+        return testResultRepository.findByOrder_Id(orderId);
     }
 
     @Override
@@ -68,5 +68,13 @@ public class TestResultServiceImpl implements TestResultService {
 
     public List<TestResult> getByCustomerName(String customerName) {
         return testResultRepository.findByOrderCustomerName(customerName);
+    }
+
+    @Override
+    public void deleteByOrderId(Long orderId) {
+        Optional<TestResult> testResultOpt = testResultRepository.findByOrder_Id(orderId);
+        if (testResultOpt.isPresent()) {
+            testResultRepository.delete(testResultOpt.get());
+        }
     }
 }

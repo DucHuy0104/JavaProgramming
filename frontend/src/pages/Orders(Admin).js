@@ -3,6 +3,7 @@ import { Table, Button, Modal, Container, Row, Col, Badge, Form, InputGroup, Car
 import { FaSearch, FaFilter, FaEye, FaEdit, FaDownload } from 'react-icons/fa';
 import { fetchOrders } from '../services/api';
 
+
 const OrdersAdmin = () => {
   const [orders, setOrders] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -10,6 +11,8 @@ const OrdersAdmin = () => {
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,12 +54,15 @@ const OrdersAdmin = () => {
       if (response.ok) {
         const updatedOrder = await response.json();
         
+        // Cập nhật danh sách orders
         setOrders(orders.map(o =>
           o.id === order.id
             ? { ...o, status: newStatus }
             : o
         ));
-        setSelectedOrder(prev => prev ? { ...prev, status: newStatus } : null);
+        
+        // Cập nhật selectedOrder nếu đang mở modal
+        setSelectedOrder(prev => prev && prev.id === order.id ? { ...prev, status: newStatus } : prev);
         
         console.log('Cập nhật trạng thái thành công:', updatedOrder);
       } else {
@@ -82,12 +88,15 @@ const OrdersAdmin = () => {
       if (response.ok) {
         const updatedOrder = await response.json();
         
+        // Cập nhật danh sách orders
         setOrders(orders.map(o =>
           o.id === order.id
             ? { ...o, paymentStatus: newStatus }
             : o
         ));
-        setSelectedOrder(prev => prev ? { ...prev, paymentStatus: newStatus } : null);
+        
+        // Cập nhật selectedOrder nếu đang mở modal
+        setSelectedOrder(prev => prev && prev.id === order.id ? { ...prev, paymentStatus: newStatus } : prev);
         
         console.log('Cập nhật trạng thái thanh toán thành công:', updatedOrder);
       } else {
@@ -119,7 +128,9 @@ const OrdersAdmin = () => {
             ? { ...o, status: 'accepted' }
             : o
         ));
-        setSelectedOrder(prev => prev ? { ...prev, status: 'accepted' } : null);
+        
+        // Cập nhật selectedOrder nếu đang mở modal
+        setSelectedOrder(prev => prev && prev.id === order.id ? { ...prev, status: 'accepted' } : prev);
         
         console.log('Đơn hàng đã được nhận thành công:', updatedOrder);
       } else {
@@ -320,6 +331,35 @@ const OrdersAdmin = () => {
     }
   };
 
+
+
+  const handleDeleteOrder = async (order) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa đơn hàng ${order.orderNumber}? Hành động này không thể hoàn tác.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8081/api/orders/${order.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      if (response.ok) {
+        alert('Đã xóa đơn hàng thành công!');
+        // Reload orders để cập nhật
+        loadOrders();
+      } else {
+        const errorData = await response.text();
+        alert(`Lỗi: ${errorData}`);
+      }
+    } catch (error) {
+      console.error('Lỗi khi xóa đơn hàng:', error);
+      alert('Có lỗi xảy ra khi xóa đơn hàng');
+    }
+  };
+
   return (
     <Container fluid className="p-4">
       <Row>
@@ -329,12 +369,16 @@ const OrdersAdmin = () => {
               <FaFilter className="me-3 text-primary" />
               Quản lý đơn hàng
             </h1>
-            <Badge bg="info" className="fs-6">
-              {filteredOrders.length} / {orders.length} đơn hàng
-            </Badge>
+            <div className="d-flex align-items-center gap-2">
+              <Badge bg="info" className="fs-6">
+                {filteredOrders.length} / {orders.length} đơn hàng
+              </Badge>
+            </div>
           </div>
         </Col>
       </Row>
+
+
 
       {/* Bộ lọc */}
       <Card className="mb-4">
@@ -495,20 +539,18 @@ const OrdersAdmin = () => {
                   Xem
                 </Button>
                 
-                {order.status === 'pending_registration' && (
-                  <Button 
-                    variant="outline-success" 
-                    size="sm" 
-                    className="me-2"
-                    onClick={() => handleAcceptOrder(order)}
-                  >
-                    Nhận Đơn
-                  </Button>
-                )}
+
+                
+
+                
+
                 
                 {order.orderType === 'self_submission' && (
                   <>
-                    {(order.status === 'pending_registration' || order.status === 'accepted') && (
+                    {order.status === 'pending_registration' && (
+                      <Button variant="outline-success" size="sm" onClick={() => handleAcceptOrder(order)}>Nhận Đơn</Button>
+                    )}
+                    {order.status === 'accepted' && (
                       <Button variant="outline-info" size="sm" onClick={() => handleUpdateStatus(order, 'kit_sent')}>Gửi Kit</Button>
                     )}
                     {order.status === 'kit_sent' && (
@@ -534,7 +576,10 @@ const OrdersAdmin = () => {
 
                 {order.orderType === 'in_clinic' && (
                   <>
-                    {(order.status === 'pending_registration' || order.status === 'accepted') && (
+                    {order.status === 'pending_registration' && (
+                      <Button variant="outline-success" size="sm" onClick={() => handleAcceptOrder(order)}>Nhận Đơn</Button>
+                    )}
+                    {order.status === 'accepted' && (
                       <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'sample_collected_clinic')}>Thu Thập Mẫu</Button>
                     )}
                     {order.status === 'sample_collected_clinic' && (
@@ -548,8 +593,43 @@ const OrdersAdmin = () => {
                     )}
                   </>
                 )}
+
+                {order.orderType === 'home_collection' && (
+                  <>
+                    {order.status === 'pending_registration' && (
+                      <Button variant="outline-success" size="sm" onClick={() => handleAcceptOrder(order)}>Nhận Đơn</Button>
+                    )}
+                    {order.status === 'accepted' && (
+                      <Button variant="outline-info" size="sm" onClick={() => handleUpdateStatus(order, 'staff_dispatched')}>Cử Nhân Viên</Button>
+                    )}
+                    {order.status === 'staff_dispatched' && (
+                      <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'sample_collected_home')}>Đã Thu Mẫu Tại Nhà</Button>
+                    )}
+                    {order.status === 'sample_collected_home' && (
+                      <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'sample_received_lab')}>Đã Nhận Mẫu Tại Lab</Button>
+                    )}
+                    {order.status === 'sample_received_lab' && (
+                      <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'testing_in_progress')}>Bắt Đầu Xét Nghiệm</Button>
+                    )}
+                    {order.status === 'testing_in_progress' && (
+                      <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'results_recorded')}>Ghi Nhận Kết Quả</Button>
+                    )}
+                    {order.status === 'results_recorded' && (
+                      <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'results_delivered')}>Trả Kết Quả</Button>
+                    )}
+                  </>
+                )}
                 
-                {(order.status !== 'results_delivered' && order.status !== 'cancelled') && (
+                {/* Chỉ hiển thị nút hủy đơn khi đơn hàng chưa hoàn thành và chưa bị hủy */}
+                {(order.status === 'pending_registration' || 
+                  order.status === 'accepted' || 
+                  order.status === 'kit_sent' || 
+                  order.status === 'sample_collected_self' || 
+                  order.status === 'sample_in_transit' || 
+                  order.status === 'sample_received_lab' || 
+                  order.status === 'sample_collected_clinic' || 
+                  order.status === 'staff_dispatched' || 
+                  order.status === 'sample_collected_home') && (
                   <Button
                     variant="outline-danger"
                     size="sm"
@@ -572,6 +652,17 @@ const OrdersAdmin = () => {
                     📄 Tải KQ
                   </Button>
                 )}
+
+                {/* Nút xóa đơn hàng */}
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  className="ms-2"
+                  onClick={() => handleDeleteOrder(order)}
+                  title="Xóa đơn hàng"
+                >
+                  🗑️ Xóa
+                </Button>
               </td>
             </tr>
             ))
@@ -626,24 +717,38 @@ const OrdersAdmin = () => {
                       </p>
                     </div>
                   )}
+
+                  {/* Thông tin nhân viên thu mẫu tại nhà */}
+                  {selectedOrder.orderType === 'home_collection' && (
+                    <div className="mt-3 p-3 bg-info bg-opacity-10 rounded">
+                      <h6 className="text-info mb-2">🏠 Thông tin thu mẫu tại nhà</h6>
+                      <p className="mb-1">
+                        <strong>Địa chỉ:</strong> {selectedOrder.address || 'Chưa cập nhật'}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Nhân viên được phân công:</strong> {selectedOrder.staffAssigned || 'Chưa phân công'}
+                      </p>
+                      <p className="mb-1">
+                        <strong>Ngày hẹn:</strong> {selectedOrder.appointmentDate ? formatDate(selectedOrder.appointmentDate) : 'Chưa cập nhật'}
+                      </p>
+                      <p className="mb-0">
+                        <strong>Dự kiến hoàn thành:</strong> {selectedOrder.estimatedCompletionDate ? formatDate(selectedOrder.estimatedCompletionDate) : 'Chưa cập nhật'}
+                      </p>
+                    </div>
+                  )}
                 </Col>
               </Row>
 
               <div className="mt-4">
                 <h5>Cập nhật trạng thái</h5>
                 <div className="d-flex gap-2 flex-wrap">
-                  {selectedOrder.status === 'pending_registration' && (
-                    <Button 
-                      variant="success" 
-                      onClick={() => handleAcceptOrder(selectedOrder)}
-                    >
-                      Nhận Đơn Hàng
-                    </Button>
-                  )}
                   
                   {selectedOrder.orderType === 'self_submission' && selectedOrder.status !== 'results_delivered' && selectedOrder.status !== 'cancelled' && (
                     <>
-                      {(selectedOrder.status === 'pending_registration' || selectedOrder.status === 'accepted') && (
+                      {selectedOrder.status === 'pending_registration' && (
+                        <Button variant="success" onClick={() => handleAcceptOrder(selectedOrder)}>Nhận Đơn Hàng</Button>
+                      )}
+                      {selectedOrder.status === 'accepted' && (
                         <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'kit_sent')}>Gửi Kit</Button>
                       )}
                       {selectedOrder.status === 'kit_sent' && (
@@ -669,7 +774,10 @@ const OrdersAdmin = () => {
 
                   {selectedOrder.orderType === 'in_clinic' && selectedOrder.status !== 'results_delivered' && selectedOrder.status !== 'cancelled' && (
                     <>
-                      {(selectedOrder.status === 'pending_registration' || selectedOrder.status === 'accepted') && (
+                      {selectedOrder.status === 'pending_registration' && (
+                        <Button variant="success" onClick={() => handleAcceptOrder(selectedOrder)}>Nhận Đơn Hàng</Button>
+                      )}
+                      {selectedOrder.status === 'accepted' && (
                         <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'sample_collected_clinic')}>Thu Thập Mẫu tại CSYT</Button>
                       )}
                       {selectedOrder.status === 'sample_collected_clinic' && (
@@ -684,7 +792,42 @@ const OrdersAdmin = () => {
                     </>
                   )}
 
-                  {(selectedOrder.status !== 'results_delivered' && selectedOrder.status !== 'cancelled') && (
+                  {selectedOrder.orderType === 'home_collection' && selectedOrder.status !== 'results_delivered' && selectedOrder.status !== 'cancelled' && (
+                    <>
+                      {selectedOrder.status === 'pending_registration' && (
+                        <Button variant="success" onClick={() => handleAcceptOrder(selectedOrder)}>Nhận Đơn Hàng</Button>
+                      )}
+                      {selectedOrder.status === 'accepted' && (
+                        <Button variant="info" onClick={() => handleUpdateStatus(selectedOrder, 'staff_dispatched')}>Cử Nhân Viên Thu Mẫu</Button>
+                      )}
+                      {selectedOrder.status === 'staff_dispatched' && (
+                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'sample_collected_home')}>Đã Thu Mẫu Tại Nhà</Button>
+                      )}
+                      {selectedOrder.status === 'sample_collected_home' && (
+                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'sample_received_lab')}>Đã Nhận Mẫu Tại Lab</Button>
+                      )}
+                      {selectedOrder.status === 'sample_received_lab' && (
+                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'testing_in_progress')}>Bắt Đầu Xét Nghiệm</Button>
+                      )}
+                      {selectedOrder.status === 'testing_in_progress' && (
+                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'results_recorded')}>Ghi Nhận Kết Quả</Button>
+                      )}
+                      {selectedOrder.status === 'results_recorded' && (
+                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'results_delivered')}>Trả Kết Quả</Button>
+                      )}
+                    </>
+                  )}
+
+                  {/* Chỉ hiển thị nút hủy đơn khi đơn hàng chưa hoàn thành và chưa bị hủy */}
+                  {(selectedOrder.status === 'pending_registration' || 
+                    selectedOrder.status === 'accepted' || 
+                    selectedOrder.status === 'kit_sent' || 
+                    selectedOrder.status === 'sample_collected_self' || 
+                    selectedOrder.status === 'sample_in_transit' || 
+                    selectedOrder.status === 'sample_received_lab' || 
+                    selectedOrder.status === 'sample_collected_clinic' || 
+                    selectedOrder.status === 'staff_dispatched' || 
+                    selectedOrder.status === 'sample_collected_home') && (
                     <Button
                       variant="danger"
                       onClick={() => handleUpdateStatus(selectedOrder, 'cancelled')}
@@ -710,6 +853,10 @@ const OrdersAdmin = () => {
                     </Button>
                   )}
                   
+
+
+
+
                   {/* Nút tải kết quả trong modal */}
                   {(selectedOrder.status === 'results_recorded' || selectedOrder.status === 'results_delivered') && (
                     <Button
@@ -719,8 +866,23 @@ const OrdersAdmin = () => {
                       📄 Tải Kết Quả Xét Nghiệm
                     </Button>
                   )}
+
+
+
+                  {/* Nút xóa đơn hàng trong modal */}
+                  <Button
+                    variant="danger"
+                    className="ms-2"
+                    onClick={() => handleDeleteOrder(selectedOrder)}
+                  >
+                    🗑️ Xóa Đơn Hàng
+                  </Button>
                 </div>
               </div>
+
+
+
+
             </>
           )}
         </Modal.Body>

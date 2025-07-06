@@ -69,7 +69,10 @@ public class TestResultController {
     @GetMapping("/order/{orderId}")
     public ResponseEntity<?> getByOrderId(@PathVariable Long orderId, Principal principal) {
         Optional<TestResult> resultOpt = testResultService.getByOrderId(orderId);
-        if (resultOpt.isEmpty()) return ResponseEntity.notFound().build();
+        if (resultOpt.isEmpty()) {
+            // Trả về thông báo rõ ràng hơn thay vì 404
+            return ResponseEntity.status(404).body("Không tìm thấy kết quả xét nghiệm cho đơn hàng ID: " + orderId);
+        }
         TestResult result = resultOpt.get();
         // Nếu là khách hàng, chỉ cho xem kết quả của mình
         if (isCustomer(principal)) {
@@ -122,4 +125,6 @@ public class TestResultController {
         User user = getCurrentUser(principal);
         return user != null && "CUSTOMER".equalsIgnoreCase(user.getRole());
     }
+
+
 } 

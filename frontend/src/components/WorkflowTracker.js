@@ -176,6 +176,19 @@ const WorkflowTracker = ({ order, onRefresh }) => {
             <p className="mb-0">{getOrderTypeText(order.orderType)}</p>
           </Col>
         </Row>
+
+        {order.orderType === 'home_collection' && (
+          <Row className="mb-3">
+            <Col md={6}>
+              <small className="text-muted">Mã theo dõi</small>
+              <p className="mb-0 fw-bold">{order.trackingNumber || 'Chưa có'}</p>
+            </Col>
+            <Col md={6}>
+              <small className="text-muted">Nhân viên phân công</small>
+              <p className="mb-0">{order.staffAssigned || 'Chưa phân công'}</p>
+            </Col>
+          </Row>
+        )}
         
         <Row className="mb-3">
           <Col md={6}>
@@ -308,6 +321,23 @@ const WorkflowTracker = ({ order, onRefresh }) => {
             <strong>✅ Hoàn thành!</strong>
             <br />
             Kết quả xét nghiệm đã được gửi đến bạn. Bạn có thể tải xuống kết quả từ phần bên dưới.
+          </div>
+        )}
+
+        {/* Special notifications for home collection */}
+        {order.orderType === 'home_collection' && order.status === 'staff_dispatched' && (
+          <div className="mt-3 alert alert-info">
+            <strong>🚗 Nhân viên đã được cử!</strong>
+            <br />
+            Nhân viên thu mẫu đã được phân công và sẽ liên hệ với bạn để sắp xếp lịch hẹn thu mẫu tại nhà.
+          </div>
+        )}
+
+        {order.orderType === 'home_collection' && order.status === 'sample_collected_home' && (
+          <div className="mt-3 alert alert-success">
+            <strong>🏠 Đã thu mẫu tại nhà!</strong>
+            <br />
+            Nhân viên đã thu thập mẫu thành công tại nhà bạn. Mẫu sẽ được chuyển đến phòng lab để xét nghiệm.
           </div>
         )}
       </Card.Body>

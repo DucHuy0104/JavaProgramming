@@ -109,8 +109,35 @@ const TestResultViewer = ({ orderId, testResult }) => {
         <Card.Body>
           <Alert variant="info">
             <FaFlask className="me-2" />
-            Kết quả xét nghiệm đang được xử lý. Vui lòng chờ trong thời gian sớm nhất.
+            <strong>Kết quả xét nghiệm đang được xử lý</strong>
+            <br />
+            <small>
+              • Quá trình xét nghiệm thường mất 1-3 ngày làm việc<br />
+              • Bạn sẽ nhận được thông báo khi có kết quả<br />
+              • Kết quả sẽ được gửi qua email và có thể xem trên ứng dụng
+            </small>
           </Alert>
+          <div className="mt-3">
+            <h6 className="text-muted mb-2">📋 Các bước tiếp theo:</h6>
+            <ul className="list-unstyled">
+              <li className="mb-1">
+                <FaCheckCircle className="me-2 text-success" size={12} />
+                Mẫu đang được xét nghiệm tại phòng lab
+              </li>
+              <li className="mb-1">
+                <FaCheckCircle className="me-2 text-success" size={12} />
+                Kết quả sẽ được duyệt bởi chuyên gia
+              </li>
+              <li className="mb-1">
+                <FaCheckCircle className="me-2 text-success" size={12} />
+                Báo cáo chi tiết sẽ được tạo
+              </li>
+              <li className="mb-1">
+                <FaCheckCircle className="me-2 text-success" size={12} />
+                Kết quả sẽ được gửi đến bạn
+              </li>
+            </ul>
+          </div>
         </Card.Body>
       </Card>
     );

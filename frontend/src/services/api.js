@@ -325,10 +325,28 @@ export const testResultAPI = {
   // Lấy test result theo order ID
   getTestResultByOrderId: async (orderId) => {
     try {
+      console.log(`API: Fetching test result for order ${orderId}`);
       const response = await api.get(`/test-results/order/${orderId}`);
+      console.log(`API: Test result response for order ${orderId}:`, response.data);
       return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      // Xử lý lỗi 404 một cách êm ái - không log error cho trường hợp này
+      if (error.response?.status === 404) {
+        console.log(`API: No test result found for order ${orderId} - This is normal`);
+        const notFoundError = new Error('Không tìm thấy kết quả xét nghiệm');
+        notFoundError.response = error.response;
+        notFoundError.isNotFound = true;
+        throw notFoundError;
+      }
+      
+      // Log error cho các lỗi khác
+      console.error(`API: Error fetching test result for order ${orderId}:`, error);
+      console.error(`API: Error status:`, error.response?.status);
+      
+      // Throw error với đầy đủ thông tin
+      const errorToThrow = new Error(error.response?.data?.message || error.message);
+      errorToThrow.response = error.response;
+      throw errorToThrow;
     }
   },
 
@@ -360,7 +378,9 @@ export const testResultAPI = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
-  }
+  },
+
+
 };
 
 // Legacy exports for backward compatibility

@@ -7,7 +7,7 @@ import WorkflowTracker from './WorkflowTracker';
 import TestResultViewer from './TestResultViewer';
 
 const Orders = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -44,7 +44,10 @@ const Orders = () => {
       if (showLoading) {
         setLoading(true);
       }
+      
+      console.log('Fetching orders...');
       const response = await getUserOrders();
+      console.log('Orders fetched successfully:', response.length, 'orders');
       
       // Kiểm tra xem có cập nhật mới không
       if (previousOrders.length > 0) {
@@ -64,19 +67,49 @@ const Orders = () => {
       setOrders(response);
       
       // Fetch test results for each order
+      console.log('Fetching test results for', response.length, 'orders...');
       const results = {};
       for (const order of response) {
-        try {
-          const result = await testResultAPI.getTestResultByOrderId(order.id);
-          results[order.id] = result;
-        } catch (error) {
-          console.log(`No test result for order ${order.id}:`, error.message);
+        // Chỉ fetch test result cho các order có trạng thái phù hợp
+        if (['testing_in_progress', 'results_recorded', 'results_delivered'].includes(order.status)) {
+          try {
+            console.log(`Fetching test result for order ${order.id}...`);
+            const result = await testResultAPI.getTestResultByOrderId(order.id);
+            results[order.id] = result;
+            console.log(`Test result fetched successfully for order ${order.id}`);
+          } catch (error) {
+            // Xử lý các loại lỗi khác nhau
+            if (error.isNotFound || error.response?.status === 404) {
+              // Không log error cho trường hợp không tìm thấy - đây là bình thường
+              console.log(`No test result found for order ${order.id} - This is normal`);
+            } else if (error.response?.status === 403) {
+              console.log(`Access denied for test result of order ${order.id}`);
+            } else if (error.response?.status === 401) {
+              console.log(`Unauthorized access for test result of order ${order.id}`);
+            } else {
+              console.error(`Error fetching test result for order ${order.id}:`, error);
+            }
+            // Không lưu kết quả nếu có lỗi
+            results[order.id] = null;
+          }
+        } else {
+          console.log(`Skipping test result fetch for order ${order.id} with status: ${order.status}`);
+          results[order.id] = null;
         }
       }
+      
+      console.log('All test results processed. Setting results...');
       setTestResults(results);
       setLastRefresh(new Date());
+      console.log('Orders and test results updated successfully');
+      
     } catch (error) {
       console.error('Error fetching orders:', error);
+      console.error('Error details:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data
+      });
     } finally {
       if (showLoading) {
         setLoading(false);
@@ -303,6 +336,8 @@ const Orders = () => {
 
                   {/* Workflow Tracker */}
                   <WorkflowTracker order={order} onRefresh={handleManualRefresh} />
+
+
 
                   {/* Test Result Viewer */}
                   <TestResultViewer 

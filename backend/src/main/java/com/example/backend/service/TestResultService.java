@@ -15,4 +15,5 @@ public interface TestResultService {
     List<TestResult> getByStaff(User staff);
     List<TestResult> getByCustomerId(Long customerId);
     List<TestResult> getByStatus(String status);
+    void deleteByOrderId(Long orderId);
 } 

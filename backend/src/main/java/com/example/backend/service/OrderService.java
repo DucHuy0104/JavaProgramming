@@ -130,6 +130,11 @@ public class OrderService {
     public List<Order> getOrdersByUserEmail(String email) {
         return orderRepository.findByEmailOrderByOrderDateDesc(email);
     }
+
+    // Xóa order
+    public void deleteOrder(Long id) {
+        orderRepository.deleteById(id);
+    }
     
     // Get next possible statuses for an order
     public List<String> getNextPossibleStatuses(String currentStatus, String orderType) {
