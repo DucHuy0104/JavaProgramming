@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { staffAPI } from '../services/api';
 import { Container, Row, Col, Form, Button, Table, Modal, Badge, Card, InputGroup, Dropdown, Alert, Spinner, Pagination} from 'react-bootstrap';
-import { FaSearch, FaPlus, FaEdit, FaTrash, FaEye, FaFilter, FaSort, FaDownload, FaUserPlus, FaUsers, FaClipboardList} from 'react-icons/fa';
+import { FaSearch, FaEdit, FaTrash, FaEye, FaFilter, FaSort, FaDownload, FaUserPlus, FaUsers} from 'react-icons/fa';
 
 const getRoleText = (role) => {
   const roleMap = {
@@ -66,15 +66,7 @@ const getStatusText = (status) => {
   return statusMap[status] || status;
 };
 
-const getStatusStep = (status) => {
-  const statusMap = {
-    'collected': 1,
-    'processing': 2,
-    'completed': 3,
-    'delivered': 4
-  };
-  return statusMap[status] || 0;
-};
+
 
 const StaffAdmin = () => {
   const [staffList, setStaffList] = useState([]);
@@ -104,15 +96,6 @@ const StaffAdmin = () => {
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
   const [showAlert, setShowAlert] = useState({ show: false, message: '', variant: 'success' });
-  const [showSampleModal, setShowSampleModal] = useState(false);
-  const [sampleForm, setSampleForm] = useState({
-    orderCode: '',
-    collectionDate: '',
-    customerName: '',
-    customerPhone: '',
-    serviceType: '',
-    notes: ''
-  });
 
   // No sample data - using real API
 
@@ -417,25 +400,7 @@ const StaffAdmin = () => {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  const handleAddSample = () => {
-    setSampleForm({
-      orderCode: '',
-      collectionDate: '',
-      customerName: '',
-      customerPhone: '',
-      serviceType: '',
-      notes: ''
-    });
-    setShowSampleModal(true);
-  };
 
-  const handleSampleSubmit = (e) => {
-    e.preventDefault();
-    // Logic xử lý thêm đơn thu mẫu
-    console.log('Sample form:', sampleForm);
-    setShowSampleModal(false);
-    showNotification('Đơn thu mẫu đã được tạo thành công!');
-  };
 
   return (
     <Container fluid>
@@ -536,7 +501,7 @@ const StaffAdmin = () => {
           ) : (
             <>
               <Table striped bordered hover responsive>
-                <thead className="table-dark">
+                <thead className="table-primary">
                   <tr>
                     <th>
                       <div className="d-flex align-items-center">
@@ -686,100 +651,7 @@ const StaffAdmin = () => {
         </Card.Body>
       </Card>
 
-      {/* Sample Collection Section */}
-      <Card className="mt-4">
-        <Card.Header>
-          <div className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">
-              <FaClipboardList className="me-2" />
-              Quản lý thu mẫu
-            </h5>
-            <Button variant="primary" size="sm" onClick={handleAddSample}>
-              <FaPlus className="me-1" />
-              Tạo đơn thu mẫu
-            </Button>
-          </div>
-        </Card.Header>
-        <Card.Body>
-          <Table striped bordered hover responsive>
-            <thead className="table-dark">
-              <tr>
-                <th>Mã đơn</th>
-                <th>Ngày thu</th>
-                <th>Khách hàng</th>
-                <th>Dịch vụ</th>
-                <th>Trạng thái</th>
-                <th>Nhân viên</th>
-                <th>Hành động</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[].map((order) => (
-                <tr key={order.id}>
-                  <td>
-                    <strong>{order.orderCode}</strong>
-                  </td>
-                  <td>{new Date(order.collectionDate).toLocaleDateString('vi-VN')}</td>
-                  <td>
-                    <div>
-                      <div><strong>{order.customerName}</strong></div>
-                      <small className="text-muted">{order.customerPhone}</small>
-                    </div>
-                  </td>
-                  <td>{order.serviceType}</td>
-                  <td>
-                    <div className="d-flex align-items-center">
-                      <Badge bg={getStatusVariant(order.status)} className="me-2">
-                        {getStatusText(order.status)}
-                      </Badge>
-                      {/* Progress Steps */}
-                      <div className="d-flex align-items-center">
-                        {[1, 2, 3, 4].map((step) => (
-                          <div key={step} className="d-flex align-items-center">
-                            <div 
-                              className={`rounded-circle d-flex align-items-center justify-content-center ${
-                                step <= getStatusStep(order.status) 
-                                  ? 'bg-success text-white' 
-                                  : 'bg-light text-muted'
-                              }`}
-                              style={{ width: '24px', height: '24px', fontSize: '12px' }}
-                            >
-                              {step}
-                            </div>
-                            {step < 4 && (
-                              <div 
-                                className={`mx-1 ${
-                                  step < getStatusStep(order.status) ? 'text-success' : 'text-muted'
-                                }`}
-                                style={{ width: '20px', height: '2px' }}
-                              >
-                                ─
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    {staffList.find(s => s.id === order.staffId)?.fullName || 'N/A'}
-                  </td>
-                  <td>
-                    <div className="btn-group" role="group">
-                      <Button variant="outline-info" size="sm" title="Xem chi tiết">
-                        <FaEye />
-                      </Button>
-                      <Button variant="outline-warning" size="sm" title="Cập nhật trạng thái">
-                        <FaEdit />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Card.Body>
-      </Card>
+
 
       {/* Modal thêm/sửa nhân viên */}
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
@@ -988,108 +860,7 @@ const StaffAdmin = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Modal tạo đơn thu mẫu */}
-      <Modal show={showSampleModal} onHide={() => setShowSampleModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Tạo đơn thu mẫu mới</Modal.Title>
-        </Modal.Header>
-        <Form onSubmit={handleSampleSubmit}>
-          <Modal.Body>
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Mã đơn <span className="text-danger">*</span></Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="orderCode"
-                    value={sampleForm.orderCode}
-                    onChange={(e) => setSampleForm({...sampleForm, orderCode: e.target.value})}
-                    placeholder="ADN001"
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Ngày thu mẫu <span className="text-danger">*</span></Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="collectionDate"
-                    value={sampleForm.collectionDate}
-                    onChange={(e) => setSampleForm({...sampleForm, collectionDate: e.target.value})}
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
 
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Tên khách hàng <span className="text-danger">*</span></Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="customerName"
-                    value={sampleForm.customerName}
-                    onChange={(e) => setSampleForm({...sampleForm, customerName: e.target.value})}
-                    placeholder="Nhập tên khách hàng"
-                    required
-                  />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Số điện thoại <span className="text-danger">*</span></Form.Label>
-                  <Form.Control
-                    type="tel"
-                    name="customerPhone"
-                    value={sampleForm.customerPhone}
-                    onChange={(e) => setSampleForm({...sampleForm, customerPhone: e.target.value})}
-                    placeholder="0912345678"
-                    required
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Loại dịch vụ <span className="text-danger">*</span></Form.Label>
-              <Form.Select
-                name="serviceType"
-                value={sampleForm.serviceType}
-                onChange={(e) => setSampleForm({...sampleForm, serviceType: e.target.value})}
-                required
-              >
-                <option value="">Chọn dịch vụ</option>
-                <option value="Xét nghiệm ADN cha con">Xét nghiệm ADN cha con</option>
-                <option value="Xét nghiệm ADN huyết thống">Xét nghiệm ADN huyết thống</option>
-                <option value="Xét nghiệm máu tổng quát">Xét nghiệm máu tổng quát</option>
-                <option value="Xét nghiệm nước tiểu">Xét nghiệm nước tiểu</option>
-              </Form.Select>
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label>Ghi chú</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={2}
-                name="notes"
-                value={sampleForm.notes}
-                onChange={(e) => setSampleForm({...sampleForm, notes: e.target.value})}
-                placeholder="Ghi chú về đơn thu mẫu..."
-              />
-            </Form.Group>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowSampleModal(false)}>
-              Hủy
-            </Button>
-            <Button variant="primary" type="submit">
-              Tạo đơn
-            </Button>
-          </Modal.Footer>
-        </Form>
-      </Modal>
     </Container>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Container, Row, Col, Badge } from 'react-bootstrap';
+import { Table, Button, Modal, Container, Row, Col, Badge, Form, InputGroup, Card } from 'react-bootstrap';
+import { FaSearch, FaFilter, FaEye, FaEdit, FaDownload } from 'react-icons/fa';
 import { fetchOrders } from '../services/api';
 
 const OrdersAdmin = () => {
@@ -9,6 +10,13 @@ const OrdersAdmin = () => {
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [serviceFilter, setServiceFilter] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState('');
 
   useEffect(() => {
     loadOrders();
@@ -198,6 +206,78 @@ const OrdersAdmin = () => {
     setOrderToCancel(null);
   };
 
+  // Filter logic
+  const filteredOrders = orders.filter(order => {
+    // Search filter
+    if (searchQuery) {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch =
+        order.orderNumber?.toLowerCase().includes(searchLower) ||
+        order.serviceName?.toLowerCase().includes(searchLower) ||
+        order.customerName?.toLowerCase().includes(searchLower) ||
+        order.email?.toLowerCase().includes(searchLower) ||
+        order.phone?.toLowerCase().includes(searchLower);
+
+      if (!matchesSearch) return false;
+    }
+
+    // Status filter with grouped statuses
+    if (statusFilter) {
+      if (statusFilter === 'processing') {
+        // Đơn đang xử lý - gom tất cả trạng thái từ pending đến results_recorded
+        const processingStatuses = [
+          'pending_registration',
+          'accepted',
+          'sample_collected_home',
+          'sample_received_lab',
+          'testing_in_progress',
+          'results_recorded',
+          'sample_collected_clinic'
+        ];
+        if (!processingStatuses.includes(order.status)) {
+          return false;
+        }
+      } else if (statusFilter === 'cancelled') {
+        // Đã hủy
+        if (order.status !== 'cancelled') {
+          return false;
+        }
+      } else if (statusFilter === 'completed') {
+        // Đã trả kết quả
+        if (order.status !== 'results_delivered') {
+          return false;
+        }
+      }
+    }
+
+    // Service filter
+    if (serviceFilter && order.serviceName !== serviceFilter) {
+      return false;
+    }
+
+    // Payment status filter
+    if (paymentStatusFilter && order.paymentStatus !== paymentStatusFilter) {
+      return false;
+    }
+
+    // Date filter
+    if (dateFilter) {
+      const orderDate = new Date(order.orderDate);
+      const filterDate = new Date(dateFilter);
+
+      // Compare only date part (ignore time)
+      if (orderDate.toDateString() !== filterDate.toDateString()) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  // Get unique values for filters
+  const uniqueServices = [...new Set(orders.map(order => order.serviceName))].filter(Boolean);
+  const uniquePaymentStatuses = [...new Set(orders.map(order => order.paymentStatus))].filter(Boolean);
+
   const handleDownloadResult = async (order) => {
     try {
       // Gọi API để tải kết quả xét nghiệm
@@ -242,9 +322,123 @@ const OrdersAdmin = () => {
 
   return (
     <Container fluid className="p-4">
-      <h1 className="h2 mb-4">Quản lý đơn hàng</h1>
+      <Row>
+        <Col>
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h1 className="h2 mb-0">
+              <FaFilter className="me-3 text-primary" />
+              Quản lý đơn hàng
+            </h1>
+            <Badge bg="info" className="fs-6">
+              {filteredOrders.length} / {orders.length} đơn hàng
+            </Badge>
+          </div>
+        </Col>
+      </Row>
 
-      <Table striped bordered hover responsive>
+      {/* Bộ lọc */}
+      <Card className="mb-4">
+        <Card.Header className="bg-light">
+          <h5 className="mb-0">
+            <FaFilter className="me-2" />
+            Bộ lọc tìm kiếm
+          </h5>
+        </Card.Header>
+        <Card.Body>
+          <Row>
+            <Col md={4} className="mb-3">
+              <Form.Label>Tìm kiếm</Form.Label>
+              <InputGroup>
+                <InputGroup.Text>
+                  <FaSearch />
+                </InputGroup.Text>
+                <Form.Control
+                  type="text"
+                  placeholder="Tìm theo mã đơn, tên KH, email, SĐT..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </InputGroup>
+            </Col>
+
+            <Col md={2} className="mb-3">
+              <Form.Label>Trạng thái</Form.Label>
+              <Form.Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="">Tất cả trạng thái</option>
+                <option value="processing">Đơn đang xử lý</option>
+                <option value="completed">Đã trả kết quả</option>
+                <option value="cancelled">Đã hủy</option>
+              </Form.Select>
+            </Col>
+
+            <Col md={2} className="mb-3">
+              <Form.Label>Thanh toán</Form.Label>
+              <Form.Select
+                value={paymentStatusFilter}
+                onChange={(e) => setPaymentStatusFilter(e.target.value)}
+              >
+                <option value="">Tất cả</option>
+                {uniquePaymentStatuses.map(status => (
+                  <option key={status} value={status}>
+                    {getPaymentStatusBadge(status).props.children}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
+
+            <Col md={2} className="mb-3">
+              <Form.Label>Dịch vụ</Form.Label>
+              <Form.Select
+                value={serviceFilter}
+                onChange={(e) => setServiceFilter(e.target.value)}
+              >
+                <option value="">Tất cả dịch vụ</option>
+                {uniqueServices.map(service => (
+                  <option key={service} value={service}>
+                    {service}
+                  </option>
+                ))}
+              </Form.Select>
+            </Col>
+
+            <Col md={2} className="mb-3">
+              <Form.Label>Ngày đặt</Form.Label>
+              <Form.Control
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+            </Col>
+          </Row>
+
+          {(searchQuery || statusFilter || serviceFilter || dateFilter || paymentStatusFilter) && (
+            <Row>
+              <Col>
+                <Button
+                  variant="outline-secondary"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery('');
+                    setStatusFilter('');
+                    setServiceFilter('');
+                    setDateFilter('');
+                    setPaymentStatusFilter('');
+                  }}
+                >
+                  Xóa bộ lọc
+                </Button>
+              </Col>
+            </Row>
+          )}
+        </Card.Body>
+      </Card>
+
+      <Card>
+        <Card.Body>
+          <Table striped bordered hover responsive>
         <thead>
           <tr>
             <th>Mã đơn</th>
@@ -261,7 +455,17 @@ const OrdersAdmin = () => {
           </tr>
         </thead>
         <tbody>
-          {orders.map(order => (
+          {filteredOrders.length === 0 ? (
+            <tr>
+              <td colSpan="11" className="text-center py-4">
+                <div className="text-muted">
+                  <FaSearch size={48} className="mb-3" />
+                  <p>Không tìm thấy đơn hàng nào phù hợp với bộ lọc.</p>
+                </div>
+              </td>
+            </tr>
+          ) : (
+            filteredOrders.map(order => (
             <tr key={order.id}>
               <td>{order.orderNumber}</td>
               <td>{order.customerName}</td>
@@ -370,9 +574,12 @@ const OrdersAdmin = () => {
                 )}
               </td>
             </tr>
-          ))}
+            ))
+          )}
         </tbody>
       </Table>
+        </Card.Body>
+      </Card>
 
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
