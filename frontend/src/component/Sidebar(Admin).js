@@ -9,7 +9,6 @@ const Sidebar = () => {
     { path: '', label: 'Dashboard' },
     { path: 'services', label: 'Dịch vụ' },
     { path: 'orders', label: 'Đơn xét nghiệm' },
-    { path: 'results', label: 'Kết quả' },
     { path: 'customers', label: 'Khách hàng' },
     { path: 'staff', label: 'Nhân viên' },
     { path: 'blog', label: 'Blog' },

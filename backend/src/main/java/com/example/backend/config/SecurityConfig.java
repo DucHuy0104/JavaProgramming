@@ -78,6 +78,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/orders/**").hasAnyRole("ADMIN", "MANAGER", "STAFF", "CUSTOMER") // Customer có thể hủy đơn
 
+                // Contact endpoint
+                .requestMatchers("/api/contact").permitAll()
+
                 // All other requests need authentication
                 .anyRequest().authenticated()
             )

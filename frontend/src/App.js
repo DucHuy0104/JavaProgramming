@@ -34,7 +34,6 @@ import DashboardAdmin from './pages/Dashboard(Admin)';
 import OrdersAdmin from './pages/Orders(Admin)';
 import ServicesAdmin from './pages/Services(Admin)';
 import CustomersAdmin from './pages/Customers(Admin)';
-import ResultsAdmin from './pages/Results(Admin)';
 import ReportsAdmin from './pages/Reports(Admin)';
 import FeedbackAdmin from './pages/Feedback(Admin)';
 import BlogAdmin from './pages/Blog(Admin)';
@@ -94,7 +93,6 @@ function App() {
           <Route path="orders" element={<OrdersAdmin />} />
           <Route path="services" element={<ServicesAdmin />} />
           <Route path="customers" element={<CustomersAdmin />} />
-          <Route path="results" element={<ResultsAdmin />} />
           <Route path="reports" element={<ReportsAdmin />} />
           <Route path="feedback" element={<FeedbackAdmin />} />
           <Route path="blog" element={<BlogAdmin />} />
