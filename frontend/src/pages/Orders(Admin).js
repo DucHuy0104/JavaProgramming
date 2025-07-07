@@ -226,8 +226,11 @@ const OrdersAdmin = () => {
         order.orderNumber?.toLowerCase().includes(searchLower) ||
         order.serviceName?.toLowerCase().includes(searchLower) ||
         order.customerName?.toLowerCase().includes(searchLower) ||
+        order.customer?.fullName?.toLowerCase().includes(searchLower) ||
         order.email?.toLowerCase().includes(searchLower) ||
-        order.phone?.toLowerCase().includes(searchLower);
+        order.customer?.email?.toLowerCase().includes(searchLower) ||
+        order.phone?.toLowerCase().includes(searchLower) ||
+        order.customer?.phoneNumber?.toLowerCase().includes(searchLower);
 
       if (!matchesSearch) return false;
     }
@@ -512,7 +515,7 @@ const OrdersAdmin = () => {
             filteredOrders.map(order => (
             <tr key={order.id}>
               <td>{order.orderNumber}</td>
-              <td>{order.customerName}</td>
+              <td>{order.customerName || order.customer?.fullName}</td>
               <td>{order.serviceName}</td>
               <td>{formatDate(order.orderDate)}</td>
               <td>{formatPrice(order.totalAmount)}</td>
@@ -683,7 +686,10 @@ const OrdersAdmin = () => {
                 <Col md={6}>
                   <h5>Thông tin đơn hàng</h5>
                   <p><strong>Mã đơn:</strong> {selectedOrder.orderNumber}</p>
-                  <p><strong>Khách hàng:</strong> {selectedOrder.customerName}</p>
+                  <p><strong>Khách hàng:</strong> {selectedOrder.customerName || selectedOrder.customer?.fullName}</p>
+                  <p><strong>Email:</strong> {selectedOrder.email || selectedOrder.customer?.email || 'N/A'}</p>
+                  <p><strong>Số điện thoại:</strong> {selectedOrder.phone || selectedOrder.customer?.phoneNumber || 'N/A'}</p>
+                  <p><strong>Địa chỉ:</strong> {selectedOrder.address || selectedOrder.customer?.address || 'N/A'}</p>
                   <p><strong>Dịch vụ:</strong> {selectedOrder.serviceName}</p>
                   <p><strong>Ngày đặt:</strong> {formatDate(selectedOrder.orderDate)}</p>
                   <p><strong>Loại đơn:</strong> {getOrderTypeText(selectedOrder.orderType)}</p>

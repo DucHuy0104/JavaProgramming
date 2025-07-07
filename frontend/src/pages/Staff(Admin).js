@@ -114,7 +114,7 @@ const StaffAdmin = () => {
       }
 
       if (user.role !== 'ADMIN') {
-        throw new Error('Bạn không có quyền truy cập trang này (cần role ADMIN)');
+        throw new Error('Bạn không có quyền truy cập trang này ');
       }
 
       // Thử gọi API admin/staff trước, nếu không được thì gọi từng role

@@ -88,9 +88,9 @@ public class UserController {
         }
     }
 
-    // Get all users (Admin only)
+    // Get all users (Admin and Manager only)
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<?> getAllUsers() {
         try {
             System.out.println("=== GET ALL USERS REQUEST ===");
@@ -231,9 +231,9 @@ public class UserController {
         }
     }
 
-    // Change user status (Admin only)
+    // Change user status (Admin and Manager only)
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<?> changeUserStatus(@PathVariable Long id, @RequestParam String status) {
         try {
             User user = userService.changeUserStatus(id, status);
@@ -691,6 +691,36 @@ public class UserController {
             Map<String, Object> response = new HashMap<>();
             response.put("success", false);
             response.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // Update user profile by ID (Admin and Manager only)
+    @PutMapping("/{id}/profile")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<?> updateUserProfile(@PathVariable Long id, @RequestBody UpdateProfileDto profileDto) {
+        try {
+            System.out.println("=== UPDATE USER PROFILE BY ID REQUEST ===");
+            System.out.println("User ID: " + id);
+            System.out.println("Profile data: " + profileDto);
+
+            User user = userService.updateProfile(id, profileDto);
+            System.out.println("✅ User profile updated successfully");
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Cập nhật thông tin khách hàng thành công!");
+            response.put("data", user);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("❌ Error updating user profile: " + e.getMessage());
+            e.printStackTrace();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Lỗi khi cập nhật thông tin: " + e.getMessage());
+
             return ResponseEntity.badRequest().body(response);
         }
     }

@@ -91,6 +91,76 @@ export const authAPI = {
   // Kiểm tra đã đăng nhập chưa
   isAuthenticated: () => {
     return !!localStorage.getItem('token');
+  },
+
+};
+
+// User APIs
+export const userAPI = {
+  // Lấy tất cả users (admin only)
+  getAllUsers: async () => {
+    try {
+      const response = await api.get('/users');
+      return response.data;
+    } catch (error) {
+      console.error('Error in getAllUsers:', error);
+      // Xử lý error an toàn
+      const errorMessage = error?.response?.data?.message || error?.message || 'Lỗi không xác định khi lấy danh sách users';
+      throw { message: errorMessage, originalError: error };
+    }
+  },
+
+  // Lấy danh sách khách hàng (chỉ role CUSTOMER)
+  getCustomers: async (search = '', status = '') => {
+    try {
+      const response = await userAPI.getAllUsers();
+      if (response.success) {
+        let customers = response.data.filter(user => user.role === 'CUSTOMER');
+
+        // Apply search filter
+        if (search && search.trim()) {
+          const searchLower = search.toLowerCase();
+          customers = customers.filter(customer =>
+            customer.fullName.toLowerCase().includes(searchLower) ||
+            customer.email.toLowerCase().includes(searchLower) ||
+            (customer.phoneNumber && customer.phoneNumber.includes(search))
+          );
+        }
+
+        // Apply status filter
+        if (status && status.trim()) {
+          customers = customers.filter(customer => customer.status === status);
+        }
+
+        return { success: true, data: customers };
+      }
+      return response;
+    } catch (error) {
+      console.error('Error in getCustomers:', error);
+      // Xử lý error an toàn
+      const errorMessage = error?.response?.data?.message || error?.message || 'Lỗi không xác định';
+      throw { message: errorMessage, originalError: error };
+    }
+  },
+
+  // Cập nhật profile user
+  updateProfile: async (userId, profileData) => {
+    try {
+      const response = await api.put(`/users/${userId}/profile`, profileData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Thay đổi trạng thái user
+  changeUserStatus: async (userId, status) => {
+    try {
+      const response = await api.patch(`/users/${userId}/status`, { status });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   }
 };
 
@@ -379,8 +449,6 @@ export const testResultAPI = {
       throw error.response?.data || error.message;
     }
   },
-
-
 };
 
 // Legacy exports for backward compatibility

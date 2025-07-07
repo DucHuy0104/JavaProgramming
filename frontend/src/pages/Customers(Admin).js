@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Button, Modal, Form, Container, Row, Col, Badge } from 'react-bootstrap';
+import { Table, Button, Modal, Form, Container, Row, Col, Badge, Alert } from 'react-bootstrap';
 import debounce from 'lodash/debounce';
+import { useNavigate } from 'react-router-dom';
+import { userAPI, orderAPI, authAPI } from '../services/api';
 
 const CustomersAdmin = () => {
+  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -14,37 +17,112 @@ const CustomersAdmin = () => {
   // New state for editing
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [hasPermission, setHasPermission] = useState(false);
+
+  // Kiểm tra quyền truy cập khi component mount
+  useEffect(() => {
+    checkPermission();
+  }, []);
 
   useEffect(() => {
-    loadCustomers();
-  }, [filters]);
+    if (hasPermission) {
+      loadCustomers();
+    }
+  }, [filters, hasPermission]);
+
+  const checkPermission = () => {
+    const user = authAPI.getCurrentUser();
+    if (!user) {
+      setError('Bạn cần đăng nhập để truy cập trang này');
+      navigate('/login');
+      return;
+    }
+
+    // Chỉ ADMIN và MANAGER mới có quyền xem danh sách khách hàng
+    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
+      setError('Bạn không có quyền truy cập trang này. Chỉ Admin và Manager mới có thể xem danh sách khách hàng.');
+      setHasPermission(false);
+      return;
+    }
+
+    setHasPermission(true);
+  };
 
   const loadCustomers = async () => {
     try {
-      // TODO: Thay thế bằng API call thực tế
-      // const queryParams = new URLSearchParams(filters);
-      // const response = await fetch(`/api/customers?${queryParams}`);
-      // const data = await response.json();
-      // setCustomers(data);
-      
-      // Dữ liệu trống - chờ kết nối API
-      setCustomers([]);
+      setLoading(true);
+      setError('');
+
+      // Debug: Kiểm tra token và user
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      console.log('Current token:', token ? 'exists' : 'missing');
+      console.log('Current user:', user);
+      console.log('User role:', user.role);
+
+      const response = await userAPI.getCustomers(filters.search, filters.status);
+      if (response.success) {
+
+        // Lấy tất cả orders một lần để tối ưu hiệu suất
+        let allOrders = [];
+        try {
+          allOrders = await orderAPI.getAllOrders();
+        } catch (error) {
+          console.error('Lỗi khi lấy danh sách orders:', error);
+        }
+
+        // Thêm thông tin số đơn hàng cho mỗi khách hàng
+        const customersWithOrderCount = response.data.map(customer => {
+          const customerOrders = allOrders.filter(order => order.email === customer.email);
+          return {
+            ...customer,
+            orderCount: customerOrders.length
+          };
+        });
+
+        setCustomers(customersWithOrderCount);
+      } else {
+        setError(response.message || 'Lỗi khi tải dữ liệu khách hàng');
+      }
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error structure:', error);
+
+      // Xử lý error message an toàn
+      let errorMessage = 'Lỗi khi tải dữ liệu khách hàng';
+      if (typeof error === 'string') {
+        errorMessage += ': ' + error;
+      } else if (error && error.message) {
+        errorMessage += ': ' + error.message;
+      } else if (error && error.response && error.response.data && error.response.data.message) {
+        errorMessage += ': ' + error.response.data.message;
+      } else {
+        errorMessage += ': ' + JSON.stringify(error);
+      }
+
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
 
   const loadOrderHistory = async (customerId) => {
     try {
-      // TODO: Thay thế bằng API call thực tế
-      // const response = await fetch(`/api/customers/${customerId}/orders`);
-      // const data = await response.json();
-      // setOrderHistory(data);
-      
-      // Dữ liệu trống - chờ kết nối API
-      setOrderHistory([]);
+      // Sử dụng API orders để lấy lịch sử đặt hàng
+      const customer = customers.find(c => c.id === customerId);
+      if (customer) {
+        const orders = await orderAPI.getAllOrders();
+        const customerOrders = orders.filter(order => order.email === customer.email);
+        setOrderHistory(customerOrders);
+      } else {
+        setOrderHistory([]);
+      }
     } catch (error) {
       console.error('Lỗi khi tải lịch sử đặt hàng:', error);
+      setOrderHistory([]);
     }
   };
 
@@ -87,26 +165,27 @@ const CustomersAdmin = () => {
     e.preventDefault();
     try {
       if (isEditing) {
-        // TODO: Gọi API cập nhật thông tin khách hàng
-        // await fetch(`/api/customers/${editFormData.id}`, {
-        //   method: 'PUT',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(editFormData)
-        // });
-        setCustomers(customers.map(c =>
-          c.id === editFormData.id ? editFormData : c
-        ));
-        alert('Thông tin khách hàng đã được cập nhật!');
+        // Sử dụng API users để cập nhật thông tin khách hàng
+        const response = await userAPI.updateProfile(editFormData.id, {
+          fullName: editFormData.fullName,
+          phoneNumber: editFormData.phoneNumber,
+          address: editFormData.address,
+          dateOfBirth: editFormData.dateOfBirth,
+          gender: editFormData.gender
+        });
+
+        if (response.success) {
+          setCustomers(customers.map(c =>
+            c.id === editFormData.id ? { ...c, ...editFormData } : c
+          ));
+          alert('Thông tin khách hàng đã được cập nhật!');
+          loadCustomers(); // Reload để lấy dữ liệu mới
+        } else {
+          alert('Lỗi: ' + response.message);
+        }
       } else {
         // TODO: Gọi API thêm khách hàng mới (nếu có chức năng thêm)
-        // const response = await fetch('/api/customers', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify(editFormData)
-        // });
-        // const newCustomer = await response.json();
-        // setCustomers([...customers, newCustomer]);
-        // alert('Khách hàng mới đã được thêm!');
+        alert('Chức năng thêm khách hàng mới chưa được triển khai');
       }
       setShowModal(false);
       setSelectedCustomer(null);
@@ -114,27 +193,46 @@ const CustomersAdmin = () => {
       setEditFormData({});
     } catch (error) {
       console.error('Lỗi khi lưu thông tin khách hàng:', error);
-      alert('Đã xảy ra lỗi khi lưu thông tin khách hàng.');
+
+      let errorMessage = 'Đã xảy ra lỗi khi lưu thông tin khách hàng';
+      if (typeof error === 'string') {
+        errorMessage += ': ' + error;
+      } else if (error && error.message) {
+        errorMessage += ': ' + error.message;
+      }
+
+      alert(errorMessage);
     }
   };
 
   const handleToggleStatus = async (customer) => {
     try {
-      // TODO: Gọi API cập nhật trạng thái
-      // await fetch(`/api/customers/${customer.id}`, {
-      //   method: 'PATCH',
-      //   body: JSON.stringify({
-      //     status: customer.status === 'active' ? 'blocked' : 'active'
-      //   })
-      // });
-      
-      setCustomers(customers.map(c =>
-        c.id === customer.id
-          ? { ...c, status: c.status === 'active' ? 'blocked' : 'active' }
-          : c
-      ));
+      const newStatus = customer.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+
+      // Sử dụng API users để cập nhật trạng thái
+      const response = await userAPI.changeUserStatus(customer.id, newStatus);
+
+      if (response.success) {
+        setCustomers(customers.map(c =>
+          c.id === customer.id
+            ? { ...c, status: newStatus }
+            : c
+        ));
+        alert(`Đã ${newStatus === 'ACTIVE' ? 'kích hoạt' : 'vô hiệu hóa'} khách hàng thành công!`);
+      } else {
+        alert('Lỗi: ' + response.message);
+      }
     } catch (error) {
       console.error('Lỗi khi cập nhật trạng thái:', error);
+
+      let errorMessage = 'Lỗi khi cập nhật trạng thái';
+      if (typeof error === 'string') {
+        errorMessage += ': ' + error;
+      } else if (error && error.message) {
+        errorMessage += ': ' + error.message;
+      }
+
+      alert(errorMessage);
     }
   };
 
@@ -149,9 +247,32 @@ const CustomersAdmin = () => {
     }).format(price);
   };
 
+  // Nếu không có quyền, hiển thị thông báo
+  if (!hasPermission && error) {
+    return (
+      <Container fluid className="py-4">
+        <h1 className="h2 mb-4">Quản lý khách hàng</h1>
+        <Alert variant="danger" className="mb-4">
+          <Alert.Heading>Không có quyền truy cập</Alert.Heading>
+          <p>{error}</p>
+          <hr />
+          <p className="mb-0">
+            Vui lòng liên hệ Admin để được cấp quyền truy cập.
+          </p>
+        </Alert>
+      </Container>
+    );
+  }
+
   return (
     <Container fluid className="p-4">
       <h1 className="h2 mb-4">Quản lý khách hàng</h1>
+
+      {error && hasPermission && (
+        <Alert variant="danger" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       <Row className="mb-4">
         <Col md={6}>
@@ -168,8 +289,8 @@ const CustomersAdmin = () => {
             onChange={handleFilterChange}
           >
             <option value="">Tất cả trạng thái</option>
-            <option value="active">Hoạt động</option>
-            <option value="blocked">Đã khóa</option>
+            <option value="ACTIVE">Hoạt động</option>
+            <option value="INACTIVE">Đã khóa</option>
           </Form.Select>
         </Col>
       </Row>
@@ -186,17 +307,26 @@ const CustomersAdmin = () => {
           </tr>
         </thead>
         <tbody>
-          {customers.map(customer => (
-            <tr key={customer.id}>
-              <td>{customer.fullName}</td>
-              <td>{customer.email}</td>
-              <td>{customer.phone}</td>
-              <td>{customer.orderCount} đơn</td>
-              <td>
-                <Badge bg={customer.status === 'active' ? 'success' : 'danger'}>
-                  {customer.status === 'active' ? 'Hoạt động' : 'Đã khóa'}
-                </Badge>
-              </td>
+          {loading ? (
+            <tr>
+              <td colSpan="6" className="text-center">Đang tải dữ liệu...</td>
+            </tr>
+          ) : customers.length === 0 ? (
+            <tr>
+              <td colSpan="6" className="text-center">Không có khách hàng nào</td>
+            </tr>
+          ) : (
+            customers.map(customer => (
+              <tr key={customer.id}>
+                <td>{customer.fullName}</td>
+                <td>{customer.email}</td>
+                <td>{customer.phoneNumber || 'N/A'}</td>
+                <td>{customer.orderCount} đơn</td>
+                <td>
+                  <Badge bg={customer.status === 'ACTIVE' ? 'success' : 'danger'}>
+                    {customer.status === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}
+                  </Badge>
+                </td>
               <td>
                 <Button
                   variant="outline-primary"
@@ -213,7 +343,7 @@ const CustomersAdmin = () => {
                 >
                   Sửa
                 </Button>
-                {customer.status === 'active' && (
+                {customer.status === 'ACTIVE' && (
                   <Button
                     variant="outline-danger"
                     size="sm"
@@ -223,7 +353,7 @@ const CustomersAdmin = () => {
                     Khóa
                   </Button>
                 )}
-                {customer.status === 'blocked' && (
+                {customer.status === 'INACTIVE' && (
                   <Button
                     variant="outline-success"
                     size="sm"
@@ -235,7 +365,8 @@ const CustomersAdmin = () => {
                 )}
               </td>
             </tr>
-          ))}
+            ))
+          )}
         </tbody>
       </Table>
 
@@ -275,8 +406,8 @@ const CustomersAdmin = () => {
                         <Form.Label>Số điện thoại</Form.Label>
                         <Form.Control
                           type="tel"
-                          name="phone"
-                          value={editFormData.phone || ''}
+                          name="phoneNumber"
+                          value={editFormData.phoneNumber || ''}
                           onChange={handleFormChange}
                         />
                       </Form.Group>
@@ -298,8 +429,8 @@ const CustomersAdmin = () => {
                           onChange={handleFormChange}
                           required
                         >
-                          <option value="active">Hoạt động</option>
-                          <option value="blocked">Đã khóa</option>
+                          <option value="ACTIVE">Hoạt động</option>
+                          <option value="INACTIVE">Đã khóa</option>
                         </Form.Select>
                       </Form.Group>
                       <Button variant="primary" type="submit">
@@ -313,12 +444,14 @@ const CustomersAdmin = () => {
                     <>
                       <p><strong>Họ tên:</strong> {selectedCustomer.fullName}</p>
                       <p><strong>Email:</strong> {selectedCustomer.email}</p>
-                      <p><strong>Số điện thoại:</strong> {selectedCustomer.phone}</p>
-                      <p><strong>Địa chỉ:</strong> {selectedCustomer.address}</p>
-                      <p><strong>Ngày tham gia:</strong> {formatDate(selectedCustomer.joinDate)}</p>
+                      <p><strong>Số điện thoại:</strong> {selectedCustomer.phoneNumber || 'N/A'}</p>
+                      <p><strong>Địa chỉ:</strong> {selectedCustomer.address || 'N/A'}</p>
+                      <p><strong>Ngày sinh:</strong> {selectedCustomer.dateOfBirth || 'N/A'}</p>
+                      <p><strong>Giới tính:</strong> {selectedCustomer.gender || 'N/A'}</p>
+                      <p><strong>Ngày tham gia:</strong> {formatDate(selectedCustomer.createdAt)}</p>
                       <p><strong>Trạng thái:</strong>{' '}
-                        <Badge bg={selectedCustomer.status === 'active' ? 'success' : 'danger'}>
-                          {selectedCustomer.status === 'active' ? 'Hoạt động' : 'Đã khóa'}
+                        <Badge bg={selectedCustomer.status === 'ACTIVE' ? 'success' : 'danger'}>
+                          {selectedCustomer.status === 'ACTIVE' ? 'Hoạt động' : 'Đã khóa'}
                         </Badge>
                       </p>
                     </>

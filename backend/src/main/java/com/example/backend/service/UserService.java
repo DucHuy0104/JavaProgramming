@@ -164,6 +164,11 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    // Update user (overloaded method)
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
     // Delete user
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) {
