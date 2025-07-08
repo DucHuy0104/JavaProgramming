@@ -111,7 +111,7 @@ export const userAPI = {
     } catch (error) {
       console.error('Error in getAllUsers:', error);
       // Xử lý error an toàn
-      const errorMessage = error?.response?.data?.message || error?.message || 'Lỗi không xác định khi lấy danh sách users';
+const errorMessage = error?.response?.data?.message || error?.message || 'Lỗi không xác định khi lấy danh sách users';
       throw { message: errorMessage, originalError: error };
     }
   },
@@ -200,7 +200,47 @@ export const blogAPI = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
-  }
+  },
+
+  // Tạo blog mới
+  createBlog: async (blogData) => {
+    try {
+      const response = await api.post('/blogs', blogData);
+return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Xóa blog
+  deleteBlog: async (id) => {
+    try {
+      const response = await api.delete(`/blogs/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Publish blog
+  publishBlog: async (id) => {
+    try {
+      const response = await api.patch(`/blogs/${id}/publish`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Update blog
+  updateBlog: async (id, blogData) => {
+    try {
+      const response = await api.put(`/blogs/${id}`, blogData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 // Staff APIs
@@ -270,7 +310,7 @@ export const staffAPI = {
       const response = await api.delete(`/users/${userId}`);
       console.log('API: Delete user response:', response.data);
       return response.data;
-    } catch (error) {
+} catch (error) {
       console.error('API: Delete user error:', error);
       console.error('API: Error response:', error.response?.data);
       throw error.response?.data || error.message;
@@ -369,7 +409,7 @@ export const orderAPI = {
   createOrder: async (orderData) => {
     try {
       const response = await api.post('/orders', orderData);
-      return response.data;
+return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -459,7 +499,7 @@ export const testResultAPI = {
   // Duyệt test result
   approveTestResult: async (testResultId) => {
     try {
-      const response = await api.post(`/test-results/${testResultId}/approve`);
+const response = await api.post(`/test-results/${testResultId}/approve`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -557,7 +597,7 @@ export const fileAPI = {
       const response = await api.delete(`/files/delete-result/${orderId}`);
       return response.data;
     } catch (error) {
-      console.error('Error deleting test result:', error);
+console.error('Error deleting test result:', error);
       throw error.response?.data || error.message;
     }
   }

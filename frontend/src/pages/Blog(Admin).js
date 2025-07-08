@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Row, Col, Form, Button, Table, Modal, Badge, Card } from 'react-bootstrap';
+import { blogAPI } from '../services/api';
 
 const getCategoryText = (category) => {
   const categoryMap = {
@@ -28,63 +29,40 @@ const BlogAdmin = () => {
     category: '',
     author: 'Admin',
     content: '',
-    image: null,
-    status: 'draft',
+    imageUrl: '',
+    status: 'DRAFT',
     publishDate: '',
   });
-  const [imagePreview, setImagePreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Sample data
-  const samplePosts = [
-    {
-      id: 1,
-      title: 'Hướng dẫn xét nghiệm DNA tại nhà',
-      category: 'guide',
-      author: 'Admin',
-      content: 'Đây là nội dung hướng dẫn chi tiết về cách tự lấy mẫu DNA tại nhà một cách an toàn và hiệu quả...',
-      image: 'https://via.placeholder.com/150/0000FF/808080?text=DNA_Guide',
-      status: 'published',
-      publishDate: '2023-01-20',
-    },
-    {
-      id: 2,
-      title: 'Tin tức: Công nghệ DNA mới nhất',
-      category: 'news',
-      author: 'Admin',
-      content: 'Cập nhật những tiến bộ vượt bậc trong công nghệ giải mã DNA, mở ra nhiều cơ hội mới...',
-      image: 'https://via.placeholder.com/150/FF0000/FFFFFF?text=DNA_News',
-      status: 'draft',
-      publishDate: '2023-02-15',
-    },
-    {
-      id: 3,
-      title: 'FAQ: Các câu hỏi thường gặp về xét nghiệm di truyền',
-      category: 'faq',
-      author: 'Admin',
-      content: 'Giải đáp các thắc mắc phổ biến liên quan đến xét nghiệm di truyền và ý nghĩa của chúng...',
-      image: null,
-      status: 'published',
-      publishDate: '2023-03-01',
-    },
-  ];
-
+  // Load posts từ API
   const loadPosts = useCallback(async () => {
-    // Simulate API call
-    let filteredPosts = samplePosts.filter(post => {
-      const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = categoryFilter ? post.category === categoryFilter : true;
-      const matchesDate = dateFilter ? post.publishDate === dateFilter : true;
-      return matchesSearch && matchesCategory && matchesDate;
-    });
-    setPosts(filteredPosts);
-  }, [searchQuery, categoryFilter, dateFilter]);
+    setLoading(true);
+    try {
+      const response = await blogAPI.getBlogs(0, 50); // lấy tối đa 50 bài
+      if (response.success) {
+        setPosts(response.data);
+      } else {
+        alert(response.message || 'Không thể tải danh sách blog');
+      }
+    } catch (err) {
+      alert('Lỗi khi tải danh sách blog: ' + (err.message || err));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      loadPosts();
-    }, 300); // Debounce for search input
-    return () => clearTimeout(handler);
-  }, [searchQuery, categoryFilter, dateFilter, loadPosts]);
+    loadPosts();
+  }, [loadPosts]);
+
+  // Lọc bài viết theo search/category/date
+  const filteredPosts = posts.filter(post => {
+    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = categoryFilter ? post.category === categoryFilter : true;
+    const matchesDate = dateFilter ? (post.publishedAt && post.publishedAt.slice(0, 10) === dateFilter) : true;
+    return matchesSearch && matchesCategory && matchesDate;
+  });
 
   const handleAddPost = () => {
     setIsEditing(false);
@@ -94,33 +72,33 @@ const BlogAdmin = () => {
       category: '',
       author: 'Admin',
       content: '',
-      image: null,
-      status: 'draft',
+      imageUrl: '',
+      status: 'DRAFT',
       publishDate: '',
     });
-    setImagePreview(null);
     setShowModal(true);
   };
 
   const handleEditPost = (post) => {
     setIsEditing(true);
     setCurrentPost({ ...post });
-    setImagePreview(post.image);
     setShowModal(true);
   };
 
-  const handleDeletePost = (id) => {
+  const handleDeletePost = async (id) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa bài viết này?')) {
-      // Simulate API call to delete
-      console.log(`Deleting post ${id}`);
-      setPosts(posts.filter(post => post.id !== id));
-      alert('Bài viết đã được xóa.');
+      try {
+        await blogAPI.deleteBlog(id);
+        setPosts(posts.filter(post => post.id !== id));
+        alert('Bài viết đã được xóa.');
+      } catch (err) {
+        alert('Lỗi khi xóa bài viết: ' + (err.message || err));
+      }
     }
   };
 
   const handlePreviewPost = (id) => {
-    // Simulate viewing post details (e.g., in a new tab or another modal)
-    alert(`Xem trước bài viết ${id}`);
+window.open(`/blogs/${id}`, '_blank');
   };
 
   const handleCloseModal = () => {
@@ -131,11 +109,10 @@ const BlogAdmin = () => {
       category: '',
       author: 'Admin',
       content: '',
-      image: null,
-      status: 'draft',
+      imageUrl: '',
+      status: 'DRAFT',
       publishDate: '',
     });
-    setImagePreview(null);
   };
 
   const handleFormChange = (e) => {
@@ -143,33 +120,36 @@ const BlogAdmin = () => {
     setCurrentPost(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCurrentPost(prev => ({ ...prev, image: file }));
-      const reader = new FileReader();
-      reader.onload = (e) => setImagePreview(e.target.result);
-      reader.readAsDataURL(file);
-    } else {
-      setCurrentPost(prev => ({ ...prev, image: null }));
-      setImagePreview(null);
-    }
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate saving to API
-    console.log('Saving post:', currentPost);
-    if (isEditing) {
-      setPosts(posts.map(p => (p.id === currentPost.id ? { ...currentPost, image: imagePreview } : p)));
-      alert('Bài viết đã được cập nhật!');
-    } else {
-      const newId = Math.max(...posts.map(p => p.id), 0) + 1;
-      const newPost = { ...currentPost, id: newId, publishDate: formatDate(new Date()) };
-      setPosts([...posts, newPost]);
-      alert('Bài viết đã được thêm!');
+    try {
+      let blogData = {
+        title: currentPost.title,
+        category: currentPost.category,
+        author: currentPost.author,
+        content: currentPost.content,
+        summary: currentPost.summary || '',
+        tags: currentPost.tags || '',
+      };
+      let createdBlog;
+      if (isEditing && currentPost.id) {
+        // Sửa bài viết
+        const res = await blogAPI.updateBlog(currentPost.id, blogData);
+        alert('Bài viết đã được cập nhật!');
+        loadPosts();
+      } else {
+        // Thêm mới
+        const res = await blogAPI.createBlog(blogData);
+        createdBlog = res.data;
+        // Publish ngay sau khi tạo
+        await blogAPI.publishBlog(createdBlog.id);
+        alert('Bài viết đã được thêm và xuất bản!');
+        loadPosts();
+      }
+      handleCloseModal();
+    } catch (err) {
+      alert('Lỗi khi lưu bài viết: ' + (err.message || err));
     }
-    handleCloseModal();
   };
 
   return (
@@ -216,15 +196,15 @@ const BlogAdmin = () => {
           </tr>
         </thead>
         <tbody>
-          {posts.map((post) => (
+          {filteredPosts.map((post) => (
             <tr key={post.id}>
-              <td>{post.title}</td>
+<td>{post.title}</td>
               <td>{getCategoryText(post.category)}</td>
               <td>{post.author}</td>
-              <td>{formatDate(post.publishDate)}</td>
+              <td>{formatDate(post.publishedAt)}</td>
               <td>
-                <Badge bg={post.status === 'published' ? 'success' : 'secondary'}>
-                  {post.status === 'published' ? 'Đã đăng' : 'Bản nháp'}
+                <Badge bg={post.status === 'PUBLISHED' ? 'success' : 'secondary'}>
+                  {post.status === 'PUBLISHED' ? 'Đã đăng' : 'Bản nháp'}
                 </Badge>
               </td>
               <td>
@@ -240,7 +220,7 @@ const BlogAdmin = () => {
               </td>
             </tr>
           ))}
-          {posts.length === 0 && (
+          {filteredPosts.length === 0 && (
             <tr>
               <td colSpan="6" className="text-center">Không có bài viết nào.</td>
             </tr>
@@ -293,26 +273,16 @@ const BlogAdmin = () => {
               />
             </Form.Group>
 
-            <Form.Group controlId="formFile" className="mb-3">
-              <Form.Label>Ảnh đại diện</Form.Label>
-              <Form.Control type="file" onChange={handleImageChange} />
-              {imagePreview && (
-                <div className="mt-2">
-                  <img src={imagePreview} alt="Preview" style={{ maxWidth: '200px', height: 'auto' }} />
-                </div>
-              )}
-            </Form.Group>
-
             <Form.Group className="mb-3">
               <Form.Label>Trạng thái</Form.Label>
               <Form.Select
                 name="status"
                 value={currentPost.status}
                 onChange={handleFormChange}
-                required
+required
               >
-                <option value="draft">Bản nháp</option>
-                <option value="published">Đã đăng</option>
+                <option value="DRAFT">Bản nháp</option>
+                <option value="PUBLISHED">Đã đăng</option>
               </Form.Select>
             </Form.Group>
 
@@ -341,4 +311,4 @@ const BlogAdmin = () => {
   );
 };
 
-export default BlogAdmin; 
+export default BlogAdmin;
