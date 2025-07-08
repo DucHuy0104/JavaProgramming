@@ -8,6 +8,7 @@ const BlogList = () => {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [expandedBlogId, setExpandedBlogId] = useState(null);
 
   useEffect(() => {
     fetchBlogs();
@@ -38,6 +39,10 @@ const BlogList = () => {
     return date.toLocaleDateString('vi-VN');
   };
 
+  const toggleExpand = (blogId) => {
+    setExpandedBlogId(expandedBlogId === blogId ? null : blogId);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -60,58 +65,69 @@ const BlogList = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Blog về Xét nghiệm ADN</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {blogs.map((blog) => (
-          <div key={blog.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            {blog.imageUrl && (
-              <img 
-                src={blog.imageUrl} 
-                alt={blog.title}
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/400x200?text=DNA+Testing';
-                }}
-              />
-            )}
-            
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                  {blog.category}
-                </span>
-                <span className="text-gray-500 text-sm">
-                  {formatDate(blog.publishedAt)}
-                </span>
-              </div>
-              
-              <h2 className="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
-                {blog.title}
-              </h2>
-              
-              <p className="text-gray-600 mb-4 line-clamp-3">
-                {blog.summary}
-              </p>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-gray-500 text-sm">
-                  Tác giả: {blog.author}
-                </span>
-                <Link 
-                  to={`/blogs/${blog.id}`}
-                  className="text-indigo-600 hover:text-indigo-800 font-medium"
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="w-[400px] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiêu đề</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tác giả</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đăng</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lượt xem</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {blogs.map((blog) => (
+              <tr key={blog.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4">
+                  {blog.imageUrl && (
+                    <img
+                      src={blog.imageUrl}
+                      alt={blog.title}
+                      className="w-full h-48 object-cover rounded"
+                      onError={(e) => {
+                        e.target.src = 'https://via.placeholder.com/400x200?text=DNA+Testing';
+                      }}
+                    />
+                  )}
+                </td>
+                <td 
+                  className="px-6 py-4 cursor-pointer" 
+                  onClick={() => toggleExpand(blog.id)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => e.key === 'Enter' && toggleExpand(blog.id)}
                 >
-                  Đọc thêm →
-                </Link>
-              </div>
-              
-              {blog.viewCount !== undefined && (
-                <div className="mt-2 text-gray-500 text-sm">
-                  {blog.viewCount} lượt xem
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
+                  <div className="text-sm font-medium text-gray-900 line-clamp-2">{blog.title}</div>
+                  <div className={`text-sm text-gray-600 ${expandedBlogId === blog.id ? '' : 'line-clamp-2'}`}>
+                    {blog.summary}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
+                    {blog.category}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{blog.author}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(blog.publishedAt)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {blog.viewCount !== undefined ? `${blog.viewCount} lượt xem` : 'N/A'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <Link
+                    to={`/blogs/${blog.id}`}
+                    className="text-indigo-600 hover:text-indigo-800 font-medium"
+                  >
+                    Đọc thêm →
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}
@@ -119,7 +135,7 @@ const BlogList = () => {
         <div className="flex justify-center mt-8">
           <nav className="flex space-x-2">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(0, prev - 1))}
+              onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
               disabled={currentPage === 0}
               className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -141,7 +157,7 @@ const BlogList = () => {
             ))}
             
             <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages - 1, prev + 1))}
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))}
               disabled={currentPage === totalPages - 1}
               className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -155,3 +171,4 @@ const BlogList = () => {
 };
 
 export default BlogList;
+
