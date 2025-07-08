@@ -66,6 +66,9 @@ public class Order {
     @Column(name = "result_notes")
     private String resultNotes; // Ghi chú về kết quả
 
+    @Column(name = "result_file_path")
+    private String resultFilePath; // Đường dẫn file PDF kết quả xét nghiệm
+
     // Getters và Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -148,4 +151,7 @@ public class Order {
     
     public String getResultNotes() { return resultNotes; }
     public void setResultNotes(String resultNotes) { this.resultNotes = resultNotes; }
+
+    public String getResultFilePath() { return resultFilePath; }
+    public void setResultFilePath(String resultFilePath) { this.resultFilePath = resultFilePath; }
 }

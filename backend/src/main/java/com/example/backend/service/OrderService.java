@@ -67,6 +67,18 @@ public class OrderService {
         return orderRepository.findById(id);
     }
 
+    public Order getOrderByIdDirect(Long id) {
+        return orderRepository.findById(id).orElse(null);
+    }
+
+    public Order updateOrder(Order order) {
+        return orderRepository.save(order);
+    }
+
+    public Optional<Order> getOrderByNumber(String orderNumber) {
+        return orderRepository.findByOrderNumber(orderNumber);
+    }
+
     public Order updateOrderStatus(Long id, String status) {
         System.out.println("=== ORDER SERVICE UPDATE ===");
         System.out.println("Looking for order ID: " + id);

@@ -18,6 +18,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // For FormData, remove the default Content-Type to let axios set it automatically
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     return config;
   },
   (error) => {
@@ -387,6 +393,16 @@ export const orderAPI = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
+  },
+
+  // Lấy order theo order number
+  getOrderByNumber: async (orderNumber) => {
+    try {
+      const response = await api.get(`/orders/number/${orderNumber}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   }
 };
 
@@ -482,6 +498,66 @@ export const dashboardAPI = {
       return response.data;
     } catch (error) {
       console.error('Error getting revenue chart:', error);
+      throw error.response?.data || error.message;
+    }
+  }
+};
+
+// File Upload APIs
+export const fileAPI = {
+  // Upload file kết quả xét nghiệm
+  uploadTestResult: async (orderId, file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const token = localStorage.getItem('token');
+      console.log('Uploading with token:', token ? 'Token exists' : 'No token');
+
+      const response = await api.post(`/files/upload-result/${orderId}`, formData, {
+        headers: {
+          // Không set Content-Type để axios tự động set với boundary
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading test result:', error);
+      console.error('Error details:', error.response);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Download file kết quả xét nghiệm
+  downloadTestResult: async (orderId) => {
+    try {
+      const response = await api.get(`/files/download-result/${orderId}`, {
+        responseType: 'blob'
+      });
+
+      // Tạo URL để download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `KetQua_${orderId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      return { success: true, message: 'Tải file thành công!' };
+    } catch (error) {
+      console.error('Error downloading test result:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Xóa file kết quả xét nghiệm
+  deleteTestResult: async (orderId) => {
+    try {
+      const response = await api.delete(`/files/delete-result/${orderId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error deleting test result:', error);
       throw error.response?.data || error.message;
     }
   }

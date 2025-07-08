@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -41,7 +43,15 @@ public class OrderController {
         System.out.println("=== UPDATE ORDER STATUS ===");
         System.out.println("Order ID: " + id);
         System.out.println("New Status: " + update.getStatus());
+
         Order result = orderService.updateOrderStatus(id, update.getStatus());
+
+        // Nếu trạng thái chuyển thành "results_delivered", tự động gửi thông báo đến người dùng
+        if (result != null && "results_delivered".equals(update.getStatus())) {
+            System.out.println("🎉 Order " + id + " results delivered! File is now available for customer download.");
+            // TODO: Có thể thêm logic gửi email thông báo ở đây nếu cần
+        }
+
         System.out.println("Update result: " + (result != null ? "Success" : "Failed"));
         return result;
     }
@@ -108,6 +118,40 @@ public class OrderController {
         } catch (Exception e) {
             System.err.println("Error deleting order " + id + ": " + e.getMessage());
             return ResponseEntity.status(500).body("Lỗi khi xóa order: " + e.getMessage());
+        }
+    }
+
+    // Lấy order theo order number
+    @GetMapping("/number/{orderNumber}")
+    public ResponseEntity<?> getOrderByNumber(@PathVariable String orderNumber) {
+        try {
+            System.out.println("=== GET ORDER BY NUMBER REQUEST ===");
+            System.out.println("Order Number: " + orderNumber);
+
+            Optional<Order> orderOpt = orderService.getOrderByNumber(orderNumber);
+            if (orderOpt.isPresent()) {
+                System.out.println("✅ Order found: " + orderOpt.get().getId());
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("data", orderOpt.get());
+                return ResponseEntity.ok(response);
+            } else {
+                System.out.println("❌ Order not found with number: " + orderNumber);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Không tìm thấy đơn hàng với mã: " + orderNumber);
+                return ResponseEntity.badRequest().body(response);
+            }
+        } catch (Exception e) {
+            System.err.println("❌ Error getting order by number: " + e.getMessage());
+            e.printStackTrace();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Lỗi khi tìm kiếm đơn hàng: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }

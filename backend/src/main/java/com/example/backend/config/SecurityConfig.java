@@ -75,8 +75,18 @@ public class SecurityConfig {
                 // Orders endpoints
                 .requestMatchers(HttpMethod.GET, "/api/orders").hasAnyRole("ADMIN", "MANAGER", "STAFF")
                 .requestMatchers(HttpMethod.GET, "/api/orders/user").hasRole("CUSTOMER") // Customer xem orders của mình
+                .requestMatchers(HttpMethod.GET, "/api/orders/number/**").permitAll() // Public access for test result lookup
                 .requestMatchers(HttpMethod.POST, "/api/orders").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/orders/**").hasAnyRole("ADMIN", "MANAGER", "STAFF", "CUSTOMER") // Customer có thể hủy đơn
+                .requestMatchers(HttpMethod.DELETE, "/api/orders/**").hasRole("ADMIN") // Only admin can delete orders
+
+                // File upload/download endpoints
+                .requestMatchers(HttpMethod.POST, "/api/files/upload-result/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+                .requestMatchers(HttpMethod.GET, "/api/files/download-result/**").permitAll() // Allow public download
+                .requestMatchers(HttpMethod.DELETE, "/api/files/delete-result/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
+
+                // Dashboard endpoints
+                .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "MANAGER")
 
                 // Contact endpoint
                 .requestMatchers("/api/contact").permitAll()

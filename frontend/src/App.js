@@ -18,6 +18,7 @@ import Orders from './components/Orders';
 import ForgotPassword from './components/ForgotPassword';
 
 import Results from './components/Results';
+import TestResult from './pages/TestResult';
 
 
 // Components for user interface
@@ -60,7 +61,8 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/results" element={<Results />} />
-        
+        <Route path="/test-result" element={<PublicLayout><TestResult /></PublicLayout>} />
+
         {/* Blog routes */}
         <Route path="/blogs" element={<PublicLayout><BlogList /></PublicLayout>} />
 

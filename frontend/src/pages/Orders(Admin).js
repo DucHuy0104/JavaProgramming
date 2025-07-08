@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Container, Row, Col, Badge, Form, InputGroup, Card } from 'react-bootstrap';
-import { FaSearch, FaFilter, FaEye, FaEdit, FaDownload } from 'react-icons/fa';
-import { fetchOrders } from '../services/api';
+import { FaSearch, FaFilter, FaUpload, FaTrash } from 'react-icons/fa';
+import { orderAPI, fileAPI } from '../services/api';
 
 
 const OrdersAdmin = () => {
@@ -11,6 +11,12 @@ const OrdersAdmin = () => {
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  // File upload states
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [orderToUpload, setOrderToUpload] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
 
 
 
@@ -27,10 +33,16 @@ const OrdersAdmin = () => {
 
   const loadOrders = async () => {
     try {
-      const data = await fetchOrders();
-      setOrders(data);
+      const response = await orderAPI.getAllOrders();
+      if (response && Array.isArray(response)) {
+        setOrders(response);
+      } else {
+        console.error('Invalid response format:', response);
+        setOrders([]);
+      }
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu:', error);
+      setOrders([]);
     }
   };
 
@@ -41,6 +53,27 @@ const OrdersAdmin = () => {
 
   const handleUpdateStatus = async (order, newStatus) => {
     try {
+      // Kiểm tra đặc biệt: nếu muốn chuyển sang "results_delivered", phải có file trước
+      if (newStatus === 'results_delivered') {
+        if (!order.resultFilePath) {
+          alert('⚠️ Không thể trả kết quả!\n\nBạn phải upload file kết quả PDF trước khi có thể trả kết quả cho khách hàng.');
+          return;
+        }
+
+        // Xác nhận trước khi trả kết quả
+        const confirmDelivery = window.confirm(
+          '🎯 Xác nhận trả kết quả?\n\n' +
+          '• File kết quả đã được upload\n' +
+          '• Khách hàng sẽ có thể tải file ngay lập tức\n' +
+          '• Không thể hoàn tác sau khi xác nhận\n\n' +
+          'Bạn có chắc chắn muốn trả kết quả?'
+        );
+
+        if (!confirmDelivery) {
+          return;
+        }
+      }
+
       // Gọi API cập nhật trạng thái
       const response = await fetch(`http://localhost:8081/api/orders/${order.id}`, {
         method: 'PATCH',
@@ -53,18 +86,23 @@ const OrdersAdmin = () => {
 
       if (response.ok) {
         const updatedOrder = await response.json();
-        
+
         // Cập nhật danh sách orders
         setOrders(orders.map(o =>
           o.id === order.id
             ? { ...o, status: newStatus }
             : o
         ));
-        
+
         // Cập nhật selectedOrder nếu đang mở modal
         setSelectedOrder(prev => prev && prev.id === order.id ? { ...prev, status: newStatus } : prev);
-        
-        console.log('Cập nhật trạng thái thành công:', updatedOrder);
+
+        // Thông báo thành công với message đặc biệt cho "trả kết quả"
+        if (newStatus === 'results_delivered') {
+          alert('🎉 Đã trả kết quả thành công!\n\nKhách hàng có thể tải file kết quả ngay bây giờ.');
+        } else {
+          console.log('Cập nhật trạng thái thành công:', updatedOrder);
+        }
       } else {
         console.error('Lỗi khi cập nhật trạng thái đơn hàng');
       }
@@ -217,6 +255,78 @@ const OrdersAdmin = () => {
     setOrderToCancel(null);
   };
 
+  // File upload functions
+  const handleUploadClick = (order) => {
+    setOrderToUpload(order);
+    setSelectedFile(null);
+    setShowUploadModal(true);
+  };
+
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        alert('Chỉ chấp nhận file PDF');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) { // 10MB
+        alert('File không được vượt quá 10MB');
+        return;
+      }
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUploadFile = async () => {
+    if (!selectedFile || !orderToUpload) return;
+
+    try {
+      setUploadLoading(true);
+      console.log('Uploading file for order:', orderToUpload.id);
+      console.log('Current user:', localStorage.getItem('user'));
+      console.log('Current token:', localStorage.getItem('token') ? 'Token exists' : 'No token');
+
+      const response = await fileAPI.uploadTestResult(orderToUpload.id, selectedFile);
+
+      if (response.success) {
+        alert('Upload file thành công!');
+        setShowUploadModal(false);
+        setSelectedFile(null);
+        setOrderToUpload(null);
+        loadOrders(); // Reload để cập nhật trạng thái
+      } else {
+        alert('Lỗi upload file: ' + response.message);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      console.error('Error response:', error.response);
+      alert('Lỗi upload file: ' + (error.message || error));
+    } finally {
+      setUploadLoading(false);
+    }
+  };
+
+
+
+  const handleDeleteResult = async (order) => {
+    if (!window.confirm('Bạn có chắc muốn xóa file kết quả này?')) return;
+
+    try {
+      console.log('Deleting result for order:', order.id);
+      const response = await fileAPI.deleteTestResult(order.id);
+
+      if (response.success) {
+        alert('Xóa file thành công!');
+        loadOrders(); // Reload để cập nhật trạng thái
+      } else {
+        alert('Lỗi xóa file: ' + response.message);
+      }
+    } catch (error) {
+      console.error('Error deleting result:', error);
+      alert('Lỗi xóa file: ' + (error.message || error));
+    }
+  };
+
   // Filter logic
   const filteredOrders = orders.filter(order => {
     // Search filter
@@ -291,50 +401,6 @@ const OrdersAdmin = () => {
   // Get unique values for filters
   const uniqueServices = [...new Set(orders.map(order => order.serviceName))].filter(Boolean);
   const uniquePaymentStatuses = [...new Set(orders.map(order => order.paymentStatus))].filter(Boolean);
-
-  const handleDownloadResult = async (order) => {
-    try {
-      // Gọi API để tải kết quả xét nghiệm
-      const response = await fetch(`http://localhost:8081/api/test-results/order/${order.id}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-
-      if (response.ok) {
-        const testResult = await response.json();
-        
-        if (testResult.pdfUrl) {
-          // Mở PDF trong tab mới
-          window.open(testResult.pdfUrl, '_blank');
-          setDownloadSuccess(true);
-          setTimeout(() => setDownloadSuccess(false), 3000);
-        } else {
-          // Tạo và tải file JSON
-          const blob = new Blob([JSON.stringify(testResult, null, 2)], { type: 'application/json' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `ket-qua-xet-nghiem-${order.orderNumber}.json`;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-          setDownloadSuccess(true);
-          setTimeout(() => setDownloadSuccess(false), 3000);
-        }
-      } else {
-        console.error('Không tìm thấy kết quả xét nghiệm cho đơn hàng này');
-        alert('Chưa có kết quả xét nghiệm cho đơn hàng này');
-      }
-    } catch (error) {
-      console.error('Lỗi khi tải kết quả:', error);
-      alert('Có lỗi xảy ra khi tải kết quả xét nghiệm');
-    }
-  };
-
-
 
   const handleDeleteOrder = async (order) => {
     if (!window.confirm(`Bạn có chắc chắn muốn xóa đơn hàng ${order.orderNumber}? Hành động này không thể hoàn tác.`)) {
@@ -523,8 +589,34 @@ const OrdersAdmin = () => {
               <td>{getStatusBadge(order.status)}</td>
               <td>{getPaymentStatusBadge(order.paymentStatus)}</td>
               <td>
-                {(order.status === 'results_recorded' || order.status === 'results_delivered') ? (
-                  <Badge bg="success">📄 Sẵn sàng</Badge>
+                {order.resultFilePath ? (
+                  <div>
+                    <Badge bg="success" className="mb-1">📄 Có file</Badge>
+                    <div>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={() => handleDeleteResult(order)}
+                        title="Xóa file"
+                      >
+                        <FaTrash />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (order.status === 'results_recorded' || order.status === 'results_delivered') ? (
+                  <div>
+                    <Badge bg="warning" className="mb-1">⏳ Chưa có file</Badge>
+                    <div>
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => handleUploadClick(order)}
+                        title="Upload file PDF"
+                      >
+                        <FaUpload />
+                      </Button>
+                    </div>
+                  </div>
                 ) : order.status === 'testing_in_progress' ? (
                   <Badge bg="primary">🔬 Đang xét nghiệm</Badge>
                 ) : (
@@ -572,7 +664,15 @@ const OrdersAdmin = () => {
                       <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'results_recorded')}>Ghi Nhận Kết Quả</Button>
                     )}
                     {order.status === 'results_recorded' && (
-                      <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'results_delivered')}>Trả Kết Quả</Button>
+                      <Button
+                        variant={order.resultFilePath ? "outline-success" : "outline-secondary"}
+                        size="sm"
+                        onClick={() => handleUpdateStatus(order, 'results_delivered')}
+                        disabled={!order.resultFilePath}
+                        title={order.resultFilePath ? "Trả kết quả cho khách hàng" : "Phải upload file trước khi trả kết quả"}
+                      >
+                        {order.resultFilePath ? "✅ Trả Kết Quả" : "⏳ Chưa có file"}
+                      </Button>
                     )}
                   </>
                 )}
@@ -592,7 +692,15 @@ const OrdersAdmin = () => {
                       <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'results_recorded')}>Ghi Nhận Kết Quả</Button>
                     )}
                     {order.status === 'results_recorded' && (
-                      <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'results_delivered')}>Trả Kết Quả</Button>
+                      <Button
+                        variant={order.resultFilePath ? "outline-success" : "outline-secondary"}
+                        size="sm"
+                        onClick={() => handleUpdateStatus(order, 'results_delivered')}
+                        disabled={!order.resultFilePath}
+                        title={order.resultFilePath ? "Trả kết quả cho khách hàng" : "Phải upload file trước khi trả kết quả"}
+                      >
+                        {order.resultFilePath ? "✅ Trả Kết Quả" : "⏳ Chưa có file"}
+                      </Button>
                     )}
                   </>
                 )}
@@ -618,7 +726,15 @@ const OrdersAdmin = () => {
                       <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'results_recorded')}>Ghi Nhận Kết Quả</Button>
                     )}
                     {order.status === 'results_recorded' && (
-                      <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'results_delivered')}>Trả Kết Quả</Button>
+                      <Button
+                        variant={order.resultFilePath ? "outline-success" : "outline-secondary"}
+                        size="sm"
+                        onClick={() => handleUpdateStatus(order, 'results_delivered')}
+                        disabled={!order.resultFilePath}
+                        title={order.resultFilePath ? "Trả kết quả cho khách hàng" : "Phải upload file trước khi trả kết quả"}
+                      >
+                        {order.resultFilePath ? "✅ Trả Kết Quả" : "⏳ Chưa có file"}
+                      </Button>
                     )}
                   </>
                 )}
@@ -644,17 +760,7 @@ const OrdersAdmin = () => {
                 )}
                 
                 {/* Nút tải kết quả - hiển thị khi đã có kết quả */}
-                {(order.status === 'results_recorded' || order.status === 'results_delivered') && (
-                  <Button
-                    variant="outline-success"
-                    size="sm"
-                    className="ms-2"
-                    onClick={() => handleDownloadResult(order)}
-                    title="Tải kết quả xét nghiệm"
-                  >
-                    📄 Tải KQ
-                  </Button>
-                )}
+
 
                 {/* Nút xóa đơn hàng */}
                 <Button
@@ -773,7 +879,14 @@ const OrdersAdmin = () => {
                         <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'results_recorded')}>Ghi Nhận Kết Quả</Button>
                       )}
                       {selectedOrder.status === 'results_recorded' && (
-                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'results_delivered')}>Trả Kết Quả</Button>
+                        <Button
+                          variant={selectedOrder.resultFilePath ? "success" : "secondary"}
+                          onClick={() => handleUpdateStatus(selectedOrder, 'results_delivered')}
+                          disabled={!selectedOrder.resultFilePath}
+                          title={selectedOrder.resultFilePath ? "Trả kết quả cho khách hàng" : "Phải upload file trước khi trả kết quả"}
+                        >
+                          {selectedOrder.resultFilePath ? "✅ Trả Kết Quả" : "⏳ Chưa có file"}
+                        </Button>
                       )}
                     </>
                   )}
@@ -793,7 +906,14 @@ const OrdersAdmin = () => {
                         <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'results_recorded')}>Ghi Nhận Kết Quả</Button>
                       )}
                       {selectedOrder.status === 'results_recorded' && (
-                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'results_delivered')}>Trả Kết Quả</Button>
+                        <Button
+                          variant={selectedOrder.resultFilePath ? "success" : "secondary"}
+                          onClick={() => handleUpdateStatus(selectedOrder, 'results_delivered')}
+                          disabled={!selectedOrder.resultFilePath}
+                          title={selectedOrder.resultFilePath ? "Trả kết quả cho khách hàng" : "Phải upload file trước khi trả kết quả"}
+                        >
+                          {selectedOrder.resultFilePath ? "✅ Trả Kết Quả" : "⏳ Chưa có file"}
+                        </Button>
                       )}
                     </>
                   )}
@@ -819,7 +939,14 @@ const OrdersAdmin = () => {
                         <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'results_recorded')}>Ghi Nhận Kết Quả</Button>
                       )}
                       {selectedOrder.status === 'results_recorded' && (
-                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'results_delivered')}>Trả Kết Quả</Button>
+                        <Button
+                          variant={selectedOrder.resultFilePath ? "success" : "secondary"}
+                          onClick={() => handleUpdateStatus(selectedOrder, 'results_delivered')}
+                          disabled={!selectedOrder.resultFilePath}
+                          title={selectedOrder.resultFilePath ? "Trả kết quả cho khách hàng" : "Phải upload file trước khi trả kết quả"}
+                        >
+                          {selectedOrder.resultFilePath ? "✅ Trả Kết Quả" : "⏳ Chưa có file"}
+                        </Button>
                       )}
                     </>
                   )}
@@ -863,15 +990,7 @@ const OrdersAdmin = () => {
 
 
 
-                  {/* Nút tải kết quả trong modal */}
-                  {(selectedOrder.status === 'results_recorded' || selectedOrder.status === 'results_delivered') && (
-                    <Button
-                      variant="success"
-                      onClick={() => handleDownloadResult(selectedOrder)}
-                    >
-                      📄 Tải Kết Quả Xét Nghiệm
-                    </Button>
-                  )}
+
 
 
 
@@ -921,8 +1040,61 @@ const OrdersAdmin = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Modal Upload File */}
+      <Modal show={showUploadModal} onHide={() => setShowUploadModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Upload File Kết Quả Xét Nghiệm</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {orderToUpload && (
+            <>
+              <p>Đơn hàng: <strong>{orderToUpload.orderNumber}</strong></p>
+              <p>Khách hàng: <strong>{orderToUpload.customerName}</strong></p>
+              <p>Dịch vụ: <strong>{orderToUpload.serviceName}</strong></p>
+
+              <Form.Group className="mt-3">
+                <Form.Label>Chọn file PDF kết quả:</Form.Label>
+                <Form.Control
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileSelect}
+                  disabled={uploadLoading}
+                />
+                <Form.Text className="text-muted">
+                  Chỉ chấp nhận file PDF, tối đa 10MB
+                </Form.Text>
+              </Form.Group>
+
+              {selectedFile && (
+                <div className="mt-2">
+                  <small className="text-success">
+                    ✅ Đã chọn file: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </small>
+                </div>
+              )}
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowUploadModal(false)}
+            disabled={uploadLoading}
+          >
+            Hủy
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleUploadFile}
+            disabled={!selectedFile || uploadLoading}
+          >
+            {uploadLoading ? 'Đang upload...' : 'Upload File'}
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
 
-export default OrdersAdmin; 
+export default OrdersAdmin;

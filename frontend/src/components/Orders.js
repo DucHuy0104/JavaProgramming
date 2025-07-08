@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Badge, Button, Modal } from 'react-bootstrap';
 import { FaCalendarAlt, FaDollarSign, FaEye, FaDownload } from 'react-icons/fa';
-import { getUserOrders, testResultAPI } from '../services/api';
+import { getUserOrders, testResultAPI, fileAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import WorkflowTracker from './WorkflowTracker';
 import TestResultViewer from './TestResultViewer';
@@ -190,6 +190,22 @@ const Orders = () => {
     fetchOrders(false); // Không hiển thị loading spinner
   };
 
+  const handleDownloadResult = async (order) => {
+    try {
+      console.log('Downloading result for order:', order.id);
+      const result = await fileAPI.downloadTestResult(order.id);
+
+      if (result.success) {
+        // Hiển thị thông báo thành công (tùy chọn)
+        console.log('Download completed successfully');
+        // Có thể thêm toast notification ở đây nếu muốn
+      }
+    } catch (error) {
+      console.error('Error downloading result:', error);
+      alert('Lỗi khi tải file: ' + (error.message || error));
+    }
+  };
+
   if (loading) {
     return (
       <Container className="py-5">
@@ -355,14 +371,14 @@ const Orders = () => {
                       Xem chi tiết
                     </Button>
                     
-                    {testResults[order.id]?.pdfUrl && (
-                      <Button 
-                        variant="outline-success" 
+                    {order.resultFilePath && order.status === 'results_delivered' && (
+                      <Button
+                        variant="outline-success"
                         size="sm"
-                        onClick={() => window.open(testResults[order.id].pdfUrl, '_blank')}
+                        onClick={() => handleDownloadResult(order)}
                       >
                         <FaDownload className="me-1" />
-                        Tải PDF
+                        Tải kết quả PDF
                       </Button>
                     )}
                   </div>
