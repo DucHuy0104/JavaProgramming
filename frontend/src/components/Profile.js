@@ -17,6 +17,13 @@ const Profile = () => {
     confirmPassword: ''
   });
 
+  // Fetch profile data from API
+  useEffect(() => {
+    if (user) {
+      fetchProfileData();
+    }
+  }, [user]);
+
   if (!user) {
     return (
       <Container className="py-5">
@@ -33,18 +40,11 @@ const Profile = () => {
     );
   }
 
-  // Fetch profile data from API
-  useEffect(() => {
-    if (user) {
-      fetchProfileData();
-    }
-  }, [user]);
-
   const fetchProfileData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8081/users/profile', {
+      const response = await fetch('http://localhost:8081/api/users/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ const Profile = () => {
   const handleSaveProfile = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8081/users/profile', {
+      const response = await fetch('http://localhost:8081/api/users/profile', {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -103,15 +103,16 @@ const Profile = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8081/users/change-password', {
-        method: 'POST',
+      const response = await fetch('http://localhost:8081/api/users/change-password', {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          oldPassword: passwordForm.oldPassword,
-          newPassword: passwordForm.newPassword
+          currentPassword: passwordForm.oldPassword,
+          newPassword: passwordForm.newPassword,
+          confirmPassword: passwordForm.confirmPassword
         })
       });
 
