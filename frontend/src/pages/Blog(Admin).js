@@ -98,7 +98,7 @@ const BlogAdmin = () => {
   };
 
   const handlePreviewPost = (id) => {
-    window.open(`/blogs/${id}`, '_blank');
+
   };
 
   const handleCloseModal = () => {
@@ -198,7 +198,7 @@ const BlogAdmin = () => {
         <tbody>
           {filteredPosts.map((post) => (
             <tr key={post.id}>
-              <td>{post.title}</td>
+<td>{post.title}</td>
               <td>{getCategoryText(post.category)}</td>
               <td>{post.author}</td>
               <td>{formatDate(post.publishedAt)}</td>
@@ -279,7 +279,7 @@ const BlogAdmin = () => {
                 name="status"
                 value={currentPost.status}
                 onChange={handleFormChange}
-                required
+required
               >
                 <option value="DRAFT">Bản nháp</option>
                 <option value="PUBLISHED">Đã đăng</option>
@@ -311,4 +311,4 @@ const BlogAdmin = () => {
   );
 };
 
-export default BlogAdmin; 
+export default BlogAdmin;

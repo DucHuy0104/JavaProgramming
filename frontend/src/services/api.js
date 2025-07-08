@@ -111,7 +111,7 @@ export const userAPI = {
     } catch (error) {
       console.error('Error in getAllUsers:', error);
       // Xử lý error an toàn
-      const errorMessage = error?.response?.data?.message || error?.message || 'Lỗi không xác định khi lấy danh sách users';
+const errorMessage = error?.response?.data?.message || error?.message || 'Lỗi không xác định khi lấy danh sách users';
       throw { message: errorMessage, originalError: error };
     }
   },
@@ -206,7 +206,11 @@ export const blogAPI = {
   createBlog: async (blogData) => {
     try {
       const response = await api.post('/blogs', blogData);
+<<<<<<< HEAD
       return response.data;
+=======
+return response.data;
+>>>>>>> 8d1b37bd9ba31dfa93b6908bf9c0fccbe25c7a6b
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -310,7 +314,7 @@ export const staffAPI = {
       const response = await api.delete(`/users/${userId}`);
       console.log('API: Delete user response:', response.data);
       return response.data;
-    } catch (error) {
+} catch (error) {
       console.error('API: Delete user error:', error);
       console.error('API: Error response:', error.response?.data);
       throw error.response?.data || error.message;
@@ -409,7 +413,7 @@ export const orderAPI = {
   createOrder: async (orderData) => {
     try {
       const response = await api.post('/orders', orderData);
-      return response.data;
+return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
     }
@@ -499,7 +503,7 @@ export const testResultAPI = {
   // Duyệt test result
   approveTestResult: async (testResultId) => {
     try {
-      const response = await api.post(`/test-results/${testResultId}/approve`);
+const response = await api.post(`/test-results/${testResultId}/approve`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -608,7 +612,7 @@ export const fileAPI = {
       const response = await api.delete(`/files/delete-result/${orderId}`);
       return response.data;
     } catch (error) {
-      console.error('Error deleting test result:', error);
+console.error('Error deleting test result:', error);
       throw error.response?.data || error.message;
     }
   }

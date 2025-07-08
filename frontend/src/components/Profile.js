@@ -78,7 +78,14 @@ const Profile = () => {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(editForm)
+        body: JSON.stringify({
+          fullName: editForm.fullName,
+          email: profileData?.email, // luôn gửi email gốc (không cho sửa email trên form)
+          phoneNumber: editForm.phoneNumber || '',
+          address: editForm.address || '',
+          dateOfBirth: editForm.dateOfBirth || '',
+          gender: editForm.gender || ''
+        })
       });
 
       if (response.ok) {
