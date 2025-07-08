@@ -309,4 +309,13 @@ public class ServiceService {
         
         return service;
     }
+
+    // Dashboard statistics methods
+    public long countActiveServices() {
+        return serviceRepository.countByIsActive(true);
+    }
+
+    public long countTotalServices() {
+        return serviceRepository.count();
+    }
 }

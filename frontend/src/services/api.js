@@ -451,6 +451,42 @@ export const testResultAPI = {
   },
 };
 
+// Dashboard APIs
+export const dashboardAPI = {
+  // Lấy thống kê dashboard
+  getStats: async () => {
+    try {
+      const response = await api.get('/dashboard/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting dashboard stats:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Lấy dữ liệu biểu đồ đơn hàng
+  getOrdersChart: async () => {
+    try {
+      const response = await api.get('/dashboard/orders-chart');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting orders chart:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Lấy dữ liệu biểu đồ doanh thu
+  getRevenueChart: async () => {
+    try {
+      const response = await api.get('/dashboard/revenue-chart');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting revenue chart:', error);
+      throw error.response?.data || error.message;
+    }
+  }
+};
+
 // Legacy exports for backward compatibility
 export async function createOrder(orderData) {
   return orderAPI.createOrder(orderData);

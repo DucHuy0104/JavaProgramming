@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Tab, Tabs } from 'react-bootstrap';
+import { Container, Row, Col, Card, Tab, Tabs, Alert } from 'react-bootstrap';
 import { Line, Bar } from 'react-chartjs-2';
+import { dashboardAPI } from '../services/api';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -34,7 +35,8 @@ const DashboardAdmin = () => {
     totalServices: 0
   });
 
-  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const [orderChartData, setOrderChartData] = useState({
     labels: [],
@@ -52,47 +54,95 @@ const DashboardAdmin = () => {
 
   const loadDashboardData = async () => {
     try {
-      // TODO: Thay thế bằng API call thực tế
-      // const response = await fetch('/api/dashboard/stats');
-      // const data = await response.json();
-      // setStats(data.stats);
-      // setOrderChartData(data.orderChart);
-      // setRevenueChartData(data.revenueChart);
+      setLoading(true);
+      setError('');
 
-      // Dữ liệu mẫu để demo
-      setStats({
-        totalOrders: 25,
-        totalRevenue: 15000000,
-        totalCustomers: 18,
-        totalServices: 5
-      });
+      console.log('Loading dashboard data...');
+      const response = await dashboardAPI.getStats();
 
-      // Dữ liệu đơn hàng mẫu
-      setOrders([
-        { id: 1, status: 'results_delivered', orderType: 'self_submission' },
-        { id: 2, status: 'testing_in_progress', orderType: 'in_clinic' },
-        { id: 3, status: 'accepted', orderType: 'home_collection' },
-        { id: 4, status: 'results_delivered', orderType: 'self_submission' },
-        { id: 5, status: 'sample_collected_self', orderType: 'self_submission' },
-        { id: 6, status: 'cancelled', orderType: 'in_clinic' },
-        { id: 7, status: 'results_recorded', orderType: 'home_collection' },
-        { id: 8, status: 'kit_sent', orderType: 'self_submission' },
-        { id: 9, status: 'results_delivered', orderType: 'in_clinic' },
-        { id: 10, status: 'sample_received_lab', orderType: 'self_submission' }
-      ]);
+      if (response.success) {
+        console.log('Dashboard stats loaded:', response.data);
+        setStats({
+          totalOrders: response.data.totalOrders || 0,
+          totalRevenue: response.data.totalRevenue || 0,
+          totalCustomers: response.data.totalCustomers || 0,
+          totalServices: response.data.totalServices || 0
+        });
+      } else {
+        setError('Không thể tải dữ liệu dashboard');
+      }
 
-      // Biểu đồ trống
+      // Tải dữ liệu biểu đồ thực tế
+      await loadChartsData();
+
+    } catch (error) {
+      console.error('Lỗi khi tải dữ liệu dashboard:', error);
+      setError('Lỗi khi tải dữ liệu dashboard: ' + (error.message || error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadChartsData = async () => {
+    try {
+      console.log('Loading charts data...');
+
+      // Tải dữ liệu biểu đồ đơn hàng
+      const ordersChartResponse = await dashboardAPI.getOrdersChart();
+      if (ordersChartResponse.success) {
+        console.log('Orders chart data:', ordersChartResponse.data);
+        setOrderChartData({
+          labels: ordersChartResponse.data.labels,
+          datasets: [{
+            label: 'Số đơn hàng',
+            data: ordersChartResponse.data.data,
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.1
+          }]
+        });
+      }
+
+      // Tải dữ liệu biểu đồ doanh thu
+      const revenueChartResponse = await dashboardAPI.getRevenueChart();
+      if (revenueChartResponse.success) {
+        console.log('Revenue chart data:', revenueChartResponse.data);
+        setRevenueChartData({
+          labels: revenueChartResponse.data.labels,
+          datasets: [{
+            label: 'Doanh thu (VNĐ)',
+            data: revenueChartResponse.data.data,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }]
+        });
+      }
+
+    } catch (error) {
+      console.error('Lỗi khi tải dữ liệu biểu đồ:', error);
+      // Nếu lỗi, sử dụng dữ liệu trống
       setOrderChartData({
         labels: [],
-        datasets: []
+        datasets: [{
+          label: 'Số đơn hàng',
+          data: [],
+          borderColor: 'rgb(75, 192, 192)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          tension: 0.1
+        }]
       });
 
       setRevenueChartData({
         labels: [],
-        datasets: []
+        datasets: [{
+          label: 'Doanh thu (VNĐ)',
+          data: [],
+          backgroundColor: 'rgba(54, 162, 235, 0.5)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
       });
-    } catch (error) {
-      console.error('Lỗi khi tải dữ liệu dashboard:', error);
     }
   };
 
@@ -103,9 +153,29 @@ const DashboardAdmin = () => {
     }).format(price);
   };
 
+  if (loading) {
+    return (
+      <Container fluid className="p-4">
+        <h1 className="h2 mb-4">Dashboard</h1>
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="mt-2">Đang tải dữ liệu...</p>
+        </div>
+      </Container>
+    );
+  }
+
   return (
     <Container fluid className="p-4">
       <h1 className="h2 mb-4">Dashboard</h1>
+
+      {error && (
+        <Alert variant="danger" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       {/* Thống kê tổng quan */}
       <Row className="mb-4">

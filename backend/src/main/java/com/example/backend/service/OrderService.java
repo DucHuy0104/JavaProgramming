@@ -5,7 +5,10 @@ import com.example.backend.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -209,5 +212,82 @@ public class OrderService {
         }
         
         return List.of();
+    }
+
+    // Dashboard statistics methods
+    public long countTotalOrders() {
+        return orderRepository.count();
+    }
+
+    public double calculateTotalRevenue() {
+        List<Order> paidOrders = orderRepository.findByPaymentStatus("PAID");
+        return paidOrders.stream()
+                .mapToDouble(Order::getTotalAmount)
+                .sum();
+    }
+
+    public long countOrdersByStatus(String status) {
+        return orderRepository.countByStatus(status);
+    }
+
+    public Map<String, Object> getOrdersChartData() {
+        List<Order> orders = orderRepository.findAll();
+
+        // Thống kê theo tháng (6 tháng gần nhất)
+        Map<String, Integer> monthlyOrders = new LinkedHashMap<>();
+        LocalDate now = LocalDate.now();
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDate month = now.minusMonths(i);
+            String monthKey = month.format(DateTimeFormatter.ofPattern("MM/yyyy"));
+            monthlyOrders.put(monthKey, 0);
+        }
+
+        // Đếm orders theo tháng
+        for (Order order : orders) {
+            if (order.getOrderDate() != null) {
+                String monthKey = order.getOrderDate().format(DateTimeFormatter.ofPattern("MM/yyyy"));
+                if (monthlyOrders.containsKey(monthKey)) {
+                    monthlyOrders.put(monthKey, monthlyOrders.get(monthKey) + 1);
+                }
+            }
+        }
+
+        Map<String, Object> chartData = new HashMap<>();
+        chartData.put("labels", new ArrayList<>(monthlyOrders.keySet()));
+        chartData.put("data", new ArrayList<>(monthlyOrders.values()));
+
+        return chartData;
+    }
+
+    public Map<String, Object> getRevenueChartData() {
+        List<Order> paidOrders = orderRepository.findByPaymentStatus("PAID");
+
+        // Thống kê doanh thu theo tháng (6 tháng gần nhất)
+        Map<String, Double> monthlyRevenue = new LinkedHashMap<>();
+        LocalDate now = LocalDate.now();
+
+        for (int i = 5; i >= 0; i--) {
+            LocalDate month = now.minusMonths(i);
+            String monthKey = month.format(DateTimeFormatter.ofPattern("MM/yyyy"));
+            monthlyRevenue.put(monthKey, 0.0);
+        }
+
+        // Tính doanh thu theo tháng
+        for (Order order : paidOrders) {
+            if (order.getOrderDate() != null) {
+                String monthKey = order.getOrderDate().format(DateTimeFormatter.ofPattern("MM/yyyy"));
+                if (monthlyRevenue.containsKey(monthKey)) {
+                    double currentRevenue = monthlyRevenue.get(monthKey);
+                    monthlyRevenue.put(monthKey, currentRevenue + order.getTotalAmount());
+                }
+            }
+        }
+
+        Map<String, Object> chartData = new HashMap<>();
+        chartData.put("labels", new ArrayList<>(monthlyRevenue.keySet()));
+        chartData.put("data", new ArrayList<>(monthlyRevenue.values()));
+
+        return chartData;
     }
 }

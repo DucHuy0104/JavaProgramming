@@ -1,18 +1,19 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.UserLoginDto;
-import com.example.backend.dto.UserRegistrationDto;
-import com.example.backend.dto.AdminUserCreationDto;
-import com.example.backend.dto.UpdateProfileDto;
-import com.example.backend.dto.ChangePasswordDto;
-import com.example.backend.entity.User;
-import com.example.backend.repository.UserRepository;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import com.example.backend.dto.AdminUserCreationDto;
+import com.example.backend.dto.ChangePasswordDto;
+import com.example.backend.dto.UpdateProfileDto;
+import com.example.backend.dto.UserLoginDto;
+import com.example.backend.dto.UserRegistrationDto;
+import com.example.backend.entity.User;
+import com.example.backend.repository.UserRepository;
 
 @Service
 public class UserService {
@@ -267,5 +268,14 @@ public class UserService {
         // Update password
         user.setPassword(passwordEncoder.encode(passwordDto.getNewPassword()));
         userRepository.save(user);
+    }
+
+    // Dashboard statistics methods
+    public long countCustomers() {
+        return userRepository.countByRole("CUSTOMER");
+    }
+
+    public long countTotalUsers() {
+        return userRepository.count();
     }
 }
