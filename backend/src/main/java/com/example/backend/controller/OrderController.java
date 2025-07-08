@@ -49,7 +49,6 @@ public class OrderController {
         // Nếu trạng thái chuyển thành "results_delivered", tự động gửi thông báo đến người dùng
         if (result != null && "results_delivered".equals(update.getStatus())) {
             System.out.println("🎉 Order " + id + " results delivered! File is now available for customer download.");
-            // TODO: Có thể thêm logic gửi email thông báo ở đây nếu cần
         }
 
         System.out.println("Update result: " + (result != null ? "Success" : "Failed"));
