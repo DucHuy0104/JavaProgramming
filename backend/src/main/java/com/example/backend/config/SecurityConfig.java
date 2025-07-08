@@ -55,22 +55,22 @@ public class SecurityConfig {
                 // Allow OPTIONS requests for CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // User profile endpoints - MUST BE BEFORE /users/** rule
-                .requestMatchers(HttpMethod.GET, "/users/profile").authenticated()
-                .requestMatchers(HttpMethod.PUT, "/users/profile").authenticated()
-                .requestMatchers(HttpMethod.POST, "/users/change-password").authenticated()
-                .requestMatchers(HttpMethod.POST, "/users/add-phone").authenticated()
-                .requestMatchers("/users/test-auth", "/users/debug-db").authenticated()
+                // User profile endpoints - MUST BE BEFORE /api/users/** rule
+                .requestMatchers(HttpMethod.GET, "/api/users/profile").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/users/profile").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/users/change-password").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/users/add-phone").authenticated()
+                .requestMatchers("/api/users/test-auth", "/api/users/debug-db").authenticated()
 
                 // Test admin endpoints
-                .requestMatchers("/users/test-admin", "/users/test-create").hasRole("ADMIN")
+                .requestMatchers("/api/users/test-admin", "/api/users/test-create").hasRole("ADMIN")
 
                 // Admin-only endpoints - TEMPORARILY ALLOW ALL FOR DEBUG
-                .requestMatchers("/users/admin/**").permitAll()
-                .requestMatchers("/users/{id}/status").hasRole("ADMIN")
+                .requestMatchers("/api/users/admin/**").permitAll()
+                .requestMatchers("/api/users/{id}/status").hasRole("ADMIN")
 
-                // Admin and Manager endpoints (MUST BE AFTER specific /users/profile rules)
-                .requestMatchers("/users", "/users/**").hasAnyRole("ADMIN", "MANAGER")
+                // Admin and Manager endpoints (MUST BE AFTER specific /api/users/profile rules)
+                .requestMatchers("/api/users", "/api/users/**").hasAnyRole("ADMIN", "MANAGER")
 
                 // Orders endpoints
                 .requestMatchers(HttpMethod.GET, "/api/orders").hasAnyRole("ADMIN", "MANAGER", "STAFF")
