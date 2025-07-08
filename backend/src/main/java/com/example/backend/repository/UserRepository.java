@@ -46,4 +46,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     // Count users by status
     long countByStatus(String status);
+
+    // Đếm số khách hàng mới theo tháng trong năm hiện tại
+    @Query("SELECT MONTH(u.createdAt) as month, COUNT(u) as count FROM User u WHERE u.role = 'CUSTOMER' AND u.status = 'ACTIVE' AND YEAR(u.createdAt) = :year GROUP BY MONTH(u.createdAt) ORDER BY month")
+    List<Object[]> countNewCustomersByMonth(@Param("year") int year);
 }

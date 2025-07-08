@@ -2,6 +2,10 @@ package com.example.backend.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -277,5 +281,35 @@ public class UserService {
 
     public long countTotalUsers() {
         return userRepository.count();
+    }
+
+    public Map<String, Object> getCustomersChartData() {
+        int year = Year.now().getValue();
+        List<Object[]> results = userRepository.countNewCustomersByMonth(year);
+        // Chuẩn bị labels và data cho 12 tháng
+        String[] labels = new String[12];
+        int[] data = new int[12];
+        for (int i = 0; i < 12; i++) {
+            labels[i] = "Tháng " + (i + 1);
+            data[i] = 0;
+        }
+        for (Object[] row : results) {
+            int month = ((Number) row[0]).intValue();
+            int count = ((Number) row[1]).intValue();
+            labels[month - 1] = "Tháng " + month;
+            data[month - 1] = count;
+        }
+        // Tính growth (tăng trưởng so với tháng trước)
+        int growth = 0;
+        for (int i = 1; i < data.length; i++) {
+            if (data[i - 1] > 0) {
+                growth = (int) Math.round(((double) (data[i] - data[i - 1]) / data[i - 1]) * 100);
+            }
+        }
+        Map<String, Object> chart = new HashMap<>();
+        chart.put("labels", labels);
+        chart.put("data", data);
+        chart.put("growth", growth);
+        return chart;
     }
 }

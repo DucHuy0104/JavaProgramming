@@ -12,6 +12,8 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { dashboardAPI } from '../services/api';
+import { userAPI } from '../services/api';
 
 ChartJS.register(
   CategoryScale,
@@ -124,73 +126,114 @@ const ReportsAdmin = () => {
     }
   };
 
-  // Hàm giả lập tải dữ liệu
-  const fetchChartData = async (chartType, period, type) => {
-    // Thay thế bằng API call thực tế
-    console.log(`Fetching data for ${chartType} - Period: ${period}, Type: ${type}`);
-    return new Promise(resolve => {
-      setTimeout(() => {
-        let data;
-        if (chartType === 'revenue') {
-          data = {
-            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'],
-            values: [5000000, 7000000, 4000000, 9000000, 7500000, 15000000],
-            total: 75000000,
-            growth: 15
-          };
-        } else if (chartType === 'orders') {
-          data = {
-            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'],
-            values: [12, 18, 15, 25, 20, 30],
-            total: 150,
-            growth: 10
-          };
-        } else if (chartType === 'customers') {
-          data = {
-            labels: ['T1', 'T2', 'T3', 'T4', 'T5', 'T6'],
-            values: [10, 15, 12, 20, 18, 25],
-            total: 45,
-            growth: 5
-          };
-        }
-        resolve(data);
-      }, 500);
-    });
-  };
-
   // useEffect để tải dữ liệu khi component mount hoặc bộ lọc thay đổi
   useEffect(() => {
     const loadRevenueData = async () => {
-      const data = await fetchChartData('revenue', revenuePeriod, revenueType);
-      setRevenueData(prev => ({
-        ...prev,
-        labels: data.labels,
-        datasets: [{ ...prev.datasets[0], data: data.values }]
-      }));
-      setTotalRevenue(data.total);
-      setRevenueGrowth(data.growth);
+      try {
+        const response = await dashboardAPI.getRevenueChart();
+        if (response.success) {
+          const labels = response.data.labels || [];
+          const dataArr = response.data.data || [];
+          setRevenueData(prev => ({
+            ...prev,
+            labels: labels,
+            datasets: [{ ...prev.datasets[0], data: dataArr }]
+          }));
+          // Tính tổng doanh thu
+          let total = response.data.total;
+          if (typeof total === 'undefined') {
+            total = dataArr.reduce((sum, v) => sum + (v || 0), 0);
+          }
+          setTotalRevenue(total);
+          // Tính tăng trưởng
+          let growth = response.data.growth;
+          if (typeof growth === 'undefined' && dataArr.length > 1) {
+            const last = dataArr[dataArr.length - 1];
+            const prev = dataArr[dataArr.length - 2];
+            growth = prev ? Math.round(((last - prev) / prev) * 100) : 0;
+          }
+          setRevenueGrowth(growth || 0);
+        }
+      } catch (error) {
+        setRevenueData(prev => ({ ...prev, labels: [], datasets: [{ ...prev.datasets[0], data: [] }] }));
+        setTotalRevenue(0);
+        setRevenueGrowth(0);
+      }
     };
 
     const loadOrderData = async () => {
-      const data = await fetchChartData('orders', orderPeriod, orderType);
-      setOrderData(prev => ({
-        ...prev,
-        labels: data.labels,
-        datasets: [{ ...prev.datasets[0], data: data.values }]
-      }));
-      setTotalOrders(data.total);
-      setOrderGrowth(data.growth);
+      try {
+        const response = await dashboardAPI.getOrdersChart();
+        if (response.success) {
+          const labels = response.data.labels || [];
+          const dataArr = response.data.data || [];
+          setOrderData(prev => ({
+            ...prev,
+            labels: labels,
+            datasets: [{ ...prev.datasets[0], data: dataArr }]
+          }));
+          // Tính tổng đơn hàng
+          let total = response.data.total;
+          if (typeof total === 'undefined') {
+            total = dataArr.reduce((sum, v) => sum + (v || 0), 0);
+          }
+          setTotalOrders(total);
+          // Tính tăng trưởng
+          let growth = response.data.growth;
+          if (typeof growth === 'undefined' && dataArr.length > 1) {
+            const last = dataArr[dataArr.length - 1];
+            const prev = dataArr[dataArr.length - 2];
+            growth = prev ? Math.round(((last - prev) / prev) * 100) : 0;
+          }
+          setOrderGrowth(growth || 0);
+        }
+      } catch (error) {
+        setOrderData(prev => ({ ...prev, labels: [], datasets: [{ ...prev.datasets[0], data: [] }] }));
+        setTotalOrders(0);
+        setOrderGrowth(0);
+      }
     };
 
+    // Phần khách hàng: nếu có API thì thay thế, chưa có thì giữ nguyên
     const loadCustomerData = async () => {
-      const data = await fetchChartData('customers', customerPeriod, customerType);
-      setCustomerData(prev => ({
-        ...prev,
-        labels: data.labels,
-        datasets: [{ ...prev.datasets[0], data: data.values }]
-      }));
-      setTotalCustomers(data.total);
-      setCustomerGrowth(data.growth);
+      try {
+        // Gọi API lấy dữ liệu biểu đồ khách hàng
+        const chartRes = await dashboardAPI.getCustomersChart();
+        console.log('Chart API:', chartRes);
+        let labels = [], dataArr = [], growth = 0;
+        if (chartRes.success) {
+          labels = chartRes.data.labels || [];
+          dataArr = chartRes.data.data || [];
+          setCustomerData(prev => ({
+            ...prev,
+            labels: labels,
+            datasets: [{ ...prev.datasets[0], data: dataArr }]
+          }));
+          // Tính tăng trưởng
+          growth = chartRes.data.growth;
+          if (typeof growth === 'undefined' && dataArr.length > 1) {
+            const last = dataArr[dataArr.length - 1];
+            const prev = dataArr[dataArr.length - 2];
+            growth = prev ? Math.round(((last - prev) / prev) * 100) : 0;
+          }
+        } else {
+          setCustomerData(prev => ({ ...prev, labels: [], datasets: [{ ...prev.datasets[0], data: [] }] }));
+        }
+        // Lấy tổng số khách hàng từ dashboard
+        const statsRes = await dashboardAPI.getStats();
+        console.log('Stats API:', statsRes);
+        let total = 0;
+        if (statsRes.success && statsRes.data && typeof statsRes.data.totalCustomers !== 'undefined') {
+          total = statsRes.data.totalCustomers;
+        }
+        setTotalCustomers(total);
+        setCustomerGrowth(growth || 0);
+      } catch (error) {
+        console.error('Customer Data Error:', error);
+        setCustomerData(prev => ({ ...prev, labels: [], datasets: [{ ...prev.datasets[0], data: [] }] }));
+        setTotalCustomers(0);
+        setCustomerGrowth(0);
+      }
     };
 
     loadRevenueData();

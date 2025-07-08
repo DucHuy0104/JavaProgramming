@@ -200,7 +200,47 @@ export const blogAPI = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
-  }
+  },
+
+  // Tạo blog mới
+  createBlog: async (blogData) => {
+    try {
+      const response = await api.post('/blogs', blogData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Xóa blog
+  deleteBlog: async (id) => {
+    try {
+      const response = await api.delete(`/blogs/${id}`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Publish blog
+  publishBlog: async (id) => {
+    try {
+      const response = await api.patch(`/blogs/${id}/publish`);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Update blog
+  updateBlog: async (id, blogData) => {
+    try {
+      const response = await api.put(`/blogs/${id}`, blogData);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
 
 // Staff APIs
@@ -498,6 +538,17 @@ export const dashboardAPI = {
       return response.data;
     } catch (error) {
       console.error('Error getting revenue chart:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Lấy dữ liệu biểu đồ khách hàng
+  getCustomersChart: async () => {
+    try {
+      const response = await api.get('/dashboard/customers-chart');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting customers chart:', error);
       throw error.response?.data || error.message;
     }
   }

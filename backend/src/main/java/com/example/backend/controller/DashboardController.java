@@ -111,4 +111,25 @@ public class DashboardController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @GetMapping("/customers-chart")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MANAGER')")
+    public ResponseEntity<?> getCustomersChart() {
+        try {
+            System.out.println("=== CUSTOMERS CHART REQUEST ===");
+            Map<String, Object> chartData = userService.getCustomersChartData();
+            System.out.println("Customers chart data: " + chartData);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", chartData);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            System.err.println("❌ Error getting customers chart: " + e.getMessage());
+            e.printStackTrace();
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Lỗi khi lấy thống kê khách hàng: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
 }
