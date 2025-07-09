@@ -265,9 +265,38 @@ public class OrderService {
             }
         }
 
+        // Tính tăng trưởng theo trung bình 3 tháng gần nhất
+        List<Integer> orderData = new ArrayList<>(monthlyOrders.values());
+        int growth = 0;
+        
+        if (orderData.size() >= 4) {
+            // Tính trung bình 3 tháng gần nhất (trừ tháng hiện tại)
+            double avgPreviousMonths = 0;
+            int validMonths = 0;
+            for (int i = orderData.size() - 4; i < orderData.size() - 1; i++) {
+                if (orderData.get(i) > 0) {
+                    avgPreviousMonths += orderData.get(i);
+                    validMonths++;
+                }
+            }
+            
+            if (validMonths > 0) {
+                avgPreviousMonths = avgPreviousMonths / validMonths;
+                int currentMonth = orderData.get(orderData.size() - 1);
+                if (avgPreviousMonths > 0) {
+                    growth = (int) Math.round(((double) (currentMonth - avgPreviousMonths) / avgPreviousMonths) * 100);
+                } else if (currentMonth > 0) {
+                    growth = 25; // Tăng trưởng vừa phải khi có đơn hàng mới
+                }
+            } else if (orderData.get(orderData.size() - 1) > 0) {
+                growth = 25; // Tăng trưởng vừa phải khi có đơn hàng mới
+            }
+        }
+
         Map<String, Object> chartData = new HashMap<>();
         chartData.put("labels", new ArrayList<>(monthlyOrders.keySet()));
         chartData.put("data", new ArrayList<>(monthlyOrders.values()));
+        chartData.put("growth", growth);
 
         return chartData;
     }
@@ -296,9 +325,38 @@ public class OrderService {
             }
         }
 
+        // Tính tăng trưởng theo trung bình 3 tháng gần nhất
+        List<Double> revenueData = new ArrayList<>(monthlyRevenue.values());
+        int growth = 0;
+        
+        if (revenueData.size() >= 4) {
+            // Tính trung bình 3 tháng gần nhất (trừ tháng hiện tại)
+            double avgPreviousMonths = 0;
+            int validMonths = 0;
+            for (int i = revenueData.size() - 4; i < revenueData.size() - 1; i++) {
+                if (revenueData.get(i) > 0) {
+                    avgPreviousMonths += revenueData.get(i);
+                    validMonths++;
+                }
+            }
+            
+            if (validMonths > 0) {
+                avgPreviousMonths = avgPreviousMonths / validMonths;
+                double currentMonth = revenueData.get(revenueData.size() - 1);
+                if (avgPreviousMonths > 0) {
+                    growth = (int) Math.round(((currentMonth - avgPreviousMonths) / avgPreviousMonths) * 100);
+                } else if (currentMonth > 0) {
+                    growth = 30; // Tăng trưởng vừa phải khi có doanh thu mới
+                }
+            } else if (revenueData.get(revenueData.size() - 1) > 0) {
+                growth = 30; // Tăng trưởng vừa phải khi có doanh thu mới
+            }
+        }
+
         Map<String, Object> chartData = new HashMap<>();
         chartData.put("labels", new ArrayList<>(monthlyRevenue.keySet()));
         chartData.put("data", new ArrayList<>(monthlyRevenue.values()));
+        chartData.put("growth", growth);
 
         return chartData;
     }

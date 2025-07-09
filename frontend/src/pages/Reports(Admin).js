@@ -145,9 +145,10 @@ const ReportsAdmin = () => {
             total = dataArr.reduce((sum, v) => sum + (v || 0), 0);
           }
           setTotalRevenue(total);
-          // Tính tăng trưởng
+          // Tính tăng trưởng từ backend
           let growth = response.data.growth;
           if (typeof growth === 'undefined' && dataArr.length > 1) {
+            // Fallback: tính theo tháng trước nếu backend không có
             const last = dataArr[dataArr.length - 1];
             const prev = dataArr[dataArr.length - 2];
             growth = prev ? Math.round(((last - prev) / prev) * 100) : 0;
@@ -178,9 +179,10 @@ const ReportsAdmin = () => {
             total = dataArr.reduce((sum, v) => sum + (v || 0), 0);
           }
           setTotalOrders(total);
-          // Tính tăng trưởng
+          // Tính tăng trưởng từ backend
           let growth = response.data.growth;
           if (typeof growth === 'undefined' && dataArr.length > 1) {
+            // Fallback: tính theo tháng trước nếu backend không có
             const last = dataArr[dataArr.length - 1];
             const prev = dataArr[dataArr.length - 2];
             growth = prev ? Math.round(((last - prev) / prev) * 100) : 0;

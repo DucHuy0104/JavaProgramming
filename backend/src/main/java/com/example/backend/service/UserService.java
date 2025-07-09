@@ -3,6 +3,7 @@ package com.example.backend.service;
 import java.util.List;
 import java.util.Optional;
 import java.time.Year;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -298,12 +299,33 @@ public class UserService {
             labels[month - 1] = "Tháng " + month;
             data[month - 1] = count;
         }
-        // Tính growth (tăng trưởng so với tháng trước)
+        // Tính growth (tăng trưởng so với trung bình 3 tháng gần nhất)
         int growth = 0;
-        for (int i = 1; i < data.length; i++) {
-            if (data[i - 1] > 0) {
-                growth = (int) Math.round(((double) (data[i] - data[i - 1]) / data[i - 1]) * 100);
+        // Tìm tháng hiện tại (tháng cuối cùng có dữ liệu)
+        int currentMonth = Year.now().getValue() == year ? LocalDate.now().getMonthValue() : 12;
+        int currentIndex = currentMonth - 1;
+        
+        // Tính trung bình 3 tháng gần nhất (trừ tháng hiện tại)
+        double avgPreviousMonths = 0;
+        int validMonths = 0;
+        for (int i = Math.max(0, currentIndex - 3); i < currentIndex; i++) {
+            if (data[i] > 0) {
+                avgPreviousMonths += data[i];
+                validMonths++;
             }
+        }
+        
+        if (validMonths > 0) {
+            avgPreviousMonths = avgPreviousMonths / validMonths;
+            if (avgPreviousMonths > 0) {
+                growth = (int) Math.round(((double) (data[currentIndex] - avgPreviousMonths) / avgPreviousMonths) * 100);
+            } else if (data[currentIndex] > 0) {
+                growth = 25; // Tăng trưởng vừa phải khi có khách hàng mới
+            }
+        } else if (data[currentIndex] > 0) {
+            growth = 25; // Tăng trưởng vừa phải khi có khách hàng mới
+        } else {
+            growth = 0; // Không có tăng trưởng
         }
         Map<String, Object> chart = new HashMap<>();
         chart.put("labels", labels);
