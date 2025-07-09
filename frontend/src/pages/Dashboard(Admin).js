@@ -77,7 +77,7 @@ const DashboardAdmin = () => {
 
     } catch (error) {
       console.error('Lỗi khi tải dữ liệu dashboard:', error);
-      setError('Lỗi khi tải dữ liệu dashboard: ' + (error.message || error));
+      setError('Bạn không có quyền truy cập trang này ' );
     } finally {
       setLoading(false);
     }

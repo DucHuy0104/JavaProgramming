@@ -13,6 +13,7 @@ import PublicRoute from './components/PublicRoute';
 import Login from './components/Login';
 import Register from './components/Register';
 import BlogList from './components/BlogList';
+import BlogDetail from './pages/BlogDetail';
 import Profile from './components/Profile';
 import Orders from './components/Orders';
 import ForgotPassword from './components/ForgotPassword';
@@ -65,6 +66,7 @@ function App() {
 
         {/* Blog routes */}
         <Route path="/blogs" element={<PublicLayout><BlogList /></PublicLayout>} />
+        <Route path="/blog/:id" element={<PublicLayout><BlogDetail /></PublicLayout>} />
 
         {/* User routes - cần đăng nhập */}
         <Route path="/profile" element={

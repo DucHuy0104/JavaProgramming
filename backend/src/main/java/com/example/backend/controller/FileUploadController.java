@@ -153,6 +153,123 @@ public class FileUploadController {
         }
     }
 
+
+
+    // Upload ảnh cho blog
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'STAFF')")
+    @PostMapping("/upload-blog-image")
+    public ResponseEntity<Map<String, Object>> uploadBlogImage(@RequestParam("file") MultipartFile file) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            System.out.println("=== UPLOAD BLOG IMAGE REQUEST ===");
+            System.out.println("File name: " + file.getOriginalFilename());
+
+            // Validate file
+            if (file.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Vui lòng chọn file ảnh");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Validate file type
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                response.put("success", false);
+                response.put("message", "Chỉ chấp nhận file ảnh (JPG, PNG, GIF)");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            // Create upload directory trong frontend/src/assets
+            // Get current working directory and navigate to frontend/src/assets
+            Path currentDir = Paths.get("").toAbsolutePath();
+            Path frontendAssetsPath = currentDir.getParent().resolve("frontend/src/assets");
+
+            System.out.println("Current directory: " + currentDir);
+            System.out.println("Frontend assets path: " + frontendAssetsPath);
+
+            if (!Files.exists(frontendAssetsPath)) {
+                Files.createDirectories(frontendAssetsPath);
+                System.out.println("Created directory: " + frontendAssetsPath);
+            }
+
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String uniqueFilename = "blog_" + System.currentTimeMillis() + fileExtension;
+
+            // Save file
+            Path filePath = frontendAssetsPath.resolve(uniqueFilename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+            System.out.println(" Blog image uploaded successfully: " + filePath);
+
+            response.put("success", true);
+            response.put("message", "Upload ảnh thành công!");
+            response.put("imagePath", "assets/" + uniqueFilename);
+            response.put("imageUrl", "/api/files/blog-images/" + uniqueFilename);
+            response.put("fileName", uniqueFilename);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            System.err.println("/*  */ Error uploading blog image: " + e.getMessage());
+            response.put("success", false);
+            response.put("message", "Lỗi khi upload ảnh: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    // Serve blog images
+    @GetMapping("/blog-images/{filename}")
+    public ResponseEntity<Resource> serveBlogImage(@PathVariable String filename) {
+        System.out.println("=== SERVE BLOG IMAGE REQUEST ===");
+        System.out.println("Requested filename: " + filename);
+
+        try {
+            // Get path to frontend/src/assets
+            Path currentDir = Paths.get("").toAbsolutePath();
+            Path frontendAssetsPath = currentDir.getParent().resolve("frontend/src/assets");
+            Path filePath = frontendAssetsPath.resolve(filename);
+
+            System.out.println("Current directory: " + currentDir);
+            System.out.println("Frontend assets path: " + frontendAssetsPath);
+            System.out.println("Full file path: " + filePath);
+            System.out.println("File exists: " + Files.exists(filePath));
+
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (!resource.exists()) {
+                System.err.println(" Blog image not found: " + filePath);
+                System.err.println(" File exists check: " + Files.exists(filePath));
+                return ResponseEntity.notFound().build();
+            }
+
+            if (!resource.isReadable()) {
+                System.err.println(" Blog image not readable: " + filePath);
+                return ResponseEntity.status(403).build();
+            }
+
+            // Determine content type
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+
+            System.out.println(" Serving blog image: " + filename);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .header(HttpHeaders.CACHE_CONTROL, "max-age=3600")
+                    .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "*")
+                    .body(resource);
+
+        } catch (Exception e) {
+            System.err.println(" Error serving blog image: " + e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/delete-result/{orderId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or hasAuthority('ROLE_MANAGER')")
     public ResponseEntity<?> deleteTestResult(@PathVariable Long orderId) {

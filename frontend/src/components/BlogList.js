@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Container, Row, Col, Card, Badge, Spinner, Alert } from 'react-bootstrap';
 import { blogAPI } from '../services/api';
+import './BlogList.css';
 
 const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
@@ -8,7 +10,26 @@ const BlogList = () => {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [expandedBlogId, setExpandedBlogId] = useState(null);
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      'news': 'primary',
+      'science': 'success',
+      'guide': 'info',
+      'faq': 'warning'
+    };
+    return colors[category] || 'secondary';
+  };
+
+  const getCategoryText = (category) => {
+    const categoryMap = {
+      'guide': 'Hướng dẫn',
+      'news': 'Tin tức',
+      'science': 'Khoa học',
+      'faq': 'FAQ',
+    };
+    return categoryMap[category] || category;
+  };
 
   useEffect(() => {
     fetchBlogs();
@@ -36,99 +57,137 @@ const BlogList = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN');
+    return date.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
-  const toggleExpand = (blogId) => {
-    setExpandedBlogId(expandedBlogId === blogId ? null : blogId);
-  };
+
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-500"></div>
-      </div>
+      <Container className="py-5">
+        <div className="text-center">
+          <Spinner animation="border" role="status" variant="primary">
+            <span className="visually-hidden">Đang tải...</span>
+          </Spinner>
+          <p className="mt-3">Đang tải tin tức...</p>
+        </div>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+      <Container className="py-5">
+        <Alert variant="danger">
           {error}
-        </div>
-      </div>
+        </Alert>
+      </Container>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Blog về Xét nghiệm ADN</h1>
-      
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border border-gray-200 rounded-lg shadow-md">
-          <thead className="bg-gray-50">
-            <tr>
-              <th scope="col" className="w-[400px] px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tiêu đề</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh mục</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tác giả</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày đăng</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lượt xem</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {blogs.map((blog) => (
-              <tr key={blog.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  {blog.imageUrl && (
-                    <img
-                      src={blog.imageUrl}
-                      alt={blog.title}
-                      className="w-full h-48 object-cover rounded"
-                      onError={(e) => {
-                        e.target.src = 'https://via.placeholder.com/400x200?text=DNA+Testing';
-                      }}
-                    />
-                  )}
-                </td>
-                <td 
-                  className="px-6 py-4 cursor-pointer" 
-                  onClick={() => toggleExpand(blog.id)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => e.key === 'Enter' && toggleExpand(blog.id)}
-                >
-                  <div className="text-sm font-medium text-gray-900 line-clamp-2">{blog.title}</div>
-                  <div className={`text-sm text-gray-600 ${expandedBlogId === blog.id ? '' : 'line-clamp-2'}`}>
-                    {blog.summary}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                    {blog.category}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{blog.author}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(blog.publishedAt)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {blog.viewCount !== undefined ? `${blog.viewCount} lượt xem` : 'N/A'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <Link
-                    to={`/blogs/${blog.id}`}
-                    className="text-indigo-600 hover:text-indigo-800 font-medium"
-                  >
-                    Đọc thêm →
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <Container className="py-5">
+      {/* Header */}
+      <div className="text-center mb-5">
+        <h1 className="display-4 fw-bold text-primary mb-3">Tin Tức & Kiến Thức</h1>
+        <p className="lead text-muted">
+          Cập nhật những thông tin mới nhất về xét nghiệm ADN và các nghiên cứu khoa học
+        </p>
       </div>
+
+      {/* News Grid */}
+      <Row>
+        {blogs.map((blog) => (
+          <Col lg={6} className="mb-4" key={blog.id}>
+            <Card className="h-100 shadow-sm border-0 news-card">
+              <Row className="g-0 h-100">
+                {/* Image Column */}
+                <Col md={5}>
+                  <div className="news-image-container">
+                    {blog.imageUrl ? (
+                      <Card.Img
+                        src={`http://localhost:8081${blog.imageUrl}`}
+                        alt={blog.title}
+                        className="news-image"
+                        onError={(e) => {
+                          e.target.src = 'https://via.placeholder.com/400x300?text=DNA+Testing';
+                        }}
+                      />
+                    ) : (
+                      <Card.Img
+                        src="https://via.placeholder.com/400x300?text=DNA+Testing"
+                        alt="Default"
+                        className="news-image"
+                      />
+                    )}
+                  </div>
+                </Col>
+
+                {/* Content Column */}
+                <Col md={7}>
+                  <Card.Body className="d-flex flex-column h-100 p-4">
+                    {/* Category Badge */}
+                    <div className="mb-2">
+                      <Badge bg={getCategoryColor(blog.category)} className="mb-2">
+                        {getCategoryText(blog.category)}
+                      </Badge>
+                    </div>
+
+                    {/* Title */}
+                    <Card.Title className="h5 fw-bold text-dark mb-3 line-clamp-2">
+                      {blog.title}
+                    </Card.Title>
+
+                    {/* Summary */}
+                    <Card.Text className="text-muted mb-3 line-clamp-3 flex-grow-1">
+                      {blog.summary || blog.content?.substring(0, 150) + '...'}
+                    </Card.Text>
+
+                    {/* Footer */}
+                    <div className="mt-auto">
+                      <div className="d-flex justify-content-between align-items-center">
+                        <small className="text-muted">
+                          <i className="fas fa-calendar-alt me-1"></i>
+                          {formatDate(blog.publishedAt)}
+                        </small>
+                        <small className="text-muted">
+                          <i className="fas fa-eye me-1"></i>
+                          {blog.viewCount || 0} lượt xem
+                        </small>
+                      </div>
+                      <div className="mt-2 d-flex justify-content-between align-items-center">
+                        <small className="text-muted">
+                          <i className="fas fa-user me-1"></i>
+                          {blog.author}
+                        </small>
+                        <Link
+                          to={`/blog/${blog.id}`}
+                          className="btn btn-outline-primary btn-sm"
+                        >
+                          Đọc thêm →
+                        </Link>
+                      </div>
+                    </div>
+                  </Card.Body>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      {/* Empty State */}
+      {blogs.length === 0 && (
+        <div className="text-center py-5">
+          <i className="fas fa-newspaper fa-3x text-muted mb-3"></i>
+          <h4 className="text-muted">Chưa có tin tức nào</h4>
+          <p className="text-muted">Hãy quay lại sau để xem những tin tức mới nhất!</p>
+        </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -166,7 +225,7 @@ const BlogList = () => {
           </nav>
         </div>
       )}
-    </div>
+    </Container>
   );
 };
 

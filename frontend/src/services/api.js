@@ -602,6 +602,24 @@ export const fileAPI = {
     }
   },
 
+  // Upload ảnh cho blog
+  uploadBlogImage: async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await api.post('/files/upload-blog-image', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading blog image:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
   // Xóa file kết quả xét nghiệm
   deleteTestResult: async (orderId) => {
     try {

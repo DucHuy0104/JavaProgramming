@@ -85,6 +85,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/files/download-result/**").permitAll() // Allow public download
                 .requestMatchers(HttpMethod.DELETE, "/api/files/delete-result/**").hasAnyRole("ADMIN", "MANAGER", "STAFF")
 
+                // Blog image endpoints
+                .requestMatchers(HttpMethod.GET, "/api/files/blog-images/**").permitAll() // Allow public access to blog images
+
                 // Dashboard endpoints
                 .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "MANAGER")
 

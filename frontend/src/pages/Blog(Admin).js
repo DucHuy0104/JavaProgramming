@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Row, Col, Form, Button, Table, Modal, Badge, Card } from 'react-bootstrap';
-import { blogAPI } from '../services/api';
+import { Container, Row, Col, Form, Button, Table, Modal, Badge, Card, Tab, Tabs } from 'react-bootstrap';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import './BlogAdmin.css';
+import { blogAPI, fileAPI } from '../services/api';
 
 const getCategoryText = (category) => {
   const categoryMap = {
@@ -27,13 +30,45 @@ const BlogAdmin = () => {
     id: null,
     title: '',
     category: '',
-    author: 'Admin',
+    author: '',
     content: '',
     imageUrl: '',
     status: 'DRAFT',
     publishDate: '',
   });
   const [loading, setLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+
+  // Cấu hình ReactQuill
+  const quillModules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'script': 'sub'}, { 'script': 'super' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
+      [{ 'direction': 'rtl' }],
+      [{ 'size': ['small', false, 'large', 'huge'] }],
+      [{ 'color': [] }, { 'background': [] }],
+      [{ 'font': [] }],
+      [{ 'align': [] }],
+      ['blockquote', 'code-block'],
+      ['link', 'image', 'video'],
+      ['clean']
+    ],
+  };
+
+  const quillFormats = [
+    'header', 'font', 'size',
+    'bold', 'italic', 'underline', 'strike', 'blockquote',
+    'list', 'bullet', 'indent',
+    'link', 'image', 'video',
+    'align', 'color', 'background',
+    'script', 'code-block'
+  ];
 
   // Load posts từ API
   const loadPosts = useCallback(async () => {
@@ -70,7 +105,7 @@ const BlogAdmin = () => {
       id: null,
       title: '',
       category: '',
-      author: 'Admin',
+      author: '',
       content: '',
       imageUrl: '',
       status: 'DRAFT',
@@ -107,12 +142,16 @@ const BlogAdmin = () => {
       id: null,
       title: '',
       category: '',
-      author: 'Admin',
+      author: '',
       content: '',
       imageUrl: '',
       status: 'DRAFT',
       publishDate: '',
     });
+    // Reset image states
+    setSelectedImage(null);
+    setImagePreview(null);
+    setUploadingImage(false);
   };
 
   const handleFormChange = (e) => {
@@ -120,16 +159,98 @@ const BlogAdmin = () => {
     setCurrentPost(prev => ({ ...prev, [name]: value }));
   };
 
+  // Xử lý chọn ảnh và tự động upload
+  const handleImageSelect = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedImage(file);
+
+      // Tạo preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+
+      // Tự động upload ảnh
+      setUploadingImage(true);
+      try {
+        const result = await fileAPI.uploadBlogImage(file);
+
+        // Cập nhật imageUrl trong currentPost
+        setCurrentPost(prev => ({
+          ...prev,
+          imageUrl: result.imageUrl
+        }));
+
+        alert('Upload ảnh thành công!');
+      } catch (error) {
+        alert('Lỗi khi upload ảnh: ' + (error.message || error));
+      } finally {
+        setUploadingImage(false);
+      }
+    }
+  };
+
+  // Upload ảnh thủ công (backup)
+  const handleImageUpload = async () => {
+    if (!selectedImage) return;
+
+    setUploadingImage(true);
+    try {
+      const result = await fileAPI.uploadBlogImage(selectedImage);
+
+      // Cập nhật imageUrl trong currentPost
+      setCurrentPost(prev => ({
+        ...prev,
+        imageUrl: result.imageUrl
+      }));
+
+      alert('Upload ảnh thành công!');
+    } catch (error) {
+      alert('Lỗi khi upload ảnh: ' + (error.message || error));
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Xóa ảnh đã chọn
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    setCurrentPost(prev => ({ ...prev, imageUrl: '' }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation
+    if (!currentPost.title.trim()) {
+      alert('Vui lòng nhập tiêu đề bài viết');
+      return;
+    }
+    if (!currentPost.category) {
+      alert('Vui lòng chọn chủ đề');
+      return;
+    }
+    if (!currentPost.author.trim()) {
+      alert('Vui lòng nhập tên tác giả');
+      return;
+    }
+    if (!currentPost.content.trim()) {
+      alert('Vui lòng nhập mô tả bài viết');
+      return;
+    }
+
     try {
       let blogData = {
-        title: currentPost.title,
+        title: currentPost.title.trim(),
         category: currentPost.category,
-        author: currentPost.author,
-        content: currentPost.content,
-        summary: currentPost.summary || '',
-        tags: currentPost.tags || '',
+        author: currentPost.author.trim(),
+        content: currentPost.content.trim(),
+        summary: currentPost.summary?.trim() || '',
+        tags: currentPost.tags?.trim() || '',
+        imageUrl: currentPost.imageUrl || '',
       };
       let createdBlog;
       if (isEditing && currentPost.id) {
@@ -262,15 +383,116 @@ const BlogAdmin = () => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label>Nội dung</Form.Label>
+              <Form.Label>Tác giả <span className="text-danger">*</span></Form.Label>
               <Form.Control
-                as="textarea"
-                rows={5}
-                name="content"
-                value={currentPost.content}
+                type="text"
+                name="author"
+                value={currentPost.author}
                 onChange={handleFormChange}
+                placeholder="VD: Bác sĩ Nguyễn Văn A, Chuyên gia ADN..."
                 required
               />
+              <Form.Text className="text-muted">
+                Nhập tên tác giả hoặc chuyên gia viết bài
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Nội dung bài viết</Form.Label>
+              <div className="border rounded" style={{ minHeight: '300px' }}>
+                <ReactQuill
+                  theme="snow"
+                  value={currentPost.content}
+                  onChange={(content) => setCurrentPost(prev => ({ ...prev, content }))}
+                  modules={quillModules}
+                  formats={quillFormats}
+                  style={{ height: '250px', marginBottom: '50px' }}
+                  placeholder="Nhập nội dung bài viết..."
+                />
+              </div>
+            </Form.Group>
+
+            {/* Preview Tab */}
+            <Form.Group className="mb-3">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <Form.Label>Xem trước nội dung</Form.Label>
+                <Button
+                  variant="outline-info"
+                  size="sm"
+                  onClick={() => setShowPreview(!showPreview)}
+                >
+                  {showPreview ? 'Ẩn xem trước' : 'Xem trước'}
+                </Button>
+              </div>
+              {showPreview && (
+                <Card className="p-3" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: currentPost.content }}
+                    style={{ lineHeight: '1.6' }}
+                  />
+                </Card>
+              )}
+            </Form.Group>
+
+            {/* Upload ảnh */}
+            <Form.Group className="mb-3">
+              <Form.Label>Ảnh bài viết</Form.Label>
+              <div className="d-flex flex-column gap-2">
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  disabled={uploadingImage}
+                />
+
+                {uploadingImage && (
+                  <div className="text-info">
+                    <small>🔄 Đang upload ảnh...</small>
+                  </div>
+                )}
+
+                {imagePreview && (
+                  <div className="mt-2">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover' }}
+                      className="border rounded"
+                    />
+                    <div className="mt-2">
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        onClick={handleRemoveImage}
+                        disabled={uploadingImage}
+                      >
+                        Xóa ảnh
+                      </Button>
+                      {currentPost.imageUrl && (
+                        <small className="text-success ms-2">✅ Ảnh đã được upload</small>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {currentPost.imageUrl && !imagePreview && (
+                  <div className="mt-2">
+                    <img
+                      src={`http://localhost:8081${currentPost.imageUrl}`}
+                      alt="Current"
+                      style={{ maxWidth: '200px', maxHeight: '150px', objectFit: 'cover' }}
+                      className="border rounded"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        console.log('Image not found:', currentPost.imageUrl);
+                      }}
+                    />
+                    <div className="mt-1">
+                      <small className="text-muted">Ảnh hiện tại</small>
+                    </div>
+                  </div>
+                )}
+              </div>
             </Form.Group>
 
             <Form.Group className="mb-3">
