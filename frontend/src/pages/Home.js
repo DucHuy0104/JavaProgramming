@@ -7,12 +7,13 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import { FaDna, FaShieldAlt, FaClock, FaUserCheck, FaFileAlt, FaHome, FaBuilding } from 'react-icons/fa';
-
+import { useNavigate } from 'react-router-dom';
 
 
 function Home() {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     // Fetch services from API
     useEffect(() => {
@@ -78,10 +79,10 @@ function Home() {
                                         <li><span className="welcome-icon"><FaFileAlt /></span> Kết quả chính xác, nhanh chóng, giá trị pháp lý</li>
                                     </ul>
                                     <div className="welcome-buttons">
-                                        <Button variant="primary" size="lg" className="me-3 mb-2">
+                                        <Button variant="primary" size="lg" className="me-3 mb-2" onClick={() => navigate('/services')}>
                                             Đặt lịch xét nghiệm
                                         </Button>
-                                        <Button variant="outline-primary" size="lg" className="mb-2">
+                                        <Button variant="outline-primary" size="lg" className="mb-2" onClick={() => navigate('/contact')}>
                                             Tư vấn miễn phí
                                         </Button>
                                     </div>
