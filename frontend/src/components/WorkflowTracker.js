@@ -34,7 +34,6 @@ const WorkflowTracker = ({ order, onRefresh }) => {
         { key: 'accepted', label: 'Admin nhận đơn', icon: FaUserCheck, description: 'Admin đã xác nhận và nhận đơn hàng' },
         { key: 'kit_sent', label: 'Gửi bộ kit', icon: FaBox, description: 'Bộ kit xét nghiệm đã được gửi đến khách hàng' },
         { key: 'sample_collected_self', label: 'Thu thập mẫu', icon: FaUserCheck, description: 'Khách hàng đã thu thập mẫu theo hướng dẫn' },
-        { key: 'sample_in_transit', label: 'Chuyển mẫu', icon: FaTruck, description: 'Mẫu đang được chuyển đến phòng lab' },
         { key: 'sample_received_lab', label: 'Nhận mẫu tại lab', icon: FaFlask, description: 'Phòng lab đã nhận và kiểm tra mẫu' },
         { key: 'testing_in_progress', label: 'Thực hiện xét nghiệm', icon: FaFlask, description: 'Đang tiến hành xét nghiệm mẫu' },
         { key: 'results_recorded', label: 'Ghi nhận kết quả', icon: FaFileAlt, description: 'Kết quả xét nghiệm đã được ghi nhận' },
@@ -114,7 +113,6 @@ const WorkflowTracker = ({ order, onRefresh }) => {
       'pending_registration': 'Chờ đăng ký',
       'kit_sent': 'Đã gửi kit',
       'sample_collected_self': 'Đã thu mẫu',
-      'sample_in_transit': 'Đang chuyển mẫu',
       'sample_received_lab': 'Đã nhận mẫu',
       'testing_in_progress': 'Đang xét nghiệm',
       'results_recorded': 'Đã ghi nhận KQ',
@@ -234,8 +232,16 @@ const WorkflowTracker = ({ order, onRefresh }) => {
                       {stepStatus === 'completed' && order[`${step.key.replace(/_/g, '')}Date`] && 
                         `✅ Hoàn thành: ${formatDate(order[`${step.key.replace(/_/g, '')}Date`])}`
                       }
-                      {stepStatus === 'current' && '🔄 Đang thực hiện...'}
-                      {stepStatus === 'pending' && '⏳ Chờ thực hiện'}
+                      {stepStatus === 'current' && (
+                        step.key === 'results_delivered' && order.status === 'results_delivered'
+                          ? '✅ Trả kết quả thành công'
+                          : '🔄 Đang thực hiện...'
+                      )}
+                      {stepStatus === 'pending' && (
+                        step.key === 'results_delivered' && order.status === 'results_delivered'
+                          ? '✅ Trả kết quả thành công'
+                          : '⏳ Chờ thực hiện'
+                      )}
                     </small>
                   </div>
                 </div>
@@ -266,7 +272,9 @@ const WorkflowTracker = ({ order, onRefresh }) => {
             <Col md={4}>
               <div className="text-center">
                 <h4 className="text-success mb-1">
-                  {steps.filter(step => getStepStatus(step.key, order.status) === 'completed').length}
+                  {order.status === 'results_delivered'
+                    ? steps.length
+                    : steps.filter(step => getStepStatus(step.key, order.status) === 'completed').length}
                 </h4>
                 <small className="text-muted">Bước đã hoàn thành</small>
               </div>
@@ -274,7 +282,9 @@ const WorkflowTracker = ({ order, onRefresh }) => {
             <Col md={4}>
               <div className="text-center">
                 <h4 className="text-info mb-1">
-                  {steps.length - steps.filter(step => getStepStatus(step.key, order.status) === 'completed').length}
+                  {order.status === 'results_delivered'
+                    ? 0
+                    : steps.length - steps.filter(step => getStepStatus(step.key, order.status) === 'completed').length}
                 </h4>
                 <small className="text-muted">Bước còn lại</small>
               </div>
@@ -345,4 +355,4 @@ const WorkflowTracker = ({ order, onRefresh }) => {
   );
 };
 
-export default WorkflowTracker; 
+export default WorkflowTracker;

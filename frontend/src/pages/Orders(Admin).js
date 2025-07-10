@@ -649,12 +649,9 @@ const OrdersAdmin = () => {
                       <Button variant="outline-info" size="sm" onClick={() => handleUpdateStatus(order, 'kit_sent')}>Gửi Kit</Button>
                     )}
                     {order.status === 'kit_sent' && (
-                      <Button variant="outline-info" size="sm" onClick={() => handleUpdateStatus(order, 'sample_collected_self')}>User Đã Thu Mẫu</Button>
+                      <Button variant="outline-info" size="sm" onClick={() => handleUpdateStatus(order, 'sample_collected_self')}>Khách Hàng Đã Thu Mẫu</Button>
                     )}
                     {order.status === 'sample_collected_self' && (
-                      <Button variant="outline-info" size="sm" onClick={() => handleUpdateStatus(order, 'sample_in_transit')}>Đang Chuyển Mẫu</Button>
-                    )}
-                    {order.status === 'sample_in_transit' && (
                       <Button variant="outline-success" size="sm" onClick={() => handleUpdateStatus(order, 'sample_received_lab')}>Đã Nhận Mẫu</Button>
                     )}
                     {order.status === 'sample_received_lab' && (
@@ -864,12 +861,9 @@ const OrdersAdmin = () => {
                         <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'kit_sent')}>Gửi Kit</Button>
                       )}
                       {selectedOrder.status === 'kit_sent' && (
-                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'sample_collected_self')}>User Đã Thu Mẫu</Button>
+                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'sample_collected_self')}>Khách Hàng Đã Thu Mẫu</Button>
                       )}
                       {selectedOrder.status === 'sample_collected_self' && (
-                        <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'sample_in_transit')}>Đang Chuyển Mẫu</Button>
-                      )}
-                      {selectedOrder.status === 'sample_in_transit' && (
                         <Button variant="success" onClick={() => handleUpdateStatus(selectedOrder, 'sample_received_lab')}>Đã Nhận Mẫu tại Lab</Button>
                       )}
                       {selectedOrder.status === 'sample_received_lab' && (
